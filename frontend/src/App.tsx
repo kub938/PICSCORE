@@ -2,7 +2,10 @@ import { Outlet } from "react-router-dom";
 
 function App() {
   return (
-    <div className="flex flex-col max-w-md mx-auto min-h-screen">
+    <div
+      className="border flex flex-col max-w-md mx-auto min-h-screen bg-gray-50
+    "
+    >
       <header></header>
       <main>
         <Outlet />
