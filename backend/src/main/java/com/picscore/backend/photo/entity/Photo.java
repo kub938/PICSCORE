@@ -1,6 +1,7 @@
 package com.picscore.backend.photo.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.picscore.backend.timeattack.TimeAttack;
 import com.picscore.backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,6 +9,8 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "photo")
@@ -17,9 +20,16 @@ public class Photo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "photo_id")
-    @OneToMany(mappedBy = "photo")
-    @OneToOne(mappedBy = "photo")
     private Long id;
+
+    @OneToMany(mappedBy = "photo")
+    private List<PhotoHashtag> photoHashtags = new ArrayList<>();
+
+    @OneToMany(mappedBy = "photo")
+    private List<PhotoLike> photoLikes = new ArrayList<>();
+
+    @OneToOne(mappedBy = "photo", fetch = FetchType.LAZY)
+    private TimeAttack timeAttack;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

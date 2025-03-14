@@ -7,17 +7,18 @@ import lombok.Setter;
 @Entity
 @Table(name = "photo_hashtag")
 @Getter @Setter
-public class PhotoHashtag {
+public class  PhotoHashtag {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "photo_hashtag_id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hashtag_id")
     private Hashtag hashtag;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "photo_id")
     private Photo photo;
 }
