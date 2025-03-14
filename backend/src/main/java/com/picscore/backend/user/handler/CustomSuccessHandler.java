@@ -29,7 +29,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         //OAuth2User
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
 
-        String nickName = customUserDetails.getNickName();
+        String nickName = customUserDetails.getName();
 
         String token = jwtUtil.createJwt(nickName, 60*60*60L);
         System.out.println("token = " + token);

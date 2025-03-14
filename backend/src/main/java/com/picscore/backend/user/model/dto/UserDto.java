@@ -7,12 +7,6 @@ import lombok.Setter;
 @Getter @Setter
 public class UserDto {
 
-    private String socialId;
-    private String socialType;
     private String nickName;
-    private String profileImage;
-    private String message;
-    private int level;
-    private int experience;
     private String role;
 }

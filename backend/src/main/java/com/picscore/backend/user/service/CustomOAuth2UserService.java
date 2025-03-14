@@ -53,13 +53,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userRepository.save(user);
 
             UserDto userDto = new UserDto();
-            userDto.setSocialId(oAuth2Response.getProviderId());
-            userDto.setSocialType(oAuth2Response.getProvider());
             userDto.setNickName(oAuth2Response.getName());
-            userDto.setProfileImage(oAuth2Response.getProfileImage());
-            userDto.setMessage("상태메시지를 작성해주세요!");
-            userDto.setLevel(0);
-            userDto.setExperience(0);
             userDto.setRole("ROLE_USER");
 
             return new CustomOAuth2User(userDto);
@@ -70,13 +64,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userRepository.save(existData);
 
             UserDto userDto = new UserDto();
-            userDto.setSocialId(oAuth2Response.getProviderId());
-            userDto.setSocialType(oAuth2Response.getProvider());
             userDto.setNickName(oAuth2Response.getName());
-            userDto.setProfileImage(oAuth2Response.getProfileImage());
-            userDto.setMessage("상태메시지를 작성해주세요!");
-            userDto.setLevel(0);
-            userDto.setExperience(0);
             userDto.setRole("ROLE_USER");
 
             return new CustomOAuth2User(userDto);

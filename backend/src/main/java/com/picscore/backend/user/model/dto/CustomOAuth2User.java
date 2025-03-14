@@ -13,7 +13,6 @@ public class CustomOAuth2User implements OAuth2User {
 
     private final UserDto userDto;
 
-
     @Override
     public Map<String, Object> getAttributes() {
         return null;
@@ -40,31 +39,4 @@ public class CustomOAuth2User implements OAuth2User {
         return userDto.getNickName();
     }
 
-    public String getSocialId() {
-        return userDto.getSocialId();
-    }
-
-    public String getSocialType() {
-        return userDto.getSocialType();
-    }
-
-    public String getNickName() {
-        return userDto.getNickName();
-    }
-
-    public String getProfileImage() {
-        return userDto.getProfileImage();
-    }
-
-    public String getMessage() {
-        return userDto.getMessage();
-    }
-
-    public int getLevel() {
-        return userDto.getLevel();
-    }
-
-    public int getExperience() {
-        return userDto.getExperience();
-    }
 }
