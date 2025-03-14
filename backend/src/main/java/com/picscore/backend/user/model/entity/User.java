@@ -1,24 +1,27 @@
 package com.picscore.backend.user.model.entity;
 
+import com.picscore.backend.common.model.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+@EntityListeners(AuditingEntityListener.class)
 @Entity
 @Getter
 @Setter
 @Table(name = "user")
-public class User {
+public class User extends BaseEntity {
 
     @Id
     @Column(name = "id", columnDefinition = "INT UNSIGNED")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "social_id", nullable = false ,length = 20)
+    @Column(name = "social_id", nullable = false ,length = 50)
     private String socialId;
 
     @Column(name = "social_type", nullable = false)
@@ -38,8 +41,4 @@ public class User {
 
     @Column(name = "experience", nullable = false)
     private int experience;
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
 }
