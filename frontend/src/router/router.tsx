@@ -2,12 +2,13 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Home from "../page/Home/Home";
 import Test from "../page/Test";
+import ErrorPage from "../page/Error/ErrorPage";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    // errorElement: <ErrorPage />,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true, //부모 요소의 path와 일치하면 일로 보냄
