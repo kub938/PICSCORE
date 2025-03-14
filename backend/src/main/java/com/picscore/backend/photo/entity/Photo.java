@@ -22,12 +22,6 @@ public class Photo {
     @Column(name = "photo_id")
     private Long id;
 
-    @OneToMany(mappedBy = "photo")
-    private List<PhotoHashtag> photoHashtags = new ArrayList<>();
-
-    @OneToMany(mappedBy = "photo")
-    private List<PhotoLike> photoLikes = new ArrayList<>();
-
     @OneToOne(mappedBy = "photo", fetch = FetchType.LAZY)
     private TimeAttack timeAttack;
 
@@ -54,4 +48,10 @@ public class Photo {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+//    관계된 컬렉션 없이 한번 해보자
+//    @OneToMany(mappedBy = "photo")
+//    private List<PhotoHashtag> photoHashtags = new ArrayList<>();
+
+//    @OneToMany(mappedBy = "photo")
+//    private List<PhotoLike> photoLikes = new ArrayList<>();
 }

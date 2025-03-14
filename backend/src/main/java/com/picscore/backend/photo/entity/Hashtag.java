@@ -15,7 +15,7 @@ public class Hashtag {
 
     @Column(name = "name", nullable = false)
     private String name;
-
-    @OneToMany(mappedBy = "hashtag")
-    private List<PhotoHashtag> photoHashtags = new ArrayList<>();
+//    관계된 컬렉션 없이 한번 해보자
+//    @OneToMany(mappedBy = "hashtag")
+//    private List<PhotoHashtag> photoHashtags = new ArrayList<>();
 }
