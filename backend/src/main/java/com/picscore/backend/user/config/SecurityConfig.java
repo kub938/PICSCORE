@@ -1,5 +1,7 @@
 package com.picscore.backend.user.config;
 
+import com.picscore.backend.user.handler.CustomSuccessHandler;
+import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +17,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuthUserService;
+    private final CustomSuccessHandler customSuccessHandler;
+    private final JWTUtil jwtUtil;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -34,8 +38,10 @@ public class SecurityConfig {
         // oauth2
         http
                 .oauth2Login((oauth2) -> oauth2
-                        .userInfoEndpoint((userInfoEndpointConfig -> userInfoEndpointConfig
-                                .userService(customOAuthUserService))));
+                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+                                .userService(customOAuthUserService))
+                                .successHandler(customSuccessHandler)
+                );
 
         // 경로별 인가 작업
         http
