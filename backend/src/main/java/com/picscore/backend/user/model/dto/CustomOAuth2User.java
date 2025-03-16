@@ -13,21 +13,29 @@ public class CustomOAuth2User implements OAuth2User {
 
     private final UserDto userDto;
 
-
+    /**
+     * OAuth2User의 속성을 반환합니다.
+     * 이 구현에서는 사용하지 않으므로 null을 반환합니다.
+     *
+     * @return null
+     */
     @Override
     public Map<String, Object> getAttributes() {
         return null;
     }
 
+    /**
+     * 사용자의 권한 목록을 반환합니다.
+     *
+     * @return 사용자의 권한을 포함하는 Collection
+     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> collection = new ArrayList<>();
 
         collection.add(new GrantedAuthority() {
-
             @Override
             public String getAuthority() {
-
                 return userDto.getRole();
             }
         });
@@ -35,36 +43,14 @@ public class CustomOAuth2User implements OAuth2User {
         return collection;
     }
 
+    /**
+     * 사용자의 이름(여기서는 닉네임)을 반환합니다.
+     *
+     * @return 사용자의 닉네임
+     */
     @Override
     public String getName() {
         return userDto.getNickName();
     }
-
-    public String getSocialId() {
-        return userDto.getSocialId();
-    }
-
-    public String getSocialType() {
-        return userDto.getSocialType();
-    }
-
-    public String getNickName() {
-        return userDto.getNickName();
-    }
-
-    public String getProfileImage() {
-        return userDto.getProfileImage();
-    }
-
-    public String getMessage() {
-        return userDto.getMessage();
-    }
-
-    public int getLevel() {
-        return userDto.getLevel();
-    }
-
-    public int getExperience() {
-        return userDto.getExperience();
-    }
 }
+
