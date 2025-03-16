@@ -7,6 +7,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class ReissueRepository {
 
+    /**
+     * HTTP 요청의 쿠키에서 리프레시 토큰을 추출합니다.
+     *
+     * @param request HTTP 서블릿 요청 객체
+     * @return 리프레시 토큰 값, 없으면 null
+     */
     public String getRefreshTokenFromCookies(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
@@ -19,4 +25,5 @@ public class ReissueRepository {
         return null;
     }
 }
+
 

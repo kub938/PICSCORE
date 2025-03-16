@@ -9,10 +9,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-/**
- * RedisConfig는 Redis와의 통신을 위한 설정을 제공합니다.
- * RedisTemplate을 Bean으로 정의하여 Redis 데이터 처리를 지원합니다.
- */
 @Configuration
 public class RedisConfig {
 
@@ -22,6 +18,11 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int port;
 
+    /**
+     * Redis 연결 팩토리 Bean 정의.
+     *
+     * @return RedisConnectionFactory 객체
+     */
     @Bean(name = "redisConnectionFactory")
     public RedisConnectionFactory redisConnectionFactory() {
         LettuceConnectionFactory factory = new LettuceConnectionFactory(host,port);
@@ -31,8 +32,10 @@ public class RedisConfig {
 
     /**
      * RedisTemplate Bean 정의.
+     * Key와 Value의 직렬화 설정을 포함합니다.
      *
-     * @return {@link RedisTemplate} 객체로, Redis와의 데이터 작업을 수행할 수 있습니다.
+     * @param redisConnectionFactory Redis 연결 팩토리
+     * @return RedisTemplate<String, Object> 객체
      */
     @Bean(name = "redisTemplate")
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
@@ -50,3 +53,4 @@ public class RedisConfig {
     }
 
 }
+

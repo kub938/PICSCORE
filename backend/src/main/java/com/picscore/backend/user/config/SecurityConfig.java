@@ -27,10 +27,18 @@ public class SecurityConfig {
     private final CustomSuccessHandler customSuccessHandler;
     private final JWTUtil jwtUtil;
 
+    /**
+     * Spring Security 필터 체인을 구성합니다.
+     *
+     * @param http HttpSecurity 객체
+     * @return 구성된 SecurityFilterChain
+     * @throws Exception 보안 구성 중 발생할 수 있는 예외
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
+                // CORS 설정
                 .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
 
                     @Override
@@ -51,37 +59,37 @@ public class SecurityConfig {
                     }
                 }));
 
-        // csrf disable
+        // CSRF 보호 비활성화
         http
                 .csrf((auth) -> auth.disable());
 
-        // Form 로그인 방식 disable
+        // Form 로그인 방식 비활성화
         http
                 .formLogin((auth) -> auth.disable());
 
-        // HTTP basic 인증 방식 disable
+        // HTTP Basic 인증 방식 비활성화
         http
                 .httpBasic((auth) -> auth.disable());
 
-        //JWTFilter 추가
+        // JWT 필터 추가
         http
                 .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
 
-        // oauth2
+        // OAuth2 로그인 설정
         http
                 .oauth2Login((oauth2) -> oauth2
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
                                 .userService(customOAuthUserService))
-                                .successHandler(customSuccessHandler)
+                        .successHandler(customSuccessHandler)
                 );
 
-        // 경로별 인가 작업
+        // URL 별 접근 권한 설정
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/", "/api/v1/user", "/api/v1/reissue").permitAll()
                         .anyRequest().authenticated());
 
-        // 세션 설정: STATELESS
+        // 세션 관리 정책 설정
         http
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -89,3 +97,4 @@ public class SecurityConfig {
         return http.build();
     }
 }
+

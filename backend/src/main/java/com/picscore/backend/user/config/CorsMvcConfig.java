@@ -7,11 +7,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsMvcConfig implements WebMvcConfigurer {
 
+    /**
+     * CORS 설정을 추가합니다.
+     *
+     * @param corsRegistry CORS 설정을 등록하는 객체
+     */
     @Override
     public void addCorsMappings(CorsRegistry corsRegistry) {
-
-        corsRegistry.addMapping("/**")
-                .exposedHeaders("Set-Cookie")
-                .allowedOrigins("http://localhost:3000");
+        corsRegistry.addMapping("/**") // 모든 경로에 대해 CORS 설정 적용
+                .exposedHeaders("Set-Cookie") // 클라이언트에서 "Set-Cookie" 헤더를 접근 가능하도록 설정
+                .allowedOrigins("http://localhost:3000"); // 허용할 Origin 설정
     }
 }
