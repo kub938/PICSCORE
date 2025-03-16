@@ -31,10 +31,11 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         String nickName = customUserDetails.getName();
 
-        String token = jwtUtil.createJwt(nickName, 60*60*60L);
-        System.out.println("token = " + token);
+        String access = jwtUtil.createJwt("access", nickName, 600000L);
+        String refresh = jwtUtil.createJwt("refresh", nickName, 86400000L);
 
-        response.addCookie(createCookie("Authorization", token));
+        response.addCookie(createCookie("access", access));
+        response.addCookie(createCookie("refresh", refresh));
         response.sendRedirect("http://localhost:3000/");
     }
 
