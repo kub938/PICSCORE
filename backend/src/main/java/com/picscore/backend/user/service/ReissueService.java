@@ -1,7 +1,9 @@
 package com.picscore.backend.user.service;
 
+import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.repository.ReissueRepository;
+import com.picscore.backend.user.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +19,8 @@ public class ReissueService {
 
     private final JWTUtil jwtUtil;
     private final ReissueRepository reissueRepository;
+    private final RedisUtil redisUtil;
+    private final UserRepository userRepository;
 
     public ResponseEntity<?> reissueToken(HttpServletRequest request, HttpServletResponse response) {
         String refresh = reissueRepository.getRefreshTokenFromCookies(request);
@@ -38,10 +42,22 @@ public class ReissueService {
         }
 
         String nickName = jwtUtil.getNickName(refresh);
+        String userKey = "refresh:" + userRepository.findIdByNickName(nickName);
+
+        // Redis에 저장되어 있는지 확인
+        Boolean isExist = redisUtil.exists(userKey);
+        if (!isExist) {
+
+            //response body
+            return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
+        }
 
         // 새 JWT 생성
         String newAccess = jwtUtil.createJwt("access", nickName, 600000L);
         String newRefresh = jwtUtil.createJwt("refresh", nickName, 86400000L);
+
+        redisUtil.setex(userKey, refresh, 86400000L);
+
         response.addCookie(createCookie("access", newAccess));
         response.addCookie(createCookie("refresh", newRefresh));
 

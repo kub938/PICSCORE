@@ -1,7 +1,9 @@
 package com.picscore.backend.user.handler;
 
+import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.dto.CustomOAuth2User;
+import com.picscore.backend.user.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +24,8 @@ import java.util.Iterator;
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JWTUtil jwtUtil;
+    private final RedisUtil redisUtil;
+    private final UserRepository userRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -33,6 +37,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         String access = jwtUtil.createJwt("access", nickName, 600000L);
         String refresh = jwtUtil.createJwt("refresh", nickName, 86400000L);
+
+        String userKey = "refresh:" + userRepository.findIdByNickName(nickName);
+        redisUtil.setex(userKey, refresh, 86400000L);
 
         response.addCookie(createCookie("access", access));
         response.addCookie(createCookie("refresh", refresh));
