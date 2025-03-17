@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # 의존성 설치
-RUN npm ci --omit=dev
+RUN npm ci
 
 # 전체 소스 복사
 COPY . .
@@ -28,7 +28,7 @@ FROM nginx:1.26-alpine
 # COPY nginx-front.conf /etc/nginx/nginx.conf
 
 # React 빌드 산출물 복사
-COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # 포트 노출
 EXPOSE 80
