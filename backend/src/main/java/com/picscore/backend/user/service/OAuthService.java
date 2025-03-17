@@ -29,7 +29,7 @@ public class OAuthService {
      * @param response HTTP 응답 객체
      * @return ResponseEntity 객체로 결과 반환
      */
-    public ResponseEntity<BaseResponse<ReissueResponse>> reissueToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<BaseResponse<ReissueResponse>> reissue(HttpServletRequest request, HttpServletResponse response) {
 
         // 쿠키에서 리프레시 토큰 추출
         String refresh = null;
@@ -64,7 +64,6 @@ public class OAuthService {
         // 닉네임 및 Redis 키 생성
         String nickName = jwtUtil.getNickName(refresh);
         String userKey = "refresh:" + userRepository.findIdByNickName(nickName);
-
 
         // Redis에 저장된 리프레시 토큰 존재 여부 확인
         Boolean isExist = redisUtil.exists(userKey);

@@ -2,7 +2,6 @@ package com.picscore.backend.user.controller;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.user.model.response.ReissueResponse;
-import com.picscore.backend.user.model.response.UserLoginResponse;
 import com.picscore.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -42,7 +41,7 @@ public class OAuthController {
      */
     @PostMapping("/reissue")
     public ResponseEntity<BaseResponse<ReissueResponse>> reissue(HttpServletRequest request, HttpServletResponse response) {
-        return oAuthService.reissueToken(request, response);
+        return oAuthService.reissue(request, response);
     }
 }
 

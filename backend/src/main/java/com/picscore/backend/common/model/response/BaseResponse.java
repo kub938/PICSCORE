@@ -23,6 +23,16 @@ public class BaseResponse<T> {
         this.data = data;
     }
 
+    public BaseResponse(String message) {
+        this.timeStamp = LocalDateTime.now();
+        this.message = message;
+        this.data = null;
+    }
+
+    public static <T> BaseResponse<T> withMessage(String message) {
+        return new BaseResponse<>(message);
+    }
+
     public static <T> BaseResponse<T> success(T data) {
         return new BaseResponse<>("Success", data);
     }
