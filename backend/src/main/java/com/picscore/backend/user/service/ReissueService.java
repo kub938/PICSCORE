@@ -53,9 +53,17 @@ public class ReissueService {
         String nickName = jwtUtil.getNickName(refresh);
         String userKey = "refresh:" + userRepository.findIdByNickName(nickName);
 
+
         // Redis에 저장된 리프레시 토큰 존재 여부 확인
         Boolean isExist = redisUtil.exists(userKey);
         if (!isExist) {
+            return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
+        }
+
+        // Redis에 저장된 리프레시 토큰 동일 여부 확인
+        Object storedRefreshTokenObj = redisUtil.get(userKey);
+        String storedRefreshToken = storedRefreshTokenObj.toString();
+        if (!storedRefreshToken.equals(refresh)) {
             return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
         }
 
