@@ -1,16 +1,5 @@
 package com.picscore.backend.user.model.entity;
 
-<<<<<<< HEAD
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-
-@Entity
-public class User {
-    @Id
-    @GeneratedValue
-    private Long id;
-=======
 import com.picscore.backend.common.model.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -28,7 +17,7 @@ import java.time.LocalDateTime;
 public class User extends BaseEntity {
 
     @Id
-    @Column(name = "id", columnDefinition = "INT UNSIGNED")
+    @Column(name = "user_id", columnDefinition = "INT UNSIGNED")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -52,5 +41,4 @@ public class User extends BaseEntity {
 
     @Column(name = "experience", nullable = false)
     private int experience;
->>>>>>> 31e6b58a6cc70f5d667ac68f023c47cd57282d29
 }

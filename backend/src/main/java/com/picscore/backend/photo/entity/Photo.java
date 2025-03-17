@@ -1,29 +1,23 @@
 package com.picscore.backend.photo.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.picscore.backend.timeattack.TimeAttack;
+import com.picscore.backend.common.model.entity.BaseEntity;
 import com.picscore.backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "photo")
 @Getter @Setter
+@EntityListeners(AuditingEntityListener.class)
 @JsonInclude(JsonInclude.Include.ALWAYS) // null 가능, activity 통한 것은 null 가능
-public class Photo {
+public class Photo extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "photo_id")
     private Long id;
-
-    @OneToOne(mappedBy = "photo", fetch = FetchType.LAZY)
-    private TimeAttack timeAttack;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -44,9 +38,6 @@ public class Photo {
     @Column(name = "is_public", nullable = false)
     private Boolean isPublic;
 
-    @CreatedDate
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
 
 //    관계된 컬렉션 없이 한번 해보자
 //    @OneToMany(mappedBy = "photo")

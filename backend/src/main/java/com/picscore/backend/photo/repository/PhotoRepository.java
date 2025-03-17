@@ -14,10 +14,7 @@ import java.util.List;
 @Repository
 public interface PhotoRepository extends JpaRepository<Photo, Long> {
 
-    @Query("SELECT p FROM Photo p JOIN FETCH p.user WHERE p.user.id = :userId")
+    @Query("SELECT p FROM Photo p  WHERE p.user.id = :userId")
     List<Photo> findPhotosByUserId(@Param("userId") Long userId);
 
-    // 또는 User 객체를 직접 사용할 수 있습니다.
-    @Query("SELECT p FROM Photo p WHERE p.user = :user")
-    List<Photo> findPhotosByUser(@Param("user") User user);
 }

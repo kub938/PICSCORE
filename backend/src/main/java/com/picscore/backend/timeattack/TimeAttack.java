@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class TimeAttack {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "time_attack_id")
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
