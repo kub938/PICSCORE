@@ -45,9 +45,10 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
-	// health, prometheus
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'io.micrometer:micrometer-registry-prometheus'
+	//json
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.0'
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.18.0'
+	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.0'
 }
 
 tasks.named('test') {
