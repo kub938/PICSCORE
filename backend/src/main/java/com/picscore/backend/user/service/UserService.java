@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UserLoginService {
+public class UserService {
 
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
@@ -32,7 +32,7 @@ public class UserLoginService {
                 .findFirst();
 
         if (accessTokenCookie.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(BaseResponse.error("AccessToken 쿠키 없음"));
         }
 
