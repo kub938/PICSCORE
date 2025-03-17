@@ -3,6 +3,12 @@ import App from "../App";
 import Home from "../page/Home/Home";
 import Test from "../page/Test";
 import ErrorPage from "../page/Error/ErrorPage";
+import TimeAttack from "../page/TimeAttack/TimeAttack";
+import TimeAttackResult from "../page/TimeAttack/TimeAttackResult";
+import RankingPage from "../page/Ranking/RankingPage";
+import { MyPage, UserDetailPage } from "../page/UserPage";
+import { ArchievePage } from "../page/Archieve";
+import { ChangeInfoPage } from "../page/ChangeInfo";
 
 const router = createBrowserRouter([
   {
@@ -11,15 +17,40 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
-        index: true, //부모 요소의 path와 일치하면 일로 보냄
-        // path: "/", //다른 컴포넌트 경로 설정할때는 index 말고 다로 경로 설정
+        index: true, // 부모 요소의 path와 일치하면 일로 보냄
         element: <Home />,
-        // loader: contactLoader, // 데이터 미리 로드
-        // action: contactAction, // 폼 제출 처리
       },
       {
         path: "/test",
         element: <Test />,
+      },
+      {
+        path: "/time-attack",
+        element: <TimeAttack />,
+      },
+      {
+        path: "/time-attack/result",
+        element: <TimeAttackResult />,
+      },
+      {
+        path: "/ranking",
+        element: <RankingPage />,
+      },
+      {
+        path: "/mypage",
+        element: <MyPage />,
+      },
+      {
+        path: "/user/:userId",
+        element: <UserDetailPage />,
+      },
+      {
+        path: "/change-info",
+        element: <ChangeInfoPage />,
+      },
+      {
+        path: "/archieve",
+        element: <ArchievePage />,
       },
     ],
   },
