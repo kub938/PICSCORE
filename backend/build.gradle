@@ -59,7 +59,7 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-jar {
-    archiveBaseName.set("app")  // 빌드된 JAR 파일 이름을 'app'으로 설정
-    archiveVersion.set("")  // 버전 번호 제거 (기본적으로 '-0.0.1-SNAPSHOT'이 붙는 것을 방지)
+bootJar {
+    archiveBaseName.set("app")  // bootJar의 이름을 'app'으로 설정
+    archiveVersion.set("")      // 버전 정보 제거
 }
