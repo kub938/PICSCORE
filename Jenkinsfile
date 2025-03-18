@@ -15,10 +15,10 @@ pipeline {
                 script {
                     echo "현재 브랜치: ${env.BRANCH_NAME}"
                     echo "현재 워크스페이스: ${env.WORKSPACE}"
-                    // def deployBranches = ['master', 'develop']
-                    // if (!deployBranches.contains(env.BRANCH_NAME)) {
-                    //     error "현재 브랜치(${env.BRANCH_NAME})에서는 배포를 수행하지 않습니다."
-                    // }
+                    def deployBranches = ['master']
+                    if (!deployBranches.contains(env.BRANCH_NAME)) {
+                        error "현재 브랜치(${env.BRANCH_NAME})에서는 배포를 수행하지 않습니다."
+                    }
                 }
             }
         }
@@ -61,6 +61,7 @@ pipeline {
                     sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.yml"
                     sh "scp -o StrictHostKeyChecking=no docker-compose.prod.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.prod.yml"
                     sh "scp -o StrictHostKeyChecking=no ./nginx/nginx.prod.conf ${DEPLOY_HOST}:${DEPLOY_PATH}/nginx/nginx.prod.conf"
+                    sh "scp -o StrictHostKeyChecking=no prometheus.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/prometheus.yml"
                     sh """
                     ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} '
                         cd ${DEPLOY_PATH} &&
