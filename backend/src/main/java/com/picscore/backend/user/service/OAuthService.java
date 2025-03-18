@@ -113,5 +113,24 @@ public class OAuthService {
 
         return cookie;
     }
+
+    public Long findIdByNickName(HttpServletRequest request) {
+        // 쿠키에서 리프레시 토큰 추출
+        String access = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("access".equals(cookie.getName())) {
+                    access = cookie.getValue();
+                }
+            }
+        }
+
+        String nickName = jwtUtil.getNickName(access);
+        Long userId = userRepository.findIdByNickName(nickName);
+
+        return userId;
+
+    }
 }
 

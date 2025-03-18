@@ -2,16 +2,17 @@ package com.picscore.backend.user.controller;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.user.jwt.JWTUtil;
+import com.picscore.backend.user.model.request.ToggleFollowRequest;
 import com.picscore.backend.user.model.response.LoginInfoResponse;
 import com.picscore.backend.user.repository.UserRepository;
+import com.picscore.backend.user.service.FollowService;
+import com.picscore.backend.user.service.OAuthService;
 import com.picscore.backend.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -28,15 +29,17 @@ public class UserController {
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
     private final UserService userService;
+    private final FollowService followService;
+    private final OAuthService oAuthService;
 
     /**
      * 현재 로그인한 사용자의 정보를 반환합니다.
-     *
+     * <p>
      * 이 API는 요청의 쿠키에서 액세스 토큰을 추출하여 사용자 정보를 조회합니다.
      *
      * @param request HTTP 요청 객체 (쿠키에서 토큰 추출)
-     * @return ResponseEntity<BaseResponse<UserLoginResponse>>
-     *         - 사용자 정보를 포함하는 응답 객체
+     * @return ResponseEntity<BaseResponse < UserLoginResponse>>
+     * - 사용자 정보를 포함하는 응답 객체
      */
     @GetMapping("/info")
     public ResponseEntity<BaseResponse<LoginInfoResponse>> LoginInfo(HttpServletRequest request) {
@@ -45,19 +48,34 @@ public class UserController {
 
     /**
      * 사용자 로그아웃을 처리합니다.
-     *
+     * <p>
      * 이 API는 클라이언트를 로그아웃 페이지로 리다이렉트하고,
      * 로그아웃 완료 메시지를 반환합니다.
      *
      * @param response HTTP 응답 객체
-     * @return ResponseEntity<BaseResponse<Void>>
-     *         - 로그아웃 완료 메시지를 포함하는 응답 객체
+     * @return ResponseEntity<BaseResponse < Void>>
+     * - 로그아웃 완료 메시지를 포함하는 응답 객체
      * @throws IOException 리다이렉트 중 발생할 수 있는 입출력 예외
      */
     @GetMapping("/logout")
-    public ResponseEntity<BaseResponse<Void>> redirectToGoogleLogin(HttpServletResponse response) throws IOException {
+    public ResponseEntity<BaseResponse<Void>> redirectToGoogleLogout(HttpServletResponse response) throws IOException {
         response.sendRedirect("/logout");
         BaseResponse<Void> baseResponse = BaseResponse.withMessage("로그아웃 완료");
+        return ResponseEntity.ok(baseResponse);
+    }
+
+    @PostMapping("folowing/me")
+    public ResponseEntity<BaseResponse<Void>> toggleFollow(
+            @RequestBody ToggleFollowRequest toggleFollowRequest,
+            HttpServletRequest request) {
+        Long followerId = oAuthService.findIdByNickName(request);
+        Boolean follow = followService.toggleFollow(followerId, toggleFollowRequest.getFollowingId());
+        BaseResponse<Void> baseResponse = null;
+        if (follow) {
+            baseResponse = BaseResponse.withMessage("팔로잉 추가 완료");
+        } else {
+            baseResponse = BaseResponse.withMessage("팔로잉 취소 완료");
+        }
         return ResponseEntity.ok(baseResponse);
     }
 }
