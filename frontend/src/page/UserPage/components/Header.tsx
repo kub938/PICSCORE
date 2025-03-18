@@ -4,7 +4,7 @@ import { HeaderProps } from "../types";
 
 const Header: React.FC<HeaderProps> = ({ title }) => {
   return (
-    <header className="flex items-center p-4 border-b">
+    <header className="flex items-center p-4 border-b border-gray-200">
       <Link to="/" className="p-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"

@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ProfileHeaderProps } from "../types";
+import { achievementData } from "../../Archieve/achievementData";
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   profile,
@@ -11,8 +12,26 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
   // 뱃지 아이콘 클릭 시 업적 페이지로 이동
   const handleBadgeClick = () => {
-    navigate("/archieve");
+    // 선택 모드로 업적 페이지로 이동
+    navigate("/archieve", {
+      state: {
+        selectionMode: true,
+        currentBadgeId: profile.displayBadgeId,
+      },
+    });
   };
+
+  // 선택된 뱃지 정보 가져오기
+  const getSelectedBadge = () => {
+    if (!profile.displayBadgeId) return null;
+
+    // 모든 뱃지 중에서 선택된 뱃지 ID와 일치하는 뱃지 찾기
+    const allBadges =
+      achievementData.find((cat) => cat.id === "all")?.badges || [];
+    return allBadges.find((badge) => badge.id === profile.displayBadgeId);
+  };
+
+  const selectedBadge = getSelectedBadge();
 
   return (
     <div className="bg-green-500 p-4 text-white">
@@ -53,24 +72,29 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               className="bg-white text-green-500 rounded p-1 absolute top-0 right-0 cursor-pointer"
               onClick={handleBadgeClick}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                <polyline points="21 15 16 10 5 21"></polyline>
-              </svg>
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white w-4 h-4 rounded-full text-xs flex items-center justify-center">
-                2
-              </span>
+              {selectedBadge ? (
+                <img
+                  src={selectedBadge.image}
+                  alt={selectedBadge.name}
+                  className="w-6 h-6 object-contain"
+                />
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+              )}
             </div>
           </div>
         )}

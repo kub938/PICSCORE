@@ -1,17 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import Header from "../UserPage/components/Header";
 import CategoryTabs from "./components/CategoryTabs";
 import BadgeGrid from "./components/BadgeGrid";
 import ProgressBar from "./components/ProgressBar";
 import { Badge, BadgeCategory } from "./types";
+import { achievementData } from "./achievementData";
 
 const ArchievePage: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // location.state를 통해 선택 모드인지 확인
+  const isSelectionMode = location.state?.selectionMode === true;
+  const currentBadgeId = location.state?.currentBadgeId;
+
   const [categories, setCategories] = useState<BadgeCategory[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [loading, setLoading] = useState<boolean>(true);
   const [achievedCount, setAchievedCount] = useState<number>(0);
   const [totalCount, setTotalCount] = useState<number>(0);
+  const [selectedBadgeId, setSelectedBadgeId] = useState<string | undefined>(
+    currentBadgeId
+  );
+  const [showSuccessMessage, setShowSuccessMessage] = useState<boolean>(false);
 
   useEffect(() => {
     fetchBadges();
@@ -24,174 +37,13 @@ const ArchievePage: React.FC = () => {
       // const response = await axios.get('api/v1/bedge');
       // setCategories(response.data);
 
-      // 목업 데이터
+      // 목업 데이터 사용
       setTimeout(() => {
-        const mockCategories: BadgeCategory[] = [
-          {
-            id: "all",
-            name: "전체",
-            badges: [
-              {
-                id: "first_photo",
-                name: "첫 사진",
-                description: "첫 번째 사진을 업로드하고 평가 받았습니다.",
-                image: "/badges/first_photo.png",
-                achieved: true,
-                achievedDate: "2024.03.05",
-              },
-              {
-                id: "timeattack_master",
-                name: "타임어택 마스터",
-                description: "타임어택에서 5번 연속 80점 이상을 기록했습니다.",
-                image: "/badges/timeattack_master.png",
-                achieved: false,
-                progress: 3,
-                maxProgress: 5,
-              },
-              {
-                id: "follower_100",
-                name: "인플루언서",
-                description: "100명 이상의 팔로워를 달성했습니다.",
-                image: "/badges/influencer.png",
-                achieved: true,
-                achievedDate: "2024.03.10",
-              },
-              {
-                id: "photo_score_90",
-                name: "프로 사진작가",
-                description: "90점 이상의 사진을 업로드했습니다.",
-                image: "/badges/pro_photographer.png",
-                achieved: false,
-                progress: 85,
-                maxProgress: 90,
-              },
-              {
-                id: "daily_login_30",
-                name: "출석왕",
-                description: "30일 연속으로 앱에 접속했습니다.",
-                image: "/badges/attendance.png",
-                achieved: false,
-                progress: 22,
-                maxProgress: 30,
-              },
-              {
-                id: "photo_100",
-                name: "다작 작가",
-                description: "100장 이상의 사진을 업로드했습니다.",
-                image: "/badges/prolific_author.png",
-                achieved: false,
-                progress: 67,
-                maxProgress: 100,
-              },
-            ],
-          },
-          {
-            id: "activity",
-            name: "활동",
-            badges: [
-              {
-                id: "first_photo",
-                name: "첫 사진",
-                description: "첫 번째 사진을 업로드하고 평가 받았습니다.",
-                image: "/badges/first_photo.png",
-                achieved: true,
-                achievedDate: "2024.03.05",
-              },
-              {
-                id: "daily_login_30",
-                name: "출석왕",
-                description: "30일 연속으로 앱에 접속했습니다.",
-                image: "/badges/attendance.png",
-                achieved: false,
-                progress: 22,
-                maxProgress: 30,
-              },
-              {
-                id: "photo_100",
-                name: "다작 작가",
-                description: "100장 이상의 사진을 업로드했습니다.",
-                image: "/badges/prolific_author.png",
-                achieved: false,
-                progress: 67,
-                maxProgress: 100,
-              },
-            ],
-          },
-          {
-            id: "timeattack",
-            name: "타임어택",
-            badges: [
-              {
-                id: "timeattack_master",
-                name: "타임어택 마스터",
-                description: "타임어택에서 5번 연속 80점 이상을 기록했습니다.",
-                image: "/badges/timeattack_master.png",
-                achieved: false,
-                progress: 3,
-                maxProgress: 5,
-              },
-              {
-                id: "timeattack_winner",
-                name: "타임어택 우승자",
-                description: "타임어택에서 1위를 달성했습니다.",
-                image: "/badges/timeattack_winner.png",
-                achieved: true,
-                achievedDate: "2024.03.15",
-              },
-            ],
-          },
-          {
-            id: "photo",
-            name: "사진",
-            badges: [
-              {
-                id: "photo_score_90",
-                name: "프로 사진작가",
-                description: "90점 이상의 사진을 업로드했습니다.",
-                image: "/badges/pro_photographer.png",
-                achieved: false,
-                progress: 85,
-                maxProgress: 90,
-              },
-              {
-                id: "photo_100",
-                name: "다작 작가",
-                description: "100장 이상의 사진을 업로드했습니다.",
-                image: "/badges/prolific_author.png",
-                achieved: false,
-                progress: 67,
-                maxProgress: 100,
-              },
-              {
-                id: "first_photo",
-                name: "첫 사진",
-                description: "첫 번째 사진을 업로드하고 평가 받았습니다.",
-                image: "/badges/first_photo.png",
-                achieved: true,
-                achievedDate: "2024.03.05",
-              },
-            ],
-          },
-          {
-            id: "social",
-            name: "소셜",
-            badges: [
-              {
-                id: "follower_100",
-                name: "인플루언서",
-                description: "100명 이상의 팔로워를 달성했습니다.",
-                image: "/badges/influencer.png",
-                achieved: true,
-                achievedDate: "2024.03.10",
-              },
-            ],
-          },
-        ];
-        setCategories(mockCategories);
+        setCategories(achievementData);
 
         // 전체 뱃지 수와 달성한 뱃지 수 계산
         const allBadges =
-          mockCategories.find((cat) => cat.id === "all")?.badges || [];
+          achievementData.find((cat) => cat.id === "all")?.badges || [];
         const achieved = allBadges.filter((badge) => badge.achieved).length;
         const total = allBadges.length;
 
@@ -215,9 +67,54 @@ const ArchievePage: React.FC = () => {
     return category ? category.badges : [];
   };
 
+  // 뱃지 선택 처리
+  const handleSelectBadge = (badge: Badge) => {
+    setSelectedBadgeId(badge.id);
+    setShowSuccessMessage(true);
+
+    // 실제 구현에서는 API를 통해 선택한 뱃지 저장
+    // axios.patch('api/v1/user/profile', { displayBadgeId: badge.id })
+    //   .then(() => {
+    //     setShowSuccessMessage(true);
+    //     setTimeout(() => setShowSuccessMessage(false), 3000);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error saving badge selection:", error);
+    //   });
+
+    // 3초 후 성공 메시지 숨기기
+    setTimeout(() => setShowSuccessMessage(false), 3000);
+  };
+
+  // 완료 버튼 클릭 시 마이페이지로 돌아가기
+  const handleComplete = () => {
+    // 실제 구현에서는 API를 통해 최종 저장 처리를 할 수 있음
+    // axios.patch('api/v1/user/profile', { displayBadgeId: selectedBadgeId })
+    //   .then(() => {
+    //     navigate("/mypage");
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error saving badge:", error);
+    //   });
+
+    // 목업 환경에서는 state를 통해 데이터 전달
+    navigate("/mypage", {
+      state: {
+        updatedProfile: { displayBadgeId: selectedBadgeId },
+      },
+    });
+  };
+
   return (
     <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-      <Header title="업적" />
+      <Header title={isSelectionMode ? "프로필 뱃지 선택" : "업적"} />
+
+      {/* 성공 메시지 */}
+      {showSuccessMessage && (
+        <div className="fixed top-16 left-0 right-0 mx-auto max-w-md bg-green-500 text-white py-2 px-4 text-center z-50 animate-fadeIn">
+          뱃지가 선택되었습니다!
+        </div>
+      )}
 
       <div className="p-4">
         <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
@@ -228,6 +125,15 @@ const ArchievePage: React.FC = () => {
           </div>
           <ProgressBar progress={(achievedCount / totalCount) * 100} />
         </div>
+
+        {isSelectionMode && (
+          <div className="bg-yellow-100 p-4 rounded-lg mb-4">
+            <p className="text-yellow-800 text-sm">
+              프로필에 표시할 뱃지를 선택해주세요. 달성한 뱃지만 선택할 수
+              있습니다.
+            </p>
+          </div>
+        )}
 
         <CategoryTabs
           categories={categories}
@@ -240,7 +146,23 @@ const ArchievePage: React.FC = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
           </div>
         ) : (
-          <BadgeGrid badges={getActiveBadges()} />
+          <BadgeGrid
+            badges={getActiveBadges()}
+            isSelectable={isSelectionMode}
+            selectedBadgeId={selectedBadgeId}
+            onSelectBadge={handleSelectBadge}
+          />
+        )}
+
+        {isSelectionMode && (
+          <div className="mt-6">
+            <button
+              onClick={handleComplete}
+              className="w-full bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition"
+            >
+              완료
+            </button>
+          </div>
         )}
       </div>
     </div>

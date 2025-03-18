@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useRecoilState } from "recoil";
 // import { userState } from "../../recoil/atoms";
 import Header from "./components/Header";
@@ -20,6 +20,7 @@ import {
 // Main UserPage Component
 const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   // const [user, setUser] = useRecoilState(userState);
 
   const isMyProfile = userId === null;
@@ -32,6 +33,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
     followingCount: 0,
     isMyProfile: isMyProfile,
     isFollowing: false,
+    displayBadgeId: undefined, // 표시할 뱃지 ID 필드 추가
   });
 
   const [userStats, setUserStats] = useState<UserStatsData>({
@@ -44,6 +46,30 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
   const [activeTab, setActiveTab] = useState<string>("gallery");
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // 업적 페이지에서 선택한 뱃지 처리
+  useEffect(() => {
+    // 업적 페이지에서 뱃지 선택 후 돌아온 경우, 선택된 뱃지 ID 업데이트
+    if (
+      location.state &&
+      location.state.updatedProfile &&
+      location.state.updatedProfile.displayBadgeId
+    ) {
+      setProfile((prev) => ({
+        ...prev,
+        displayBadgeId: location.state.updatedProfile.displayBadgeId,
+      }));
+
+      // 선택된 뱃지 ID를 localStorage에 저장
+      localStorage.setItem(
+        "selectedBadgeId",
+        location.state.updatedProfile.displayBadgeId
+      );
+
+      // 업데이트 후 state 초기화 (중복 처리 방지)
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   useEffect(() => {
     // Fetch user profile, stats and photos from API
@@ -74,6 +100,10 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
           followingCount: 95,
           isMyProfile: isMyProfile,
           isFollowing: !isMyProfile && Math.random() > 0.5,
+          // 마이페이지의 경우 사용자가 선택한 뱃지 ID 사용
+          displayBadgeId: isMyProfile
+            ? localStorage.getItem("selectedBadgeId") || undefined
+            : undefined,
         });
 
         setUserStats({

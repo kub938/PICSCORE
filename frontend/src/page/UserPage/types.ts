@@ -9,6 +9,7 @@ export interface UserProfileData {
   followingCount: number;
   isMyProfile: boolean;
   isFollowing: boolean;
+  displayBadgeId?: string; // 표시할 뱃지 ID
 }
 
 // 사용자 통계 데이터 인터페이스
@@ -88,4 +89,5 @@ export interface UserProfileFormData {
   nickname: string;
   statusMessage: string;
   profileImage: string | null;
+  displayBadgeId?: string; // 표시할 뱃지 ID
 }
