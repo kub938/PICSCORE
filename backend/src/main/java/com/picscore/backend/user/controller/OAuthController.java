@@ -31,17 +31,5 @@ public class OAuthController {
     public void redirectToGoogleLogin(HttpServletResponse response) throws IOException {
         response.sendRedirect("/oauth2/authorization/google");
     }
-
-    /**
-     * 토큰을 재발급합니다.
-     *
-     * @param request HTTP 요청 객체
-     * @param response HTTP 응답 객체
-     * @return 재발급된 토큰 정보를 포함한 ResponseEntity
-     */
-    @PostMapping("/reissue")
-    public ResponseEntity<BaseResponse<ReissueResponse>> reissue(HttpServletRequest request, HttpServletResponse response) {
-        return oAuthService.reissue(request, response);
-    }
 }
 

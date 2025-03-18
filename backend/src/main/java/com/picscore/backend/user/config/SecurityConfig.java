@@ -7,6 +7,7 @@ import com.picscore.backend.user.jwt.JWTFilter;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.repository.UserRepository;
 import com.picscore.backend.user.service.CustomOAuth2UserService;
+import com.picscore.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +33,7 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
     private final UserRepository userRepository;
+    private final OAuthService oAuthService;
 
     /**
      * Spring Security 필터 체인을 구성합니다.
@@ -79,7 +81,7 @@ public class SecurityConfig {
 
         // JWT 필터 추가
         http
-                .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
+                .addFilterAfter(new JWTFilter(jwtUtil, oAuthService), OAuth2LoginAuthenticationFilter.class);
 
         http
                 .addFilterBefore(new CustomLogoutFilter(jwtUtil, redisUtil, userRepository), LogoutFilter.class);

@@ -2,6 +2,7 @@ package com.picscore.backend.user.jwt;
 
 import com.picscore.backend.user.model.dto.CustomOAuth2User;
 import com.picscore.backend.user.model.dto.UserDto;
+import com.picscore.backend.user.service.OAuthService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,6 +22,7 @@ import java.io.PrintWriter;
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
+    private final OAuthService oAuthService;
 
     /**
      * JWT 토큰을 검증하고 인증 처리를 수행하는 필터 메서드입니다.
@@ -57,11 +59,8 @@ public class JWTFilter extends OncePerRequestFilter {
             // 토큰 만료 검증
             jwtUtil.isExpired(accessToken);
         } catch (ExpiredJwtException e) {
-            // 토큰 만료 시 응답 처리
-            response.setContentType("text/plain");
-            response.getWriter().write("access token expired");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+            // 토큰 만료 시 재발급 처리
+            oAuthService.reissue(request, response);
         }
 
         // 토큰 카테고리 검증
