@@ -4,10 +4,14 @@ import Home from "../page/Home/Home";
 import Test from "../page/Test";
 import ErrorPage from "../page/Error/ErrorPage";
 import ImageEval from "../page/ImageEval/ImageEval";
-import Ranking from "../page/Ranking/Ranking";
+import TimeAttack from "../page/TimeAttack/Timeattack";
+import TimeAttackResult from "../page/TimeAttack/TimeAttackResult";
+import RankingPage from "../page/Ranking/RankingPage";
+import { MyPage, UserDetailPage } from "../page/UserPage";
+import { ArchievePage } from "../page/Archieve";
+import { ChangeInfoPage } from "../page/ChangeInfo";
 import Board from "../page/Board/Board";
 import Contest from "../page/Contest/Contest";
-import Timeattack from "../page/Timeattack/Timeattack";
 
 
 const router = createBrowserRouter([
@@ -25,6 +29,34 @@ const router = createBrowserRouter([
         element: <Test />,
       },
       {
+        path: "/time-attack",
+        element: <TimeAttack />,
+      },
+      {
+        path: "/time-attack/result",
+        element: <TimeAttackResult />,
+      },
+      {
+        path: "/ranking",
+        element: <RankingPage />,
+      },
+      {
+        path: "/mypage",
+        element: <MyPage />,
+      },
+      {
+        path: "/user/:userId",
+        element: <UserDetailPage />,
+      },
+      {
+        path: "/change-info",
+        element: <ChangeInfoPage />,
+      },
+      {
+        path: "/archieve",
+        element: <ArchievePage />,
+      },
+      {
         path: "/imageEval",
         element: <ImageEval />,
       },
@@ -40,12 +72,9 @@ const router = createBrowserRouter([
         path: "/contest",
         element: <Contest />,
       },
-      {
-        path: "/timeattack",
-        element: <Timeattack />,
-      },
     ],
   },
 ]);
 
 export default router;
+
