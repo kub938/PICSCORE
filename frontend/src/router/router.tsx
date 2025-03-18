@@ -13,7 +13,6 @@ import { ChangeInfoPage } from "../page/ChangeInfo";
 import Board from "../page/Board/Board";
 import Contest from "../page/Contest/Contest";
 
-
 const router = createBrowserRouter([
   {
     path: "/",
@@ -62,7 +61,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/ranking",
-        element: <Ranking />,
+        element: <RankingPage />,
       },
       {
         path: "/board",
@@ -77,4 +76,3 @@ const router = createBrowserRouter([
 ]);
 
 export default router;
-
