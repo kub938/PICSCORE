@@ -9,6 +9,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     User findBySocialId(String socialId);
 
+    User findByNickName(String nickName);
+
     @Query("SELECT u.id FROM User u WHERE u.nickName = :nickName")
     Long findIdByNickName(@Param("nickName") String nickName);
 }
