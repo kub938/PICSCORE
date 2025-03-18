@@ -6,7 +6,11 @@ function GoogleLoginBtn() {
   };
   return (
     <button onClick={locateGoogleLogin}>
-      <img src={googleLoginBtn} alt="Google Login" className="w-76" />
+      <img
+        src={googleLoginBtn}
+        alt="Google Login"
+        className="w-76 cursor-pointer"
+      />
     </button>
   );
 }
