@@ -1,5 +1,5 @@
 import React from "react";
-import { BadgeCategory } from "../types";
+import { BadgeCategory } from "../../../types";
 
 // 카테고리 탭에서는 BadgeCategory의 일부 속성만 필요함
 type Category = Pick<BadgeCategory, "id" | "name">;

@@ -4,7 +4,7 @@ import Header from "../UserPage/components/Header";
 import ProfileSection from "./components/ProfileSection";
 import SettingsSection from "./components/SettingsSection";
 import NotificationSettings from "./components/NotificationSettings";
-import { UserProfile, FormErrors } from "./types";
+import { UserProfile, FormErrors } from "../../types";
 
 const ChangeInfoPage: React.FC = () => {
   const navigate = useNavigate();
