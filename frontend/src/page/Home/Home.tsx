@@ -24,7 +24,7 @@ function Home() {
             <div className="w-[30%] h-full bg-yellow-300 rounded-full"></div>
           </div>
         </div>
-        <Link to="/ImageEval">
+        <Link to="/image-eval">
           <div className="relative transition-all duration-300 hover:scale-105">
             <div className="font-bold bg-white px-5 py-2.5 rounded-full text-pic-primary">
               <button>사진 찍기</button>
@@ -36,7 +36,7 @@ function Home() {
       {/* 메뉴 그리드 섹션 */}
       <div className="grid grid-cols-2 gap-5 w-full max-w-[400px]">
         {/* 타임어택 */}
-        <Link to="/Timeattack">
+        <Link to="/time-attack">
           <div className="bg-white rounded-xl p-5 flex flex-col items-center shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
             <div className="absolute inset-0 bg-white rounded-xl shadow-xl"></div>
             <div className="relative mb-2 z-10">
@@ -52,7 +52,7 @@ function Home() {
         </Link>
 
         {/* 컨테스트 */}
-        <Link to="/Contest">
+        <Link to="/contest">
           <div className="bg-white rounded-xl p-5 flex flex-col items-center shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
             <div className="absolute inset-0 bg-white rounded-xl shadow-xl"></div>
             <div className="relative mb-2 z-10">
@@ -68,7 +68,7 @@ function Home() {
         </Link>
 
         {/* 게시글 */}
-        <Link to="/Board">
+        <Link to="/board">
           <div className="bg-white rounded-xl p-5 flex flex-col items-center shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
             <div className="absolute inset-0 bg-white rounded-xl shadow-xl"></div>
             <div className="relative mb-2 z-10">
@@ -84,7 +84,7 @@ function Home() {
         </Link>
 
         {/* 랭킹 */}
-        <Link to="/Ranking">
+        <Link to="/ranking">
           <div className="bg-white rounded-xl p-5 flex flex-col items-center shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
             <div className="absolute inset-0 bg-white rounded-xl shadow-xl"></div>
             <div className="relative mb-2 z-10">
