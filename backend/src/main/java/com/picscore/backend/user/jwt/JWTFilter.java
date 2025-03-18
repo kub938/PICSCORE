@@ -50,7 +50,6 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // 액세스 토큰이 없으면 다음 필터로 진행
         if (accessToken == null) {
-            System.out.println("accessToken null");
             filterChain.doFilter(request, response);
             return;
         }

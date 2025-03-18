@@ -3,6 +3,7 @@ package com.picscore.backend.user.service;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
+import com.picscore.backend.user.model.response.GetMyFollowersResponse;
 import com.picscore.backend.user.model.response.LoginInfoResponse;
 import com.picscore.backend.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
