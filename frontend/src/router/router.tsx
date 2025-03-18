@@ -12,6 +12,9 @@ import { ArchievePage } from "../page/Archieve";
 import { ChangeInfoPage } from "../page/ChangeInfo";
 import Board from "../page/Board/Board";
 import Contest from "../page/Contest/Contest";
+import Login from "../page/Login/Login";
+import TimeAttack from "../page/Timeattack/TimeAttack";
+import TimeAttackResult from "../page/Timeattack/TimeAttackResult";
 
 const router = createBrowserRouter([
   {
@@ -70,6 +73,10 @@ const router = createBrowserRouter([
       {
         path: "/contest",
         element: <Contest />,
+      },
+      {
+        path: "/login",
+        element: <Login />,
       },
     ],
   },
