@@ -49,19 +49,19 @@ services:
       - .env
     volumes:
       - mysql-data:/var/lib/mysql
-    networks:
-      - picscore-network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - picscore-network
 
   redis:
     container_name: redis
     image: redis:7.4-alpine
-    ports:
-      - "6379:6379"
+    # ports:
+    #   - "6379:6379"
     env_file:
       - .env
     healthcheck:
