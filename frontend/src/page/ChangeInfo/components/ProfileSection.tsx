@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { UserProfile, FormErrors } from "../types";
+import { UserProfile, FormErrors } from "../../../types";
 
 interface ProfileSectionProps {
   profile: UserProfile;

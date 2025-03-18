@@ -28,7 +28,7 @@ RUN apk add --no-cache curl
 WORKDIR /app
 
 # 빌드된 JAR 파일을 고정된 이름으로 복사
-COPY --from=builder /home/gradle/project/build/libs/*.jar app.jar
+COPY --from=builder /home/gradle/project/build/libs/app.jar app.jar
 
 # 보안 강화를 위해 일반 사용자 생성
 RUN addgroup -S spring && adduser -S spring -G spring
