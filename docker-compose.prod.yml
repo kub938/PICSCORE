@@ -68,14 +68,7 @@ services:
 
 
 volumes:
-  mysql-data:
-    name: mysql-data
   prometheus-data:
     name: prometheus-data
   grafana-data:
     name: grafana-data
-
-networks:
-  picscore-network:
-    name: picscore-network
-    driver: bridge
