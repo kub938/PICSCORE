@@ -1,9 +1,13 @@
 package com.picscore.backend.user.config;
 
+import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.user.handler.CustomSuccessHandler;
+import com.picscore.backend.user.jwt.CustomLogoutFilter;
 import com.picscore.backend.user.jwt.JWTFilter;
 import com.picscore.backend.user.jwt.JWTUtil;
+import com.picscore.backend.user.repository.UserRepository;
 import com.picscore.backend.user.service.CustomOAuth2UserService;
+import com.picscore.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +17,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -26,6 +31,9 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuthUserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final JWTUtil jwtUtil;
+    private final RedisUtil redisUtil;
+    private final UserRepository userRepository;
+    private final OAuthService oAuthService;
 
     /**
      * Spring Security 필터 체인을 구성합니다.
@@ -46,7 +54,7 @@ public class SecurityConfig {
 
                         CorsConfiguration configuration = new CorsConfiguration();
 
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -73,7 +81,10 @@ public class SecurityConfig {
 
         // JWT 필터 추가
         http
-                .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
+                .addFilterAfter(new JWTFilter(jwtUtil, oAuthService), OAuth2LoginAuthenticationFilter.class);
+
+        http
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, redisUtil, userRepository), LogoutFilter.class);
 
         // OAuth2 로그인 설정
         http
@@ -86,7 +97,7 @@ public class SecurityConfig {
         // URL 별 접근 권한 설정
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/api/v1/user", "/api/v1/reissue").permitAll()
+                        .requestMatchers("/", "/api/v1/user","/api/v1/user/photo/{userId}", "/api/v1/reissue").permitAll()
                         .anyRequest().authenticated());
 
         // 세션 관리 정책 설정

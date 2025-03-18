@@ -1,8 +1,9 @@
 package com.picscore.backend.user.service;
 
+import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.user.jwt.JWTUtil;
-import com.picscore.backend.user.repository.ReissueRepository;
+import com.picscore.backend.user.model.response.ReissueResponse;
 import com.picscore.backend.user.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
@@ -15,10 +16,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class ReissueService {
+public class OAuthService {
 
     private final JWTUtil jwtUtil;
-    private final ReissueRepository reissueRepository;
     private final RedisUtil redisUtil;
     private final UserRepository userRepository;
 
@@ -29,24 +29,36 @@ public class ReissueService {
      * @param response HTTP 응답 객체
      * @return ResponseEntity 객체로 결과 반환
      */
-    public ResponseEntity<?> reissueToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<BaseResponse<ReissueResponse>> reissue(HttpServletRequest request, HttpServletResponse response) {
+
         // 쿠키에서 리프레시 토큰 추출
-        String refresh = reissueRepository.getRefreshTokenFromCookies(request);
+        String refresh = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refresh".equals(cookie.getName())) {
+                    refresh = cookie.getValue();
+                }
+            }
+        }
 
         if (refresh == null) {
-            return new ResponseEntity<>("refresh token null", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(BaseResponse.error("RefreshToken 쿠키 없음"));
         }
 
         // 리프레시 토큰 만료 여부 확인
         try {
             jwtUtil.isExpired(refresh);
         } catch (ExpiredJwtException e) {
-            return new ResponseEntity<>("refresh token expired", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(BaseResponse.error("유효하지 않은 토큰"));
         }
 
         // 토큰 유형 확인
         if (!"refresh".equals(jwtUtil.getCategory(refresh))) {
-            return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(BaseResponse.error("RefreshToken이 아님"));
         }
 
         // 닉네임 및 Redis 키 생성
@@ -56,7 +68,16 @@ public class ReissueService {
         // Redis에 저장된 리프레시 토큰 존재 여부 확인
         Boolean isExist = redisUtil.exists(userKey);
         if (!isExist) {
-            return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(BaseResponse.error("Redis에 존재하지 않음"));
+        }
+
+        // Redis에 저장된 리프레시 토큰 동일 여부 확인
+        Object storedRefreshTokenObj = redisUtil.get(userKey);
+        String storedRefreshToken = storedRefreshTokenObj.toString();
+        if (!storedRefreshToken.equals(refresh)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(BaseResponse.error("Redis의 값과 다름"));
         }
 
         // 새로운 액세스 및 리프레시 토큰 생성
@@ -70,7 +91,9 @@ public class ReissueService {
         response.addCookie(createCookie("access", newAccess));
         response.addCookie(createCookie("refresh", newRefresh));
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        ReissueResponse data = new ReissueResponse(newAccess);
+
+        return ResponseEntity.ok(BaseResponse.success("토큰 재발급 성공", data));
     }
 
     /**
@@ -89,6 +112,25 @@ public class ReissueService {
         cookie.setHttpOnly(true); // JavaScript에서 접근 불가 (보안 강화)
 
         return cookie;
+    }
+
+    public Long findIdByNickName(HttpServletRequest request) {
+        // 쿠키에서 리프레시 토큰 추출
+        String access = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("access".equals(cookie.getName())) {
+                    access = cookie.getValue();
+                }
+            }
+        }
+
+        String nickName = jwtUtil.getNickName(access);
+        Long userId = userRepository.findIdByNickName(nickName);
+
+        return userId;
+
     }
 }
 

@@ -12,7 +12,11 @@ function Home() {
       <div className="flex flex-col items-center mb-10">
         <div className="w-[150px] h-[150px] rounded-full overflow-hidden border-3 border-white mb-4">
           <img
+<<<<<<< HEAD
             src={profileImage}
+=======
+            src="/path/to/sunset/image.jpg"
+>>>>>>> 860d1871fa2e1f32321e3f68d610057f1f28ba71
             alt="프로필 이미지"
             className="w-full h-full object-cover"
           />
@@ -25,16 +29,22 @@ function Home() {
           </div>
         </div>
         <Link to="/ImageEval">
+<<<<<<< HEAD
           <div className="relative transition-all duration-300 hover:scale-105">
             <div className="font-bold bg-white px-5 py-2.5 rounded-full text-pic-primary">
               <button>사진 찍기</button>
             </div>
+=======
+          <div className="bg-white px-5 py-2.5 rounded-full font-bold text-gray-600">
+            <button>사진 찍기</button>
+>>>>>>> 860d1871fa2e1f32321e3f68d610057f1f28ba71
           </div>
         </Link>
       </div>
 
       {/* 메뉴 그리드 섹션 */}
       <div className="grid grid-cols-2 gap-5 w-full max-w-[400px]">
+<<<<<<< HEAD
         {/* 타임어택 */}
         <Link to="/Timeattack">
           <div className="bg-white rounded-xl p-5 flex flex-col items-center shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
@@ -52,6 +62,15 @@ function Home() {
         </Link>
 
         {/* 컨테스트 */}
+=======
+        <Link to="/Time-attack">
+          <div className="bg-white rounded-xl p-5 flex flex-col items-center aspect-square">
+            <div className="text-4xl mb-2">⏰</div>
+            <button>타임어택</button>
+          </div>
+        </Link>
+
+>>>>>>> 860d1871fa2e1f32321e3f68d610057f1f28ba71
         <Link to="/Contest">
           <div className="bg-white rounded-xl p-5 flex flex-col items-center shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
             <div className="absolute inset-0 bg-white rounded-xl shadow-xl"></div>
@@ -67,7 +86,10 @@ function Home() {
           </div>
         </Link>
 
+<<<<<<< HEAD
         {/* 게시글 */}
+=======
+>>>>>>> 860d1871fa2e1f32321e3f68d610057f1f28ba71
         <Link to="/Board">
           <div className="bg-white rounded-xl p-5 flex flex-col items-center shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
             <div className="absolute inset-0 bg-white rounded-xl shadow-xl"></div>
@@ -83,7 +105,10 @@ function Home() {
           </div>
         </Link>
 
+<<<<<<< HEAD
         {/* 랭킹 */}
+=======
+>>>>>>> 860d1871fa2e1f32321e3f68d610057f1f28ba71
         <Link to="/Ranking">
           <div className="bg-white rounded-xl p-5 flex flex-col items-center shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
             <div className="absolute inset-0 bg-white rounded-xl shadow-xl"></div>

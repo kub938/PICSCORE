@@ -39,9 +39,7 @@ public class RedisUtil {
      * @param key 조회할 키
      * @return 저장된 값, 키가 없는 경우 null
      */
-    public Object get(String key) {
-        return redisTemplate.opsForValue().get(key);
-    }
+    public Object get(String key) {return redisTemplate.opsForValue().get(key);}
 
     /**
      * 키의 존재 여부를 확인합니다.
@@ -51,6 +49,16 @@ public class RedisUtil {
      */
     public Boolean exists(String key) {
         return redisTemplate.hasKey(key);
+    }
+
+    /**
+     * 지정된 키를 삭제합니다.
+     *
+     * @param key 삭제할 키
+     * @return 키가 성공적으로 삭제되면 true, 키가 존재하지 않으면 false
+     */
+    public Boolean delete(String key) {
+        return redisTemplate.delete(key);
     }
 }
 

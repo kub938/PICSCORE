@@ -44,8 +44,27 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+	//json
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.0'
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.18.0'
+	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.0'
+
+	// health, prometheus
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+bootJar {
+    archiveBaseName.set("app")  // bootJar의 이름을 'app'으로 설정
+    archiveVersion.set("")      // 버전 정보 제거
+}
+
+// 기존 jar 태스크는 비활성화
+jar {
+    enabled = false
 }
