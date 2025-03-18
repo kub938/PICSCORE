@@ -60,7 +60,7 @@ pipeline {
                     sh "scp -o StrictHostKeyChecking=no .env ${DEPLOY_HOST}:${DEPLOY_PATH}/.env"
                     sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.yml"
                     sh "scp -o StrictHostKeyChecking=no docker-compose.prod.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.prod.yml"
-                    sh "scp -o StrictHostKeyChecking=no ./nginx/nginx.prod.conf ${DEPLOY_HOST}:${DEPLOY_PATH}/nginx.prod.conf"
+                    sh "scp -o StrictHostKeyChecking=no ./nginx/nginx.prod.conf ${DEPLOY_HOST}:${DEPLOY_PATH}/nginx/nginx.prod.conf"
                     sh """
                     ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} '
                         cd ${DEPLOY_PATH} &&
