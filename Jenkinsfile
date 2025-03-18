@@ -64,7 +64,7 @@ pipeline {
                         cd ${DEPLOY_PATH} &&
                         docker compose down --remove-orphans &&
                         docker compose pull &&
-                        docker compose up -d &&
+                        docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d &&
                         docker image prune -f
                     '
                     """
