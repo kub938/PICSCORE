@@ -3,12 +3,12 @@ import App from "../App";
 import Home from "../page/Home/Home";
 import Test from "../page/Test";
 import ErrorPage from "../page/Error/ErrorPage";
-import TimeAttack from "../page/TimeAttack/TimeAttack";
-import TimeAttackResult from "../page/TimeAttack/TimeAttackResult";
-import RankingPage from "../page/Ranking/RankingPage";
-import { MyPage, UserDetailPage } from "../page/UserPage";
-import { ArchievePage } from "../page/Archieve";
-import { ChangeInfoPage } from "../page/ChangeInfo";
+import ImageEval from "../page/ImageEval/ImageEval";
+import Ranking from "../page/Ranking/Ranking";
+import Board from "../page/Board/Board";
+import Contest from "../page/Contest/Contest";
+import Timeattack from "../page/Timeattack/Timeattack";
+
 
 const router = createBrowserRouter([
   {
@@ -25,32 +25,24 @@ const router = createBrowserRouter([
         element: <Test />,
       },
       {
-        path: "/time-attack",
-        element: <TimeAttack />,
-      },
-      {
-        path: "/time-attack/result",
-        element: <TimeAttackResult />,
+        path: "/imageEval",
+        element: <ImageEval />,
       },
       {
         path: "/ranking",
-        element: <RankingPage />,
+        element: <Ranking />,
       },
       {
-        path: "/mypage",
-        element: <MyPage />,
+        path: "/board",
+        element: <Board />,
       },
       {
-        path: "/user/:userId",
-        element: <UserDetailPage />,
+        path: "/contest",
+        element: <Contest />,
       },
       {
-        path: "/change-info",
-        element: <ChangeInfoPage />,
-      },
-      {
-        path: "/archieve",
-        element: <ArchievePage />,
+        path: "/timeattack",
+        element: <Timeattack />,
       },
     ],
   },
