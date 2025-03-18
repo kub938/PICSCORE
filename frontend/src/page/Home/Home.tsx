@@ -1,20 +1,6 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useRecoilState } from "recoil";
-import { userState } from "../../store/userState";
 
 function Home() {
-  useEffect(() => {
-    // 로그인 후 리다이렉트 처리
-    const [userStateValue, setUserState] = useRecoilState(userState);
-    const urlParams = new URLSearchParams(location.search);
-    const loginSuccess = urlParams.get("loginSuccess");
-    if (loginSuccess === "true") {
-      setUserState(true);
-      console.log("userStateValue 세팅 완료 ", userStateValue);
-    }
-  }, [location]);
-
   return (
     <div className="p-5 bg-[#a4d675] min-h-screen flex flex-col items-center">
       {/* 프로필 이미지 섹션 */}
