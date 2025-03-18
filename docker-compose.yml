@@ -5,8 +5,6 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     image: rublin322/picscore-frontend:latest
-    ports:
-      - "80:80"
     networks:
       - picscore-network
 
@@ -30,6 +28,16 @@ services:
       retries: 5
     networks:
       - picscore-network
+  
+  proxy:
+    container_name: proxy
+    image: nginx:1.26-alpine
+    restart: always
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - picscore-network
 
   mysql:
     container_name: mysql
@@ -41,19 +49,19 @@ services:
       - .env
     volumes:
       - mysql-data:/var/lib/mysql
-    networks:
-      - picscore-network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - picscore-network
 
   redis:
     container_name: redis
     image: redis:7.4-alpine
-    ports:
-      - "6379:6379"
+    # ports:
+    #   - "6379:6379"
     env_file:
       - .env
     healthcheck:
