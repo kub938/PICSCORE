@@ -59,6 +59,7 @@ pipeline {
                 sshagent(credentials: ['ec2-ssh-key']) {
                     sh "scp -o StrictHostKeyChecking=no .env ${DEPLOY_HOST}:${DEPLOY_PATH}/.env"
                     sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.yml"
+                    sh "scp -o StrictHostKeyChecking=no docker-compose.prod.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.prod.yml"
                     sh """
                     ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} '
                         cd ${DEPLOY_PATH} &&
