@@ -1,4 +1,4 @@
-import { BadgeCategory } from "./types";
+import { BadgeCategory } from "../../types";
 // Import 방식으로 이미지 불러오기 (방법 1)
 import badge1 from "../../assets/badge1.png";
 import badge2 from "../../assets/badge2.png";

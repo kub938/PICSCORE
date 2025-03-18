@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Badge } from "../types";
+import { Badge } from "../../../types";
 import { achievementData } from "../achievementData";
 
 interface BadgeSelectorProps {

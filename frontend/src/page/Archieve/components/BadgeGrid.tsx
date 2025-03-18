@@ -1,6 +1,6 @@
 import React from "react";
 import BadgeItem from "./BadgeItem";
-import { Badge } from "../types";
+import { Badge } from "../../..//types";
 
 interface BadgeGridProps {
   badges: Badge[];

@@ -1,5 +1,5 @@
 import React from "react";
-import { RankingUser } from "../types";
+import { RankingUser } from "../../../types";
 
 interface RankingListProps {
   rankings: RankingUser[];

@@ -4,7 +4,7 @@ import Header from "./components/Header";
 import TrophyCard from "./components/TrophyCard";
 import RankingList from "./components/RankingList";
 import Pagination from "./components/Pagination";
-import { RankingUser, TimeFrame } from "./types";
+import { RankingUser, TimeFrame } from "../../types";
 
 // Import medal images
 import goldTrophy from "../../assets/gold.png";

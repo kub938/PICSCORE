@@ -5,7 +5,7 @@ import Header from "../UserPage/components/Header";
 import CategoryTabs from "./components/CategoryTabs";
 import BadgeGrid from "./components/BadgeGrid";
 import ProgressBar from "./components/ProgressBar";
-import { Badge, BadgeCategory } from "./types";
+import { Badge, BadgeCategory } from "../../types";
 import { achievementData } from "./achievementData";
 
 const ArchievePage: React.FC = () => {
