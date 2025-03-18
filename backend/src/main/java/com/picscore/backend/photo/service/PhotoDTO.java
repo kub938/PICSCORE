@@ -12,3 +12,4 @@ public class PhotoDTO {
         this.imageUrl = imageUrl;
     }
 }
+
