@@ -3,6 +3,12 @@ import App from "../App";
 import Home from "../page/Home/Home";
 import Test from "../page/Test";
 import ErrorPage from "../page/Error/ErrorPage";
+import ImageEval from "../page/ImageEval/ImageEval";
+import Ranking from "../page/Ranking/Ranking";
+import Board from "../page/Board/Board";
+import Contest from "../page/Contest/Contest";
+import Timeattack from "../page/Timeattack/Timeattack";
+
 
 const router = createBrowserRouter([
   {
@@ -20,6 +26,26 @@ const router = createBrowserRouter([
       {
         path: "/test",
         element: <Test />,
+      },
+      {
+        path: "/imageEval",
+        element: <ImageEval />,
+      },
+      {
+        path: "/ranking",
+        element: <Ranking />,
+      },
+      {
+        path: "/board",
+        element: <Board />,
+      },
+      {
+        path: "/contest",
+        element: <Contest />,
+      },
+      {
+        path: "/timeattack",
+        element: <Timeattack />,
       },
     ],
   },
