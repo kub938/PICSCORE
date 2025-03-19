@@ -9,5 +9,5 @@ public class GetMyFollowingDto {
 
     private Long userId;
     private String profile_image;
-    private String nickname;
+    private String nickName;
 }

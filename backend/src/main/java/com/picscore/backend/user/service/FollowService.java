@@ -2,11 +2,14 @@ package com.picscore.backend.user.service;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.user.model.dto.GetMyFollowingDto;
+import com.picscore.backend.user.model.dto.GetUserFollowerDto;
 import com.picscore.backend.user.model.entity.Follow;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.model.dto.GetMyFollowerDto;
+import com.picscore.backend.user.model.request.GetUserFollowersRequest;
 import com.picscore.backend.user.model.response.GetMyFollowersResponse;
 import com.picscore.backend.user.model.response.GetMyFollowingsResponse;
+import com.picscore.backend.user.model.response.GetUserFollowersResponse;
 import com.picscore.backend.user.repository.FollowRepository;
 import com.picscore.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -129,6 +132,32 @@ public class FollowService {
 
         // 성공 응답 반환
         return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", response));
+    }
+
+    public ResponseEntity<BaseResponse<GetUserFollowersResponse>> getUserFollowers(Long myId, Long userId) {
+
+        List<Follow> followList = followRepository.findByFollowingId(userId);
+
+        List<GetUserFollowerDto> followers =
+                followList.stream()
+                        .map(follow -> {
+                            User follower = follow.getFollower();
+
+                            boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(
+                                    myId, follower.getId());
+
+                            return new GetUserFollowerDto(
+                                    follower.getId(),
+                                    follower.getProfileImage(),
+                                    follower.getNickName(),
+                                    isFollowing
+                            );
+                        })
+                        .collect(Collectors.toList());
+
+        GetUserFollowersResponse response = new GetUserFollowersResponse(followers);
+
+        return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", response));
     }
 }
 

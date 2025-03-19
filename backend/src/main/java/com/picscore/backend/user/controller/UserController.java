@@ -4,6 +4,7 @@ import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.request.ToggleFollowRequest;
 import com.picscore.backend.user.model.response.GetMyFollowingsResponse;
+import com.picscore.backend.user.model.response.GetUserFollowersResponse;
 import com.picscore.backend.user.model.response.LoginInfoResponse;
 import com.picscore.backend.user.model.response.GetMyFollowersResponse;
 import com.picscore.backend.user.repository.UserRepository;
@@ -108,6 +109,12 @@ public class UserController {
         return followService.getMyFollowers(userId);
     }
 
+    /**
+     * 현재 사용자의 팔로잉 목록을 조회하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체
+     * @return ResponseEntity<BaseResponse<GetMyFollowersResponse>> 팔로잉 목록 정보
+     */
     @GetMapping("following/me")
     public ResponseEntity<BaseResponse<GetMyFollowingsResponse>> getMyFollowings(HttpServletRequest request) {
         // 현재 사용자의 ID를 토큰에서 추출
@@ -115,6 +122,16 @@ public class UserController {
 
         // 팔로잉 목록 조회 및 응답 반환
         return followService.getMyFollowings(userId);
+    }
+
+    @GetMapping("follower/{userId}")
+    public ResponseEntity<BaseResponse<GetUserFollowersResponse>> getUserFollowers(
+            HttpServletRequest request,
+            @PathVariable Long userId) {
+
+        Long myId = oAuthService.findIdByNickName(request);
+
+        return followService.getUserFollowers(myId, userId);
     }
 
 }
