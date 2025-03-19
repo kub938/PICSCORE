@@ -22,7 +22,8 @@ public class PhotoService {
     private final PhotoRepository photoRepository;
     private final PhotoLikeRepository photoLikeRepository;
     private final PhotoHashtagRepository photoHashtagRepository;
-    public ResponseEntity<BaseResponse<Map<Integer, List<GetPhotosResponse>>>> getPaginatedPhotos() {
+
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos() {
         // 사진 목록 조회
         List<Photo> photos = photoRepository.getAllWithoutPublic();
 
@@ -49,10 +50,16 @@ public class PhotoService {
 
             paginatedPhotos.put(page + 1, getPhotoResponses); // 페이지 번호는 1부터 시작하도록 설정
         }
+        // 응답 데이터 구성
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("totalPages", totalPages); // 전체 페이지 수
+        responseData.put("photos", paginatedPhotos); // 페이지별 사진 리스트
 
         // 응답 반환
-        return ResponseEntity.ok(BaseResponse.success("사진 리스트 조회 성공", paginatedPhotos));
+        return ResponseEntity.ok(BaseResponse.success("사진 리스트 조회 성공", responseData));
     }
+
+
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(Long userId) {
         List<Photo> photos = photoRepository.findPhotosByUserId(userId);
         List<GetPhotosResponse> getPhotoResponses = photos.stream()

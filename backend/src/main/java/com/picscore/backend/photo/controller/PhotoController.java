@@ -64,7 +64,7 @@ public class PhotoController {
     }
     // 전체 사진 조회
     @GetMapping("/photo")
-    public ResponseEntity<BaseResponse<Map<Integer, List<GetPhotosResponse>>>> getPaginatedPhotos() {
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos() {
         return photoService.getPaginatedPhotos();
     }
 }
