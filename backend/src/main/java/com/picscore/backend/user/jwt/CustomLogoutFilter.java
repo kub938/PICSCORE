@@ -43,11 +43,11 @@ public class CustomLogoutFilter extends GenericFilterBean {
             return;
         }
 
-//        String requestMethod = request.getMethod();
-//        if (!requestMethod.equals("POST")) { // HTTP 메서드가 POST가 아닌 경우 다음 필터로 전달
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
+        String requestMethod = request.getMethod();
+        if (!requestMethod.equals("POST")) { // HTTP 메서드가 POST가 아닌 경우 다음 필터로 전달
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // 2. 쿠키에서 Refresh 토큰 추출
         String refresh = null;
@@ -94,16 +94,17 @@ public class CustomLogoutFilter extends GenericFilterBean {
         // 6. 로그아웃 처리: Redis에서 Refresh 토큰 삭제 및 쿠키 제거
         redisUtil.delete(userKey); // Redis에서 Refresh 토큰 삭제
 
-        Cookie cookie = new Cookie("refresh", null); // Refresh 쿠키 초기화 (값 설정 없음)
-        cookie.setMaxAge(0); // 쿠키 만료 시간 설정 (즉시 만료)
-        cookie.setPath("/"); // 모든 경로에서 적용 가능
+        // 7. 쿠키 삭제
+        deleteCookie(response, "access");
+        deleteCookie(response, "refresh");
 
-        response.addCookie(cookie); // 응답에 쿠키 추가
         response.setStatus(HttpServletResponse.SC_OK); // 로그아웃 성공 상태 코드 설정
+    }
 
-        System.out.println("로그아웃 성공");
-
-        // 7. 로그아웃 성공 후 클라이언트 리다이렉트 처리
-        response.sendRedirect("http://localhost:5173?logOut=true");
+    private void deleteCookie(HttpServletResponse response, String cookieName) {
+        Cookie cookie = new Cookie(cookieName, null); // 값은 null로 설정
+        cookie.setMaxAge(0); // 만료 시간 0으로 설정 (즉시 삭제)
+        cookie.setPath("/"); // 쿠키의 경로 설정 (어플리케이션 전체에 적용)
+        response.addCookie(cookie); // 응답에 쿠키 추가
     }
 }

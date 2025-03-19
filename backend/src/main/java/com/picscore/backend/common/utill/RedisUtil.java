@@ -57,8 +57,6 @@ public class RedisUtil {
      * @param key 삭제할 키
      * @return 키가 성공적으로 삭제되면 true, 키가 존재하지 않으면 false
      */
-    public Boolean delete(String key) {
-        return redisTemplate.delete(key);
-    }
+    public Boolean delete(String key) {return redisTemplate.delete(key);}
 }
 

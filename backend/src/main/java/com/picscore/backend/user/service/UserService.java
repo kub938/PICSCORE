@@ -71,22 +71,32 @@ public class UserService {
         return ResponseEntity.ok(BaseResponse.success("로그인 성공", response));
     }
 
+    /**
+     * 사용자 검색 기능을 제공하는 메서드
+     *
+     * @param searchText 검색할 닉네임 텍스트
+     * @return ResponseEntity<BaseResponse<List<SearchUsersResponse>>> 검색된 사용자 목록을 포함한 응답
+     */
     public ResponseEntity<BaseResponse<List<SearchUsersResponse>>> searchUser(String searchText) {
 
+        // 1. 주어진 검색어로 시작하는 닉네임을 가진 사용자들을 데이터베이스에서 조회
         List<User> userList = userRepository.findByNickNameContaining(searchText);
 
+        // 2. 조회된 사용자 목록을 SearchUsersResponse DTO로 변환
         List<SearchUsersResponse> response =
-                userList.stream()
-                        .map(user -> {
+                userList.stream() // 스트림 생성
+                        .map(user -> { // 각 User 객체를 SearchUsersResponse로 변환
                             return new SearchUsersResponse(
-                                    user.getId(),
-                                    user.getProfileImage(),
-                                    user.getNickName(),
-                                    user.getMessage()
+                                    user.getId(), // 사용자 ID
+                                    user.getProfileImage(), // 프로필 이미지 URL
+                                    user.getNickName(), // 닉네임
+                                    user.getMessage() // 상태 메시지
                             );
                         })
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()); // 변환된 객체들을 리스트로 수집
 
+        // 3. 성공 응답 생성 및 반환
         return ResponseEntity.ok(BaseResponse.success("친구 검색 성공", response));
     }
+
 }

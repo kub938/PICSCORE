@@ -3,6 +3,7 @@ package com.picscore.backend.user.service;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.user.jwt.JWTUtil;
+import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.model.response.ReissueResponse;
 import com.picscore.backend.user.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -114,23 +115,70 @@ public class OAuthService {
         return cookie;
     }
 
+    /**
+     * 현재 로그인한 사용자의 ID를 닉네임을 통해 조회하는 메서드
+     *
+     * @param request HTTP 요청 객체 (쿠키에서 AccessToken 추출)
+     * @return Long 사용자 ID
+     */
     public Long findIdByNickName(HttpServletRequest request) {
-        // 쿠키에서 리프레시 토큰 추출
+        // 쿠키에서 AccessToken 추출
         String access = null;
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("access".equals(cookie.getName())) {
                     access = cookie.getValue();
+                    break; // AccessToken을 찾았으므로 루프 종료
                 }
             }
         }
 
+        // JWT에서 닉네임 추출
         String nickName = jwtUtil.getNickName(access);
+        // 닉네임으로 사용자 ID 조회
         Long userId = userRepository.findIdByNickName(nickName);
 
         return userId;
-
     }
+
+    /**
+     * 사용자 계정을 삭제하는 메서드
+     *
+     * @param userId 삭제할 사용자의 ID
+     * @param response HTTP 응답 객체 (쿠키 삭제에 사용)
+     * @return ResponseEntity<BaseResponse<Void>> 삭제 결과를 포함한 응답
+     */
+    public ResponseEntity<BaseResponse<Void>> deleteUser(Long userId, HttpServletResponse response) {
+        // 사용자 조회 및 삭제
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+        userRepository.delete(user);
+
+        // Redis에서 Refresh Token 삭제
+        String userKey = "refresh:" + userId;
+        redisUtil.delete(userKey);
+
+        // 쿠키에서 Access Token과 Refresh Token 삭제
+        deleteCookie(response, "access");
+        deleteCookie(response, "refresh");
+
+        return ResponseEntity.ok(BaseResponse.withMessage("회원탈퇴 완료"));
+    }
+
+    /**
+     * 특정 이름의 쿠키를 삭제하는 헬퍼 메서드
+     *
+     * @param response HTTP 응답 객체
+     * @param cookieName 삭제할 쿠키의 이름
+     */
+    private void deleteCookie(HttpServletResponse response, String cookieName) {
+        Cookie cookie = new Cookie(cookieName, null); // 쿠키 값을 null로 설정
+        cookie.setMaxAge(0); // 쿠키 만료 시간을 0으로 설정 (즉시 삭제)
+        cookie.setPath("/"); // 쿠키 경로를 루트로 설정 (애플리케이션 전체에 적용)
+        response.addCookie(cookie); // 응답에 삭제할 쿠키 추가
+    }
+
+
 }
 

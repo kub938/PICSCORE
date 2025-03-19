@@ -7,10 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -30,6 +27,16 @@ public class OAuthController {
     @GetMapping("/user")
     public void redirectToGoogleLogin(HttpServletResponse response) throws IOException {
         response.sendRedirect("/oauth2/authorization/google");
+    }
+
+    @DeleteMapping("/user")
+    public ResponseEntity<BaseResponse<Void>> deleteUser(
+            HttpServletRequest request, HttpServletResponse response
+    ) {
+
+        Long userId = oAuthService.findIdByNickName(request);
+
+        return oAuthService.deleteUser(userId, response);
     }
 }
 
