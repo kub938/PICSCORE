@@ -4,6 +4,7 @@ import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.model.response.LoginInfoResponse;
+import com.picscore.backend.user.model.response.SearchUsersResponse;
 import com.picscore.backend.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 사용자 관련 서비스를 제공하는 클래스
@@ -66,5 +69,24 @@ public class UserService {
         // 유저 정보 + 토큰 반환
         LoginInfoResponse response = new LoginInfoResponse(user.getId(), user.getNickName(), accessToken);
         return ResponseEntity.ok(BaseResponse.success("로그인 성공", response));
+    }
+
+    public ResponseEntity<BaseResponse<List<SearchUsersResponse>>> searchUser(String searchText) {
+
+        List<User> userList = userRepository.findByNickNameContaining(searchText);
+
+        List<SearchUsersResponse> response =
+                userList.stream()
+                        .map(user -> {
+                            return new SearchUsersResponse(
+                                    user.getId(),
+                                    user.getProfileImage(),
+                                    user.getNickName(),
+                                    user.getMessage()
+                            );
+                        })
+                        .collect(Collectors.toList());
+
+        return ResponseEntity.ok(BaseResponse.success("친구 검색 성공", response));
     }
 }

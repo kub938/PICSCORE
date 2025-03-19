@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ToggleFollowRequest {
+public class SearchUsersRequest {
 
-    private Long followingId;
+    private String searchText;
 }

@@ -2,14 +2,16 @@ package com.picscore.backend.user.model.entity;
 
 import com.picscore.backend.common.model.entity.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Getter
-@Setter
+@NoArgsConstructor
 @Table(name = "user")
 public class User extends BaseEntity {
 
@@ -38,4 +40,18 @@ public class User extends BaseEntity {
 
     @Column(name = "experience", nullable = false)
     private int experience;
+
+    public User(String socialId, String socialType, String nickName, String profileImage, String message, int level, int experience) {
+        this.socialId = socialId;
+        this.socialType = socialType;
+        this.nickName = nickName;
+        this.profileImage = profileImage;
+        this.message = message;
+        this.level = level;
+        this.experience = experience;
+    }
+
+    public void updateNickName(String nickName) {
+        this.nickName = nickName;
+    }
 }

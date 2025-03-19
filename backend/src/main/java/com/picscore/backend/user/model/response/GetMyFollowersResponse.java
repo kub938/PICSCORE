@@ -2,12 +2,13 @@ package com.picscore.backend.user.model.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 
 @Data
 @AllArgsConstructor
-public class LoginInfoResponse {
+public class GetMyFollowersResponse {
+
     private Long userId;
-    private String nickname;
-    private String accessToken;
+    private String profileImage;
+    private String nickName;
+    private Boolean isFollowing;
 }

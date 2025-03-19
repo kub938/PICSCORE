@@ -49,32 +49,32 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         if (existData == null) {
             // 기존 데이터가 없을 경우 새 사용자 생성 및 저장
-            User user = new User();
-            user.setSocialId(oAuth2Response.getProviderId());
-            user.setSocialType(oAuth2Response.getProvider());
-            user.setNickName(oAuth2Response.getName());
-            user.setProfileImage(oAuth2Response.getProfileImage());
-            user.setMessage("상태메시지를 작성해주세요!");
-            user.setLevel(0);
-            user.setExperience(0);
+            User user = new User(
+                    oAuth2Response.getProviderId(),
+                    oAuth2Response.getProvider(),
+                    oAuth2Response.getName(),
+                    oAuth2Response.getProfileImage(),
+                    "상태메시지를 작성해주세요!",
+                    0,
+                    0
+            );
 
             userRepository.save(user);
 
             // 새 사용자 정보를 UserDto에 매핑
-            UserDto userDto = new UserDto();
-            userDto.setNickName(oAuth2Response.getName());
-            userDto.setRole("ROLE_USER");
+            UserDto userDto = new UserDto(
+                    oAuth2Response.getName(),
+                    "ROLE_USER"
+            );
 
             return new CustomOAuth2User(userDto);
         } else {
             // 기존 데이터가 있을 경우 닉네임 업데이트 후 저장
-            existData.setNickName(oAuth2Response.getName());
+            existData.updateNickName(oAuth2Response.getName());
             userRepository.save(existData);
 
             // 기존 사용자 정보를 UserDto에 매핑
-            UserDto userDto = new UserDto();
-            userDto.setNickName(oAuth2Response.getName());
-            userDto.setRole("ROLE_USER");
+            UserDto userDto = new UserDto(oAuth2Response.getName(), "ROLE_USER");
 
             return new CustomOAuth2User(userDto);
         }
