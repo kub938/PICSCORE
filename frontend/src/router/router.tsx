@@ -3,7 +3,7 @@ import App from "../App";
 import Home from "../page/Home/Home";
 import Test from "../page/Test";
 import ErrorPage from "../page/Error/ErrorPage";
-import ImageEval from "../page/ImageEval/ImageEval";
+import ImageUpload from "../page/ImageEval/ImageUpload";
 import RankingPage from "../page/Ranking/RankingPage";
 import { MyPage, UserDetailPage } from "../page/UserPage";
 import { ArchievePage } from "../page/Archieve";
@@ -58,7 +58,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/image-eval",
-        element: <ImageEval />,
+        element: <ImageUpload />,
       },
       {
         path: "/ranking",
