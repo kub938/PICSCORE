@@ -28,12 +28,12 @@ public class PhotoController {
     private final OAuthService oAuthService;
     private final UserRepository userRepository;
     // 남 사진 조회
-    @GetMapping("user/photo/{userId}")
+    @GetMapping("/user/photo/{userId}")
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(@PathVariable Long userId) {
         return photoService.getPhotosByUserId(userId);
     }
     // 내 사진 조회
-    @GetMapping("user/photo/me")
+    @GetMapping("/user/photo/me")
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getMyPhotos(HttpServletRequest request) {
         // 토큰에서 사용자 정보 추출
         Long userId = oAuthService.findIdByNickName(request);
@@ -58,9 +58,15 @@ public class PhotoController {
     }
 
     // 사진 상세조회
-    @GetMapping("photo/{photoId}")
+    @GetMapping("/photo/{photoId}")
     public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(@PathVariable Long photoId) {
         return photoService.getPhotoDetail(photoId);
+    }
+    // 내 사진 조회
+    @GetMapping("/photo")
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getAllPhotos() {
+
+        return photoService.getAllPhotos();
     }
 }
 

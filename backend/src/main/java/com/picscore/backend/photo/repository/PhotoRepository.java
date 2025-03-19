@@ -15,5 +15,7 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
     List<Photo> findPhotosByUserId(@Param("userId") Long userId);
 
     Photo findPhotoById(Long id);
+    @Query("SELECT p FROM Photo p  WHERE p.isPublic = true")
+    List<Photo> getAllWithoutPublic();
 
 }

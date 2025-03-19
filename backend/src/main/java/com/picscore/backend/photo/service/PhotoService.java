@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -23,7 +24,21 @@ public class PhotoService {
     private final PhotoRepository photoRepository;
     private final PhotoLikeRepository photoLikeRepository;
     private final PhotoHashtagRepository photoHashtagRepository;
-    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(Long userId) {
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getAllPhotos() {
+        List<Photo> photos = photoRepository.getAllWithoutPublic();
+        // createdAt 기준으로 내림차순 정렬
+        List<Photo> sortedPhotos = photos.stream()
+                .sorted(Comparator.comparing(Photo::getCreatedAt).reversed()) // 최신 순으로 정렬
+                .collect(Collectors.toList());
+
+        // DTO로 변환
+        List<GetPhotosResponse> getPhotoResponses = sortedPhotos.stream()
+                .map(photo -> new GetPhotosResponse(photo.getId(), photo.getImageUrl()))
+                .collect(Collectors.toList());
+
+        // 응답 반환
+        return ResponseEntity.ok(BaseResponse.success("사진 조회 성공", getPhotoResponses));
+    }public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(Long userId) {
         List<Photo> photos = photoRepository.findPhotosByUserId(userId);
         List<GetPhotosResponse> getPhotoResponses = photos.stream()
                 .map(photo -> new GetPhotosResponse(photo.getId(), photo.getImageUrl()))
