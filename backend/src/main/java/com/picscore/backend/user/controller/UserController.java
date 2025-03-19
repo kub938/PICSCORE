@@ -3,6 +3,7 @@ package com.picscore.backend.user.controller;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.request.ToggleFollowRequest;
+import com.picscore.backend.user.model.response.GetMyFollowingsResponse;
 import com.picscore.backend.user.model.response.LoginInfoResponse;
 import com.picscore.backend.user.model.response.GetMyFollowersResponse;
 import com.picscore.backend.user.repository.UserRepository;
@@ -12,6 +13,7 @@ import com.picscore.backend.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -104,6 +106,15 @@ public class UserController {
 
         // 팔로워 목록 조회 및 응답 반환
         return followService.getMyFollowers(userId);
+    }
+
+    @GetMapping("following/me")
+    public ResponseEntity<BaseResponse<GetMyFollowingsResponse>> getMyFollowings(HttpServletRequest request) {
+        // 현재 사용자의 ID를 토큰에서 추출
+        Long userId = oAuthService.findIdByNickName(request);
+
+        // 팔로잉 목록 조회 및 응답 반환
+        return followService.getMyFollowings(userId);
     }
 
 }

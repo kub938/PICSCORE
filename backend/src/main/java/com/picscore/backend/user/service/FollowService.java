@@ -1,10 +1,12 @@
 package com.picscore.backend.user.service;
 
 import com.picscore.backend.common.model.response.BaseResponse;
+import com.picscore.backend.user.model.dto.GetMyFollowingDto;
 import com.picscore.backend.user.model.entity.Follow;
 import com.picscore.backend.user.model.entity.User;
-import com.picscore.backend.user.model.response.GetMyFollowerResponse;
+import com.picscore.backend.user.model.dto.GetMyFollowerDto;
 import com.picscore.backend.user.model.response.GetMyFollowersResponse;
+import com.picscore.backend.user.model.response.GetMyFollowingsResponse;
 import com.picscore.backend.user.repository.FollowRepository;
 import com.picscore.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class FollowService {
 
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
+
 
     /**
      * 팔로우 관계를 토글(추가/삭제)하는 메서드
@@ -56,6 +59,7 @@ public class FollowService {
         }
     }
 
+
     /**
      * 현재 사용자의 팔로워 목록을 조회하는 메서드
      *
@@ -67,7 +71,7 @@ public class FollowService {
         List<Follow> followList = followRepository.findByFollowingId(userId);
 
         // 팔로워 정보를 DTO로 변환
-        List<GetMyFollowerResponse> followers =
+        List<GetMyFollowerDto> followers =
                 followList.stream()
                         .map(follow -> {
                             User follower = follow.getFollower();
@@ -77,7 +81,7 @@ public class FollowService {
                             );
 
                             // 팔로워 정보를 DTO로 변환
-                            return new GetMyFollowerResponse(
+                            return new GetMyFollowerDto(
                                     follower.getId(),
                                     follower.getProfileImage(),
                                     follower.getNickName(),
@@ -91,6 +95,40 @@ public class FollowService {
 
         // 성공 응답 반환
         return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", response));
+    }
+
+
+    /**
+     * 현재 사용자의 팔로잉 목록을 조회하는 메서드
+     *
+     * @param userId 현재 사용자의 ID
+     * @return ResponseEntity<BaseResponse<GetMyFollowersResponse>> 팔로잉 목록을 포함한 응답
+     */
+    public ResponseEntity<BaseResponse<GetMyFollowingsResponse>> getMyFollowings(Long userId) {
+
+        // 현재 사용자가 팔로워되어 있는 모든 팔로우 Entity 조회
+        List<Follow> followList = followRepository.findByFollowerId(userId);
+
+        // 팔로잉 정보를 DTO로 변환
+        List<GetMyFollowingDto> followings =
+                followList.stream()
+                        .map(follow -> {
+                            User following = follow.getFollowing();
+
+                            // 팔로잉 정보를 DTO로 변환
+                            return new GetMyFollowingDto(
+                                    following.getId(),
+                                    following.getProfileImage(),
+                                    following.getNickName()
+                            );
+                        })
+                        .collect(Collectors.toList());;
+
+        // 응답 객체 생성
+        GetMyFollowingsResponse response = new GetMyFollowingsResponse(followings);
+
+        // 성공 응답 반환
+        return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", response));
     }
 }
 

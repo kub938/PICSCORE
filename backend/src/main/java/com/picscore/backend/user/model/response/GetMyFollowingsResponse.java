@@ -1,6 +1,6 @@
 package com.picscore.backend.user.model.response;
 
-import com.picscore.backend.user.model.dto.GetMyFollowerDto;
+import com.picscore.backend.user.model.dto.GetMyFollowingDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class GetMyFollowersResponse {
+public class GetMyFollowingsResponse {
 
-    private List<GetMyFollowerDto> followers;
+    private List<GetMyFollowingDto> followings;
 }
