@@ -3,6 +3,7 @@ package com.picscore.backend.user.service;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.user.jwt.JWTUtil;
+import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.model.response.ReissueResponse;
 import com.picscore.backend.user.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -130,7 +131,29 @@ public class OAuthService {
         Long userId = userRepository.findIdByNickName(nickName);
 
         return userId;
-
     }
+
+    public ResponseEntity<BaseResponse<Void>> deleteUser(Long userId, HttpServletResponse response) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+        userRepository.delete(user);
+
+        String userKey = "refresh:" + userId;
+        redisUtil.delete(userKey);
+
+        deleteCookie(response, "access");
+        deleteCookie(response, "refresh");
+
+        return ResponseEntity.ok(BaseResponse.withMessage("회원탈퇴 완료"));
+    }
+
+    private void deleteCookie(HttpServletResponse response, String cookieName) {
+        Cookie cookie = new Cookie(cookieName, null); // 값은 null로 설정
+        cookie.setMaxAge(0); // 만료 시간 0으로 설정 (즉시 삭제)
+        cookie.setPath("/"); // 쿠키의 경로 설정 (어플리케이션 전체에 적용)
+        response.addCookie(cookie); // 응답에 쿠키 추가
+    }
+
 }
 
