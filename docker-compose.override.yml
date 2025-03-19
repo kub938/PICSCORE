@@ -12,3 +12,11 @@ services:
       - "80:80"
     volumes:
       - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+  
+  mysql:
+    ports:
+      - "3306:3306"
+
+  redis:
+    ports:
+      - "6379:6379"
