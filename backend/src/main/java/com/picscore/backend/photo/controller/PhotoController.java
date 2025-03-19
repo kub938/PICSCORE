@@ -62,11 +62,10 @@ public class PhotoController {
     public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(@PathVariable Long photoId) {
         return photoService.getPhotoDetail(photoId);
     }
-    // 내 사진 조회
+    // 전체 사진 조회
     @GetMapping("/photo")
-    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getAllPhotos() {
-
-        return photoService.getAllPhotos();
+    public ResponseEntity<BaseResponse<Map<Integer, List<GetPhotosResponse>>>> getPaginatedPhotos() {
+        return photoService.getPaginatedPhotos();
     }
 }
 

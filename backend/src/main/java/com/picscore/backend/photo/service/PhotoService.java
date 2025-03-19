@@ -13,9 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,21 +22,38 @@ public class PhotoService {
     private final PhotoRepository photoRepository;
     private final PhotoLikeRepository photoLikeRepository;
     private final PhotoHashtagRepository photoHashtagRepository;
-    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getAllPhotos() {
+    public ResponseEntity<BaseResponse<Map<Integer, List<GetPhotosResponse>>>> getPaginatedPhotos() {
+        // 사진 목록 조회
         List<Photo> photos = photoRepository.getAllWithoutPublic();
+
         // createdAt 기준으로 내림차순 정렬
         List<Photo> sortedPhotos = photos.stream()
-                .sorted(Comparator.comparing(Photo::getCreatedAt).reversed()) // 최신 순으로 정렬
+                .sorted(Comparator.comparing(Photo::getCreatedAt).reversed())
                 .collect(Collectors.toList());
 
-        // DTO로 변환
-        List<GetPhotosResponse> getPhotoResponses = sortedPhotos.stream()
-                .map(photo -> new GetPhotosResponse(photo.getId(), photo.getImageUrl()))
-                .collect(Collectors.toList());
+        // 고정된 페이지 크기 설정
+        int size = 2; // 한 페이지당 사진 개수
+        int totalPages = (int) Math.ceil((double) sortedPhotos.size() / size); // 전체 페이지 수 계산
+
+        // 페이지별 데이터 저장
+        Map<Integer, List<GetPhotosResponse>> paginatedPhotos = new HashMap<>();
+        for (int page = 0; page < totalPages; page++) {
+            int start = page * size;
+            int end = Math.min((page + 1) * size, sortedPhotos.size()); // 마지막 페이지 처리
+            List<Photo> pagePhotos = sortedPhotos.subList(start, end);
+
+            // DTO 변환
+            List<GetPhotosResponse> getPhotoResponses = pagePhotos.stream()
+                    .map(photo -> new GetPhotosResponse(photo.getId(), photo.getImageUrl()))
+                    .collect(Collectors.toList());
+
+            paginatedPhotos.put(page + 1, getPhotoResponses); // 페이지 번호는 1부터 시작하도록 설정
+        }
 
         // 응답 반환
-        return ResponseEntity.ok(BaseResponse.success("사진 조회 성공", getPhotoResponses));
-    }public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(Long userId) {
+        return ResponseEntity.ok(BaseResponse.success("사진 리스트 조회 성공", paginatedPhotos));
+    }
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(Long userId) {
         List<Photo> photos = photoRepository.findPhotosByUserId(userId);
         List<GetPhotosResponse> getPhotoResponses = photos.stream()
                 .map(photo -> new GetPhotosResponse(photo.getId(), photo.getImageUrl()))
