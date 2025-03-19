@@ -1,8 +1,10 @@
 package com.picscore.backend.photo.controller;
 
-import com.picscore.backend.photo.entity.Photo;
-import com.picscore.backend.photo.service.PhotoDTO;
-import com.picscore.backend.photo.service.PhotoPayloadDTO;
+import com.picscore.backend.common.model.response.BaseResponse;
+import com.picscore.backend.photo.model.entity.Photo;
+import com.picscore.backend.photo.model.response.GetPhotoDetailResponse;
+import com.picscore.backend.photo.model.response.GetPhotosResponse;
+import com.picscore.backend.photo.model.request.UploadPhotoRequest;
 import com.picscore.backend.photo.service.PhotoService;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.repository.UserRepository;
@@ -13,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,34 +27,35 @@ public class PhotoController {
     private final PhotoService photoService;
     private final OAuthService oAuthService;
     private final UserRepository userRepository;
+    // 남 사진 조회
     @GetMapping("user/photo/{userId}")
     public ResponseEntity<Map<String, Object>> getPhotosByUserId(@PathVariable Long userId) {
-        List<PhotoDTO> photos = photoService.getPhotosByUserId(userId);
+        List<GetPhotosResponse> photos = photoService.getPhotosByUserId(userId);
         Map<String, Object> response = new HashMap<>();
         response.put("message", "사진 조회 완료");
-        response.put("photos", photos);
+        response.put("data", photos);
         return ResponseEntity.ok(response);
     }
-
+    // 내 사진 조회
     @GetMapping("user/photo/me")
     public ResponseEntity<Map<String, Object>> getMyPhotos(HttpServletRequest request) {
         // 토큰에서 사용자 정보 추출
         Long userId = oAuthService.findIdByNickName(request);
-        List<PhotoDTO> photos = photoService.getPhotosByUserId(userId);
+        List<GetPhotosResponse> photos = photoService.getPhotosByUserId(userId);
         Map<String, Object> response = new HashMap<>();
         response.put("message", "사진 조회 완료");
-        response.put("photos", photos);
+        response.put("data", photos);
         return ResponseEntity.ok(response);
     }
+    // 사진 업로드
     @PostMapping("/photo")
-    public ResponseEntity<Map<String, Object>> savePhoto(HttpServletRequest request, @RequestBody PhotoPayloadDTO payload) {
+    public ResponseEntity<BaseResponse<HttpStatus>> savePhoto(HttpServletRequest request, @RequestBody UploadPhotoRequest payload) {
         // 토큰에서 사용자 정보 추출
         Long userId = oAuthService.findIdByNickName(request);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID; " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저 없음; " + userId));
 
-        // 사진 저장 로직
-        Photo savedPhoto = photoService.savePhoto(
+        return photoService.savePhoto(
                 user,
                 payload.getImageUrl(),
                 payload.getScore(),
@@ -61,14 +63,12 @@ public class PhotoController {
                 payload.getAnalysisText(),
                 payload.getIsPublic()
         );
-        // 응답 생성
-        Map<String, Object> response = new HashMap<>();
-        response.put("timeStamp", LocalDateTime.now().toString());
-        response.put("isSuccess", true);
-        response.put("status", HttpStatus.CREATED.value());
-        response.put("message", "사진 업로드 완료");
+    }
 
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    // 사진 상세조회
+    @GetMapping("photo/{photoId}")
+    public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(@PathVariable Long photoId) {
+        return photoService.getPhotoDetail(photoId);
     }
 }
 

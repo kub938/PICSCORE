@@ -1,10 +1,9 @@
-package com.picscore.backend.photo.service;
+package com.picscore.backend.photo.model.request;
 
-import com.picscore.backend.user.model.entity.User;
 import lombok.Data;
 
 @Data
-public class PhotoPayloadDTO {
+public class UploadPhotoRequest {
     private String imageUrl;
     private Float score;
     private String analysisChart; // nullable

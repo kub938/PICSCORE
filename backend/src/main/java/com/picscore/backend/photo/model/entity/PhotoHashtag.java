@@ -1,4 +1,4 @@
-package com.picscore.backend.photo.entity;
+package com.picscore.backend.photo.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
