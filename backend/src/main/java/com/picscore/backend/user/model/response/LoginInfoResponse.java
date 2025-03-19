@@ -1,9 +1,10 @@
 package com.picscore.backend.user.model.response;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 
-@Getter
+@Data
 @AllArgsConstructor
 public class LoginInfoResponse {
     private Long userId;

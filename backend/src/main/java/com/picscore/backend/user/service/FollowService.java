@@ -47,7 +47,10 @@ public class FollowService {
             return false;
         } else {
             // 팔로우 관계가 없으면 새로 생성
-            Follow follow = new Follow(null, follower, following);
+            Follow follow = new Follow(
+                    follower,
+                    following
+            );
             followRepository.save(follow);
             return true;
         }

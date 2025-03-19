@@ -8,10 +8,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Getter
-@Setter
-@Table(name = "follow")
 @NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "follow")
 public class Follow extends BaseEntity {
 
     @Id
@@ -26,4 +24,9 @@ public class Follow extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "following_id", nullable = false)
     private User following;
+
+    public Follow(User follower, User following) {
+        this.follower = follower;
+        this.following = following;
+    }
 }
