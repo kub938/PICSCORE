@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import BottomBar from "../../components/BottomBar/BottomBar";
 import profileImage from "../../assets/profile.jpg";
 import contest from "../../assets/contest.png";
 import time from "../../assets/time.png";
@@ -32,7 +33,6 @@ function Home() {
           </div>
         </Link>
       </div>
-
       {/* 메뉴 그리드 섹션 */}
       <div className="grid grid-cols-2 gap-5 w-full max-w-[400px]">
         {/* 타임어택 */}
@@ -97,8 +97,8 @@ function Home() {
           </div>
         </Link>
       </div>
+      <BottomBar activeTab="Home" /> {/* 하단 바(임의 테스트) */}
     </div>
   );
 }
-
 export default Home;
