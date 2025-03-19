@@ -1,15 +1,12 @@
 package com.picscore.backend.user.service;
 
 import com.picscore.backend.common.model.response.BaseResponse;
-import com.picscore.backend.user.model.dto.GetMyFollowingDto;
-import com.picscore.backend.user.model.dto.GetUserFollowerDto;
-import com.picscore.backend.user.model.entity.Follow;
-import com.picscore.backend.user.model.entity.User;
-import com.picscore.backend.user.model.dto.GetMyFollowerDto;
-import com.picscore.backend.user.model.request.GetUserFollowersRequest;
-import com.picscore.backend.user.model.response.GetMyFollowersResponse;
 import com.picscore.backend.user.model.response.GetMyFollowingsResponse;
 import com.picscore.backend.user.model.response.GetUserFollowersResponse;
+import com.picscore.backend.user.model.response.GetUserFollowingsResponse;
+import com.picscore.backend.user.model.entity.Follow;
+import com.picscore.backend.user.model.entity.User;
+import com.picscore.backend.user.model.response.GetMyFollowersResponse;
 import com.picscore.backend.user.repository.FollowRepository;
 import com.picscore.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -69,12 +66,12 @@ public class FollowService {
      * @param userId 현재 사용자의 ID
      * @return ResponseEntity<BaseResponse<GetMyFollowersResponse>> 팔로워 목록을 포함한 응답
      */
-    public ResponseEntity<BaseResponse<GetMyFollowersResponse>> getMyFollowers(Long userId) {
+    public ResponseEntity<BaseResponse<List<GetMyFollowersResponse>>> getMyFollowers(Long userId) {
         // 현재 사용자가 팔로잉되어 있는 모든 팔로우 Entity 조회
         List<Follow> followList = followRepository.findByFollowingId(userId);
 
         // 팔로워 정보를 DTO로 변환
-        List<GetMyFollowerDto> followers =
+        List<GetMyFollowersResponse> followers =
                 followList.stream()
                         .map(follow -> {
                             User follower = follow.getFollower();
@@ -84,7 +81,7 @@ public class FollowService {
                             );
 
                             // 팔로워 정보를 DTO로 변환
-                            return new GetMyFollowerDto(
+                            return new GetMyFollowersResponse(
                                     follower.getId(),
                                     follower.getProfileImage(),
                                     follower.getNickName(),
@@ -93,11 +90,8 @@ public class FollowService {
                         })
                         .collect(Collectors.toList());
 
-        // 응답 객체 생성
-        GetMyFollowersResponse response = new GetMyFollowersResponse(followers);
-
         // 성공 응답 반환
-        return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", response));
+        return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", followers));
     }
 
 
@@ -107,19 +101,19 @@ public class FollowService {
      * @param userId 현재 사용자의 ID
      * @return ResponseEntity<BaseResponse<GetMyFollowersResponse>> 팔로잉 목록을 포함한 응답
      */
-    public ResponseEntity<BaseResponse<GetMyFollowingsResponse>> getMyFollowings(Long userId) {
+    public ResponseEntity<BaseResponse<List<GetMyFollowingsResponse>>> getMyFollowings(Long userId) {
 
         // 현재 사용자가 팔로워되어 있는 모든 팔로우 Entity 조회
         List<Follow> followList = followRepository.findByFollowerId(userId);
 
         // 팔로잉 정보를 DTO로 변환
-        List<GetMyFollowingDto> followings =
+        List<GetMyFollowingsResponse> followings =
                 followList.stream()
                         .map(follow -> {
                             User following = follow.getFollowing();
 
                             // 팔로잉 정보를 DTO로 변환
-                            return new GetMyFollowingDto(
+                            return new GetMyFollowingsResponse(
                                     following.getId(),
                                     following.getProfileImage(),
                                     following.getNickName()
@@ -127,26 +121,24 @@ public class FollowService {
                         })
                         .collect(Collectors.toList());;
 
-        // 응답 객체 생성
-        GetMyFollowingsResponse response = new GetMyFollowingsResponse(followings);
-
         // 성공 응답 반환
-        return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", response));
+        return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", followings));
     }
 
-    public ResponseEntity<BaseResponse<GetUserFollowersResponse>> getUserFollowers(Long myId, Long userId) {
+    public ResponseEntity<BaseResponse<List<GetUserFollowersResponse>>> getUserFollowers(Long myId, Long userId) {
 
         List<Follow> followList = followRepository.findByFollowingId(userId);
 
-        List<GetUserFollowerDto> followers =
+        List<GetUserFollowersResponse> followers =
                 followList.stream()
                         .map(follow -> {
                             User follower = follow.getFollower();
 
                             boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(
-                                    myId, follower.getId());
+                                    myId, follower.getId()
+                            );
 
-                            return new GetUserFollowerDto(
+                            return new GetUserFollowersResponse(
                                     follower.getId(),
                                     follower.getProfileImage(),
                                     follower.getNickName(),
@@ -155,9 +147,42 @@ public class FollowService {
                         })
                         .collect(Collectors.toList());
 
-        GetUserFollowersResponse response = new GetUserFollowersResponse(followers);
+        return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", followers));
+    }
 
-        return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", response));
+    public ResponseEntity<BaseResponse<List<GetUserFollowingsResponse>>>  getUserFollowings(Long myId, Long userId) {
+
+        List<Follow> followList = followRepository.findByFollowerId(userId);
+
+        List<GetUserFollowingsResponse> followings =
+                followList.stream()
+                        .map(follow -> {
+                            User following = follow.getFollowing();
+
+                            boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(
+                                    myId, following.getId()
+                            );
+
+                            return new GetUserFollowingsResponse(
+                                    following.getId(),
+                                    following.getProfileImage(),
+                                    following.getNickName(),
+                                    isFollowing
+                            );
+                        })
+                        .collect(Collectors.toList());
+
+        return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", followings));
+    }
+
+    public ResponseEntity<BaseResponse<Void>> deleteMyFollower(Long myId, Long userId) {
+
+        Optional<Follow> follow = followRepository.findByFollowerIdAndFollowingId(userId, myId);
+        if (follow.isPresent()) {
+            followRepository.delete(follow.get());
+        }
+
+        return ResponseEntity.ok(BaseResponse.withMessage("팔로워 삭제 완료"));
     }
 }
 

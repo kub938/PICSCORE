@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class GetUserFollowersRequest {
+public class SearchUsersRequest {
 
-    private Long userId;
+    private String searchText;
 }

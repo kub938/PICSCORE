@@ -1,14 +1,14 @@
-package com.picscore.backend.user.model.dto;
+package com.picscore.backend.user.model.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class GetUserFollowerDto {
+public class GetUserFollowingsResponse {
 
     private Long userId;
-    private String profile_image;
+    private String profileImage;
     private String nickName;
     private boolean isFollowing;
 }
