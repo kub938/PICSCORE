@@ -23,12 +23,12 @@ public class PhotoService {
     private final PhotoRepository photoRepository;
     private final PhotoLikeRepository photoLikeRepository;
     private final PhotoHashtagRepository photoHashtagRepository;
-    public List<GetPhotosResponse> getPhotosByUserId(Long userId) {
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(Long userId) {
         List<Photo> photos = photoRepository.findPhotosByUserId(userId);
         List<GetPhotosResponse> getPhotoResponses = photos.stream()
                 .map(photo -> new GetPhotosResponse(photo.getId(), photo.getImageUrl()))
                 .collect(Collectors.toList());
-        return getPhotoResponses;
+        return ResponseEntity.ok(BaseResponse.success("사진 조회 성공", getPhotoResponses));
     }
     public ResponseEntity<BaseResponse<HttpStatus>> savePhoto(User user, String imageUrl, Float score, String analysisChart, String analysisText, Boolean isPublic) {
         Photo photo = new Photo();

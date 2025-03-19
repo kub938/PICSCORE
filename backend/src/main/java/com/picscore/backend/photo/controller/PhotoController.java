@@ -29,23 +29,15 @@ public class PhotoController {
     private final UserRepository userRepository;
     // 남 사진 조회
     @GetMapping("user/photo/{userId}")
-    public ResponseEntity<Map<String, Object>> getPhotosByUserId(@PathVariable Long userId) {
-        List<GetPhotosResponse> photos = photoService.getPhotosByUserId(userId);
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "사진 조회 완료");
-        response.put("data", photos);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(@PathVariable Long userId) {
+        return photoService.getPhotosByUserId(userId);
     }
     // 내 사진 조회
     @GetMapping("user/photo/me")
-    public ResponseEntity<Map<String, Object>> getMyPhotos(HttpServletRequest request) {
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getMyPhotos(HttpServletRequest request) {
         // 토큰에서 사용자 정보 추출
         Long userId = oAuthService.findIdByNickName(request);
-        List<GetPhotosResponse> photos = photoService.getPhotosByUserId(userId);
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "사진 조회 완료");
-        response.put("data", photos);
-        return ResponseEntity.ok(response);
+        return photoService.getPhotosByUserId(userId);
     }
     // 사진 업로드
     @PostMapping("/photo")
