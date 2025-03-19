@@ -57,7 +57,7 @@ const router = createBrowserRouter([
         element: <ArchievePage />,
       },
       {
-        path: "/imageEval",
+        path: "/image-eval",
         element: <ImageEval />,
       },
       {
