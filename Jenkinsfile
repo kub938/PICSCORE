@@ -15,7 +15,7 @@ pipeline {
                 script {
                     echo "현재 브랜치: ${env.BRANCH_NAME}"
                     echo "현재 워크스페이스: ${env.WORKSPACE}"
-                    def deployBranches = ['master']
+                    def deployBranches = ['master', 'backend']
                     if (!deployBranches.contains(env.BRANCH_NAME)) {
                         error "현재 브랜치(${env.BRANCH_NAME})에서는 배포를 수행하지 않습니다."
                     }
@@ -35,7 +35,7 @@ pipeline {
         stage('Build Frontend Docker Image') {
             steps {
                 dir('frontend') {
-                    sh "docker build -t ${FRONTEND_IMAGE} ."
+                    // sh "docker build -t ${FRONTEND_IMAGE} ."
                 }
             }
         }
@@ -49,7 +49,7 @@ pipeline {
         stage('Push Docker Images') {
             steps {
                 withDockerRegistry([credentialsId: 'dockerhub-token', url: '']) {
-                    sh "docker push ${FRONTEND_IMAGE}"
+                    // sh "docker push ${FRONTEND_IMAGE}"
                     sh "docker push ${BACKEND_IMAGE}"
                 }
             }

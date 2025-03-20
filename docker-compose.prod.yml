@@ -3,7 +3,8 @@ services:
     ports: []
 
   backend:
-    ports: []
+    ports:
+      - "8081:8080"
     depends_on:
       mysql:
         condition: service_healthy

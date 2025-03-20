@@ -1,9 +1,9 @@
 services:
   frontend:
     container_name: frontend
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    # build:
+    #   context: ./frontend
+    #   dockerfile: Dockerfile
     image: rublin322/picscore-frontend:latest
     networks:
       - picscore-network
