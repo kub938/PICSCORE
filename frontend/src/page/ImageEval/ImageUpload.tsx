@@ -10,6 +10,8 @@ function ImageUpload() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageFile, setImageFile] = useState<File | null>(null); // 원본 파일 (서버 전송용)
   const [imagePreview, setImagePreview] = useState<string>(""); // 미리보기용 URL
+  const cameraRef = useRef<HTMLInputElement>(null);
+
   const modalOpen = () => {
     setModalState(true);
   };
@@ -26,6 +28,13 @@ function ImageUpload() {
   const inputBtnClick = (event: React.MouseEvent) => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
+    }
+  };
+
+  const handleCameraCapture = () => {
+    if (cameraRef.current) {
+      console.log("카메라 클릭");
+      cameraRef.current.click();
     }
   };
 
@@ -62,8 +71,19 @@ function ImageUpload() {
             style={{ boxShadow: "0 0 10px rgba(0, 0, 0, 0.3)" }}
             className="bg-gray-50 mt-10 flex justify-around text-xl rounded-2xl px-8 py-5 w-80 "
           >
-            <div className="flex flex-col justify-center items-center">
+            <div
+              className="flex flex-col justify-center items-center"
+              onClick={handleCameraCapture}
+            >
               <CameraIcon className="text-pic-primary w-16" />
+              <input
+                type="file"
+                hidden
+                ref={cameraRef}
+                onChange={getImageFile}
+                accept="image/*"
+                capture="environment"
+              />
               <div className="text-[#3c3c3c] text-sm">사진 촬영</div>
             </div>
             <div className="border-l border-gray-300"></div>
@@ -98,6 +118,7 @@ function ImageUpload() {
         style={{ borderStyle: "dashed", borderSpacing: "40px" }}
         onClick={modalOpen}
       >
+        {/* 이미지 미리보기 화면 */}
         {imagePreview ? (
           <img
             src={imagePreview}
@@ -115,10 +136,9 @@ function ImageUpload() {
           </>
         )}
       </div>
-
       <Link to="/Image-eval">
         <Button
-          color="green"
+          color={imageFile ? "green" : "gray"}
           width={32}
           height={12}
           textSize="lg"
