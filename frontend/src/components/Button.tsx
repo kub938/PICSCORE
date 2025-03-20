@@ -1,5 +1,5 @@
 interface ButtonProps {
-  color: "white" | "green";
+  color: "white" | "green" | "gray";
   width: number;
   height: number;
   content: string;
@@ -20,6 +20,7 @@ function Button({
       "bg-pic-primary hover:bg-[#7cc948] active:bg-[#66a13e] text-[#fafafa]",
     white:
       "bg-white hover:bg-gray-100 active:bg-gray-200 text-gray-800 border border-gray-300",
+    gray: "bg-gray-100 border border-gray-300 text-gray-400 cursor-not-allowed opacity-75",
   };
 
   return (
@@ -29,6 +30,7 @@ function Button({
       flex items-center justify-center text-center text-${textSize}
       ${colorClasses[color]}`}
       onClick={onClick}
+      disabled={color === "gray"}
     >
       {content}
     </button>
