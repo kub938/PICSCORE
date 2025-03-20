@@ -2,6 +2,7 @@ package com.picscore.backend.photo.controller;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.photo.model.entity.Photo;
+import com.picscore.backend.photo.model.request.SearchPhotoRequest;
 import com.picscore.backend.photo.model.response.GetPhotoDetailResponse;
 import com.picscore.backend.photo.model.response.GetPhotosResponse;
 import com.picscore.backend.photo.model.request.UploadPhotoRequest;
@@ -28,8 +29,14 @@ public class PhotoController {
     private final OAuthService oAuthService;
     private final UserRepository userRepository;
 
+    // 주제 사진 검색
+    @GetMapping("/photo/search")
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> searchPhotosByHashtag(@RequestBody SearchPhotoRequest request) {
+    return photoService.searchPhotosByHashtag(request.getKeyword());
+    }
+
     // 공개-비공개 설정
-    @PatchMapping("photo/{photoId}")
+    @PatchMapping("/photo/{photoId}")
     public ResponseEntity<BaseResponse<Void>> togglePublic(HttpServletRequest request, @PathVariable Long photoId) {
         Long userId = oAuthService.findIdByNickName(request);
         return photoService.togglePublic(photoId, userId);

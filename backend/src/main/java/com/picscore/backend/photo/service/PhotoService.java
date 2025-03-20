@@ -24,6 +24,12 @@ public class PhotoService {
     private final PhotoLikeRepository photoLikeRepository;
     private final PhotoHashtagRepository photoHashtagRepository;
 
+    // 주제로 검색
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> searchPhotosByHashtag(String keyword) {
+        List<GetPhotosResponse> results = photoRepository.findPhotosByHashtagName(keyword);
+        return ResponseEntity.ok(BaseResponse.success("사진 조회 성공", results));
+    }
+
     // 사진 삭제
     @Transactional
     public ResponseEntity<BaseResponse<Void>> deletePhoto(Long photoId, Long userId) {
