@@ -33,6 +33,13 @@ public class PhotoController {
     public ResponseEntity<BaseResponse<Void>> togglePublic(HttpServletRequest request, @PathVariable Long photoId) {
         return photoService.togglePublic();
     }
+    // 사진 삭제
+    @DeleteMapping("/photo/{photoId}")
+    public ResponseEntity<BaseResponse<Void>> deletePhoto(HttpServletRequest request, @PathVariable Long photoId) {
+        Long userId = oAuthService.findIdByNickName(request);
+
+        return photoService.deletePhoto(photoId, userId);
+    }
 
     // 남 사진 조회
     @GetMapping("/user/photo/{userId}")

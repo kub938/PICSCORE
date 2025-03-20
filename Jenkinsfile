@@ -59,17 +59,20 @@ pipeline {
                 sshagent(credentials: ['ec2-ssh-key']) {
                     sh "scp -o StrictHostKeyChecking=no .env ${DEPLOY_HOST}:${DEPLOY_PATH}/.env"
                     sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.yml"
-                    sh "scp -o StrictHostKeyChecking=no docker-compose.prod.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.prod.yml"
-                    sh "scp -o StrictHostKeyChecking=no ./nginx/nginx.prod.conf ${DEPLOY_HOST}:${DEPLOY_PATH}/nginx/nginx.prod.conf"
+                    sh "scp -o StrictHostKeyChecking=no ./nginx.conf ${DEPLOY_HOST}:${DEPLOY_PATH}/nginx.conf"
                     sh "scp -o StrictHostKeyChecking=no prometheus.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/prometheus.yml"
                     sh """
                     ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} '
                         cd ${DEPLOY_PATH} &&
                         docker compose down --remove-orphans &&
                         docker compose pull &&
-                        docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d &&
+                        docker compose up -d &&
+                        docker container prune -f &&
                         docker image prune -f &&
-                        docker volume prune -f
+                        docker volume prune -f &&
+                        docker network prune -f &&
+                        docker builder prune -f &&
+                        docker system prune -f
                     '
                     """
                 }
