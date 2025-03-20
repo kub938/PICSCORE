@@ -1,6 +1,6 @@
 package com.picscore.backend.timeattack;
 
-import com.picscore.backend.photo.entity.Photo;
+import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.user.model.entity.User;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;

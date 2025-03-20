@@ -1,0 +1,45 @@
+package com.picscore.backend.photo.model.response;
+
+import com.picscore.backend.photo.model.entity.Photo;
+import com.picscore.backend.user.model.entity.User;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+public class GetPhotoDetailResponse {
+    // User 정보
+    public Long userId;
+    public String nickName;
+    public String profileImage;
+
+    // Photo 정보
+    public Long photoId;
+    public String imageUrl;
+    public Float score;
+    public String analysisChart; // JSON 형태로 저장된 데이터
+    public String analysisText;  // JSON 형태로 저장된 데이터
+    public LocalDateTime createdAt;
+
+    // 기타 정보
+    public int likeCnt;          // 좋아요 수
+    public List<String> hashTag; // 해시태그 리스트
+
+    public GetPhotoDetailResponse(User user, Photo photo, int likeCnt, List<String> hashTag) {
+        // User 정보 설정
+        this.userId = user.getId();
+        this.nickName = user.getNickName();
+        this.profileImage = user.getProfileImage();
+
+        // Photo 정보 설정
+        this.photoId = photo.getId();
+        this.imageUrl = photo.getImageUrl();
+        this.score = photo.getScore();
+        this.analysisChart = photo.getAnalysisChart();
+        this.analysisText = photo.getAnalysisText();
+        this.createdAt = photo.getCreatedAt();
+
+        // 기타 정보 설정
+        this.likeCnt = likeCnt;
+        this.hashTag = hashTag;
+    }
+}

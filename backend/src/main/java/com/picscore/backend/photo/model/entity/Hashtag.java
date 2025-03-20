@@ -1,11 +1,15 @@
-package com.picscore.backend.photo.entity;
+package com.picscore.backend.photo.model.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "hashtag")
 public class Hashtag {
     @Id
