@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-
+import BottomBar from "./components/BottomBar/BottomBar";
 function App() {
   return (
     <div
@@ -10,7 +10,7 @@ function App() {
       <main>
         <Outlet />
       </main>
-      <footer></footer>
+      <BottomBar />
     </div>
   );
 }
