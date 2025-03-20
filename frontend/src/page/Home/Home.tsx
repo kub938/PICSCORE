@@ -11,7 +11,7 @@ function Home() {
   return (
     <>
       <NavBar />
-      <div className="h-screen w-full mx-auto bg-gradient-to-b from-white via-white to-pic-primary flex flex-col items-center flex-grow">
+      <div className=" w-full mx-auto bg-gradient-to-b from-white via-white to-pic-primary flex flex-col items-center flex-grow">
         {/* 프로필 이미지 섹션 */}
         <div className="flex flex-col items-center mb-10">
           <div className="w-[150px] h-[150px] rounded-full overflow-hidden border-3 border-white mb-4">
@@ -107,7 +107,6 @@ function Home() {
           </Link>
         </div>
       </div>
-      <BottomBar />
     </>
   );
 }

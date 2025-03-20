@@ -20,7 +20,7 @@ const BottomBar: React.FC<{ activeTab?: string }> = ({
 
   return (
     // <div className="fixed z-50 bottom-0 left-0 right-0 bg-white border-t border-gray-300 shadow-lg">
-    <div className="max-w-[480px] mx-auto flex justify-around items-center h-16">
+    <div className="max-w-[480px] flex  justify-around  h-16">
       {tabs.map((tab) => (
         <Link
           key={tab.name}

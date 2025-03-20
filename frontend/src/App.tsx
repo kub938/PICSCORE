@@ -7,10 +7,10 @@ function App() {
     "
     >
       <header></header>
-      <main>
+      <main className="flex flex-col justify-between flex-grow">
         <Outlet />
       </main>
-      {/* <BottomBar /> */}
+      <BottomBar />
     </div>
   );
 }
