@@ -19,7 +19,8 @@ const BottomBar: React.FC<{ activeTab?: string }> = ({
   ];
 
   return (
-    <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-gray-300 flex justify-around items-center h-16">
+    // <div className="fixed z-50 bottom-0 left-0 right-0 bg-white border-t border-gray-300 shadow-lg">
+    <div className="max-w-[480px] flex  justify-around  h-16">
       {tabs.map((tab) => (
         <Link
           key={tab.name}
@@ -37,10 +38,17 @@ const BottomBar: React.FC<{ activeTab?: string }> = ({
               }`}
             />
           </div>
-          <span className="text-xs">{tab.label}</span>
+          <span
+            className={`text-xs ${
+              activeTab === tab.name ? "font-bold" : "font-normal"
+            }`}
+          >
+            {tab.label}
+          </span>
         </Link>
       ))}
     </div>
+    // </div>
   );
 };
 

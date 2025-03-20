@@ -10,8 +10,8 @@ import ranking from "../../assets/ranking.png";
 function Home() {
   return (
     <>
-      <NavBar activeTab="Home" /> {/* Nav 바(임의 테스트) */}
-      <div className="p-5 bg-pic-primary min-h-screen flex flex-col items-center">
+      <NavBar />
+      <div className=" w-full mx-auto bg-gradient-to-b from-white via-white to-pic-primary flex flex-col items-center flex-grow">
         {/* 프로필 이미지 섹션 */}
         <div className="flex flex-col items-center mb-10">
           <div className="w-[150px] h-[150px] rounded-full overflow-hidden border-3 border-white mb-4">
@@ -21,9 +21,9 @@ function Home() {
               className="w-full h-full object-cover"
             />
           </div>
-          <h2 className="font-bold text-white text-2xl mb-2">태열</h2>
+          <h2 className="font-bold text-ffffff text-2xl mb-2">태열</h2>
           <div className="w-[200px] text-center mb-5 flex items-center justify-center">
-            <span className="font-bold text-white mr-2">LV.30</span>
+            <span className="font-bold text-ffffff mr-2">LV.30</span>
             <div className="bg-white/30 h-2.5 rounded-full flex-1">
               <div className="w-[30%] h-full bg-yellow-300 rounded-full"></div>
             </div>
@@ -106,7 +106,6 @@ function Home() {
             </div>
           </Link>
         </div>
-        <BottomBar activeTab="Home" /> {/* 하단 바(임의 테스트) */}
       </div>
     </>
   );

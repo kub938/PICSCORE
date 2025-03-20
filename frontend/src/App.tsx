@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-
+import BottomBar from "./components/BottomBar/BottomBar";
 function App() {
   return (
     <div
@@ -7,10 +7,10 @@ function App() {
     "
     >
       <header></header>
-      <main>
+      <main className="flex flex-col justify-between flex-grow">
         <Outlet />
       </main>
-      <footer></footer>
+      <BottomBar />
     </div>
   );
 }
