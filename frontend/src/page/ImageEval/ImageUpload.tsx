@@ -3,6 +3,7 @@ import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
 import { CameraIcon } from "@heroicons/react/24/outline";
 import Button from "../../components/Button";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 function ImageUpload() {
   const [modalState, setModalState] = useState(false);
@@ -62,13 +63,15 @@ function ImageUpload() {
           사진을 촬영 또는 업로드 해주세요
         </div>
       </div>
-      <Button
-        color="green"
-        width={32}
-        height={12}
-        textSize="lg"
-        content="확인"
-      ></Button>
+      <Link to="/Image-eval">
+        <Button
+          color="green"
+          width={32}
+          height={12}
+          textSize="lg"
+          content="확인"
+        ></Button>
+      </Link>
     </div>
   );
 }

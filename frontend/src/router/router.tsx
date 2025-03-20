@@ -13,6 +13,7 @@ import Contest from "../page/Contest/Contest";
 import Login from "../page/Login/Login";
 import TimeAttack from "../page/Timeattack/Timeattack";
 import TimeAttackResult from "../page/Timeattack/TimeAttackResult";
+import ImageEval from "../page/ImageEval/ImageEval";
 
 const router = createBrowserRouter([
   {
@@ -57,9 +58,10 @@ const router = createBrowserRouter([
         element: <ArchievePage />,
       },
       {
-        path: "/image-eval",
+        path: "/image-upload",
         element: <ImageUpload />,
       },
+      { path: "/image-eval", element: <ImageEval /> },
       {
         path: "/ranking",
         element: <RankingPage />,
