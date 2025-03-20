@@ -1,7 +1,7 @@
 # Stage 1: React 앱 빌드
 	
 # Node LTS 버전 사용
-FROM node:22.13-alpine AS builder
+FROM node:22.14-alpine AS builder
 
 # 작업 디렉토리 설정
 WORKDIR /app
