@@ -10,7 +10,7 @@ function App() {
       <main>
         <Outlet />
       </main>
-      <BottomBar />
+      {/* <BottomBar /> */}
     </div>
   );
 }
