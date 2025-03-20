@@ -25,7 +25,7 @@ function Home() {
             <div className="w-[30%] h-full bg-yellow-300 rounded-full"></div>
           </div>
         </div>
-        <Link to="/image-eval">
+        <Link to="/image-upload">
           <div className="relative transition-all duration-300 hover:scale-105">
             <div className="font-bold bg-white px-5 py-2.5 rounded-full text-pic-primary">
               <button>사진 찍기</button>
