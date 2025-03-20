@@ -28,6 +28,12 @@ public class PhotoController {
     private final OAuthService oAuthService;
     private final UserRepository userRepository;
 
+    // 공개-비공개 설정
+    @PatchMapping("photo/{photoId}")
+    public ResponseEntity<BaseResponse<Void>> togglePublic(HttpServletRequest request, @PathVariable Long photoId) {
+        Long userId = oAuthService.findIdByNickName(request);
+        return photoService.togglePublic(photoId, userId);
+    }
     // 사진 삭제
     @DeleteMapping("/photo/{photoId}")
     public ResponseEntity<BaseResponse<Void>> deletePhoto(HttpServletRequest request, @PathVariable Long photoId) {
