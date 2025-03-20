@@ -35,7 +35,7 @@ pipeline {
         stage('Build Frontend Docker Image') {
             steps {
                 dir('frontend') {
-                    // sh "docker build -t ${FRONTEND_IMAGE} ."
+                    sh "docker build -t ${FRONTEND_IMAGE} ."
                 }
             }
         }
@@ -49,7 +49,7 @@ pipeline {
         stage('Push Docker Images') {
             steps {
                 withDockerRegistry([credentialsId: 'dockerhub-token', url: '']) {
-                    // sh "docker push ${FRONTEND_IMAGE}"
+                    sh "docker push ${FRONTEND_IMAGE}"
                     sh "docker push ${BACKEND_IMAGE}"
                 }
             }
