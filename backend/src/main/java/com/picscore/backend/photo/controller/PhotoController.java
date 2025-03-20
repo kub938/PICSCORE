@@ -27,6 +27,13 @@ public class PhotoController {
     private final PhotoService photoService;
     private final OAuthService oAuthService;
     private final UserRepository userRepository;
+
+    // 공개-비공개 설정
+    @PatchMapping("photo/{photoId}")
+    public ResponseEntity<BaseResponse<Void>> togglePublic(HttpServletRequest request, @PathVariable Long photoId) {
+        return photoService.togglePublic();
+    }
+
     // 남 사진 조회
     @GetMapping("/user/photo/{userId}")
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(@PathVariable Long userId) {

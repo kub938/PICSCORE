@@ -100,6 +100,10 @@ public class PhotoService {
         GetPhotoDetailResponse response = new GetPhotoDetailResponse(user, photo, likeCnt, hashTags);
         return ResponseEntity.ok(BaseResponse.success("사진 상세 조회 성공",response));
     }
+
+    public ResponseEntity<BaseResponse<Void>> togglePublic() {
+
+    }
 }
 
 
