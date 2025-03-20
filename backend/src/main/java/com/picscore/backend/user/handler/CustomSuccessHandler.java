@@ -35,6 +35,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        System.out.println("과연2");
 
         // OAuth2User 정보 가져오기
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
@@ -55,7 +56,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(createCookie("refresh", refresh));
 
         // 인증 성공 후 리다이렉트
-        response.sendRedirect("http://localhost:5173?loginSuccess=true");
+        // response.sendRedirect("http://localhost:5173?loginSuccess=true");
     }
 
     /**
@@ -69,7 +70,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(60 * 60 * 60 * 60); // 쿠키 유효 기간 설정 (초 단위)
-        //cookie.setSecure(true); // HTTPS 환경에서만 전송 (주석 처리 상태)
+        cookie.setSecure(true); // HTTPS 환경에서만 전송 (주석 처리 상태)
         cookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능
         cookie.setHttpOnly(true); // JavaScript에서 접근 불가 (보안 강화)
 
