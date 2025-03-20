@@ -132,7 +132,26 @@ public class PhotoService {
         return ResponseEntity.ok(BaseResponse.success("사진 상세 조회 성공",response));
     }
 
-    public ResponseEntity<BaseResponse<Void>> togglePublic() {
+    // 공개-비공개 토글
+    public ResponseEntity<BaseResponse<Void>> togglePublic(Long photoId, Long userId) {
+        // 사진 조회
+        Photo photo = photoRepository.findPhotoById(photoId);
+
+        if (photo == null) {
+            // 사진이 존재하지 않을 경우 에러 반환
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(BaseResponse.error("해당 사진을 찾을 수 없습니다."));
+        }
+
+        // 사진 소유자 정보 조회
+        User user = photo.getUser();
+        if (!user.getId().equals(userId)) {
+            // 요청한 사용자 ID가 사진 소유자가 아닐 경우 에러 반환
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(BaseResponse.error("사진 수정 권한이 없습니다."));
+        }
+        photoRepository.togglePublic(photoId);
+        return ResponseEntity.ok(BaseResponse.withMessage("사진 설정 완료"));
 
     }
 }

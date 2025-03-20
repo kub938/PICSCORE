@@ -31,7 +31,8 @@ public class PhotoController {
     // 공개-비공개 설정
     @PatchMapping("photo/{photoId}")
     public ResponseEntity<BaseResponse<Void>> togglePublic(HttpServletRequest request, @PathVariable Long photoId) {
-        return photoService.togglePublic();
+        Long userId = oAuthService.findIdByNickName(request);
+        return photoService.togglePublic(photoId, userId);
     }
     // 사진 삭제
     @DeleteMapping("/photo/{photoId}")
