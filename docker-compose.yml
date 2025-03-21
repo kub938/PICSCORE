@@ -67,8 +67,8 @@ services:
   redis:
     container_name: redis
     image: redis:7.4-alpine
-    env_file:
-      - .env
+    # env_file:
+    #   - .env
     ports:
       - "6379:6379"
     healthcheck:
