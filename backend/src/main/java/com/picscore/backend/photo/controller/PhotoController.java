@@ -2,6 +2,7 @@ package com.picscore.backend.photo.controller;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.photo.model.entity.Photo;
+import com.picscore.backend.photo.model.request.GetPhotosRequest;
 import com.picscore.backend.photo.model.request.SearchPhotoRequest;
 import com.picscore.backend.photo.model.response.GetPhotoDetailResponse;
 import com.picscore.backend.photo.model.response.GetPhotosResponse;
@@ -51,15 +52,17 @@ public class PhotoController {
 
     // 남 사진 조회
     @GetMapping("/user/photo/{userId}")
-    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(@PathVariable Long userId) {
-        return photoService.getPhotosByUserId(userId);
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>>
+    getPhotosByUserId(@PathVariable Long userId, @RequestBody GetPhotosRequest request) {
+        return photoService.getPhotosByUserId(userId, request.getIsPublic());
     }
     // 내 사진 조회
     @GetMapping("/user/photo/me")
-    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getMyPhotos(HttpServletRequest request) {
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>>
+    getMyPhotos(HttpServletRequest request, @RequestBody GetPhotosRequest body) {
         // 토큰에서 사용자 정보 추출
         Long userId = oAuthService.findIdByNickName(request);
-        return photoService.getPhotosByUserId(userId);
+        return photoService.getPhotosByUserId(userId, body.getIsPublic());
     }
     // 사진 업로드
     @PostMapping("/photo")
