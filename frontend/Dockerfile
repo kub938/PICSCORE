@@ -36,10 +36,14 @@
 # # NGINX 실행
 # CMD ["nginx", "-g", "daemon off;"]
 
+# NGINX LTS 버전 사용
 FROM nginx:1.26-alpine
 
+# Nginx 설정 복사
 COPY nginx-front.conf /etc/nginx/nginx.conf
 
+# 포트 노출
 EXPOSE 80
 
+# NGINX 실행
 CMD ["nginx", "-g", "daemon off;"]
