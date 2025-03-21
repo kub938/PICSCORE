@@ -56,13 +56,18 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // Redis에 Refresh Token 저장
         String userKey = "refresh:" + userRepository.findIdByNickName(nickName);
         redisUtil.setex(userKey, refresh, 86400000L); // 1일 TTL
-        
+
+//        response.setHeader("Set-Cookie", "access=" + access + "; Path=/; HttpOnly; Secure; SameSite=None; Domain=j12b104.p.ssafy.io");
+//        response.setHeader("Set-Cookie", "refresh=" + refresh + "; Path=/; HttpOnly; Secure; SameSite=None; Domain=j12b104.p.ssafy.io");
+//        response.sendRedirect("https://j12b104.p.ssafy.io");
+
+
         // 클라이언트에 Access Token 및 Refresh Token 쿠키로 설정
         response.addCookie(createCookie("access", access));
         response.addCookie(createCookie("refresh", refresh));
-        
-        // 인증 성공 후 리다이렉트
-        response.sendRedirect("https://j12b104.p.ssafy.io/");
+
+         //인증 성공 후 리다이렉트
+         response.sendRedirect("https://j12b104.p.ssafy.io");
     }
 
     /**
@@ -78,8 +83,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         cookie.setSecure(true); // HTTPS에서만 전송 (배포 환경에서는 필수)
         cookie.setHttpOnly(true); // JavaScript에서 접근 불가
         cookie.setPath("/"); // 모든 경로에서 접근 가능
-        cookie.setDomain("j12b104.p.ssafy.io"); // 프론트엔드와 동일한 도메인 설정
-        cookie.setAttribute("SameSite", "None"); // 크로스 도메인 리디렉션 허용
+//        cookie.setDomain("j12b104.p.ssafy.io"); // 프론트엔드와 동일한 도메인 설정
+//        cookie.setAttribute("SameSite", "None"); // 크로스 도메인 리디렉션 허용
     
         return cookie;
     }
