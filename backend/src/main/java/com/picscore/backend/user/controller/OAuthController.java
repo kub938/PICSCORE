@@ -19,7 +19,6 @@ public class OAuthController {
     private final OAuthService oAuthService;
 
     /**
-     * Google 로그인 페이지로 리다이렉트합니다.
      *
      * @param response HTTP 응답 객체
      * @throws IOException 리다이렉트 중 발생할 수 있는 입출력 예외
