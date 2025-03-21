@@ -8,6 +8,7 @@ import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.model.response.GetMyProfileResponse;
+import com.picscore.backend.user.model.response.GetUserProfileResponse;
 import com.picscore.backend.user.model.response.LoginInfoResponse;
 import com.picscore.backend.user.model.response.SearchUsersResponse;
 import com.picscore.backend.user.repository.FollowRepository;
@@ -135,6 +136,40 @@ public class UserService {
         );
 
         return ResponseEntity.ok(BaseResponse.success("내 프로필 조회 성공", response));
+    }
+
+    public ResponseEntity<BaseResponse<GetUserProfileResponse>> getUserProfile(
+            Long myId, Long userId
+    ) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        int followerCnt = followRepository.countByFollowingId(userId);
+        int followingCnt = followRepository.countByFollowerId(userId);
+
+        boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, userId);
+
+        List<UserBadge> userBadgeList = userBadgeRepository.findByUserId(userId);
+        List<ProfileBadgeDto> profileBadgeList =
+                userBadgeList.stream()
+                        .map(userBadge -> {
+                            Badge badge = userBadge.getBadge();
+                            return new ProfileBadgeDto(
+                                    badge.getId(),
+                                    badge.getName(),
+                                    badge.getImage()
+                            );
+                        })
+                        .collect(Collectors.toList());
+
+        GetUserProfileResponse response = new GetUserProfileResponse(
+                user.getId(), user.getNickName(), user.getProfileImage(),
+                user.getMessage(), user.getLevel(), user.getExperience(),
+                followerCnt, followingCnt, isFollowing, profileBadgeList
+        );
+
+        return ResponseEntity.ok(BaseResponse.success("유저 프로필 조회 성공", response));
     }
 
 }

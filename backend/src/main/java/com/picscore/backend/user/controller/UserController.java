@@ -175,4 +175,15 @@ public class UserController {
 
         return userService.getMyProfile(userId);
     }
+
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<BaseResponse<GetUserProfileResponse>> getUserProfile(
+            HttpServletRequest request,
+            @PathVariable Long userId
+    ) {
+
+        Long myId = oAuthService.findIdByNickName(request);
+
+        return userService.getUserProfile(myId, userId);
+    }
 }
