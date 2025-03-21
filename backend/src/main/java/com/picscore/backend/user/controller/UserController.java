@@ -3,6 +3,7 @@ package com.picscore.backend.user.controller;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.request.SearchUsersRequest;
+import com.picscore.backend.user.model.request.UpdateMyProfileRequest;
 import com.picscore.backend.user.model.response.GetMyFollowersResponse;
 import com.picscore.backend.user.model.response.GetMyFollowingsResponse;
 import com.picscore.backend.user.model.response.GetUserFollowersResponse;
@@ -151,7 +152,7 @@ public class UserController {
     public ResponseEntity<BaseResponse<Void>> deleteMyFollower(
             HttpServletRequest request,
             @PathVariable Long userId
-            ) {
+    ) {
 
         Long myId = oAuthService.findIdByNickName(request);
 
@@ -185,5 +186,17 @@ public class UserController {
         Long myId = oAuthService.findIdByNickName(request);
 
         return userService.getUserProfile(myId, userId);
+    }
+
+    @PatchMapping("/profile")
+    public ResponseEntity<BaseResponse<Void>> updateMyProfile(
+            HttpServletResponse response,
+            HttpServletRequest request,
+            @RequestBody UpdateMyProfileRequest updateMyProfileRequest
+            ) {
+
+        Long userId = oAuthService.findIdByNickName(request);
+
+        return userService.updateMyProfile(userId, updateMyProfileRequest, response);
     }
 }
