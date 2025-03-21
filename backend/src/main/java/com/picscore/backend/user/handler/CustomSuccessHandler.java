@@ -41,18 +41,18 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         
         String socialId = customUserDetails.getSocialId();
         boolean isExist = userRepository.existsBySocialId(socialId);
-
+        
         String nickName = null;
         if (isExist) {
             nickName = userRepository.findNickNameBySocialId(socialId);
         } else {
             nickName = customUserDetails.getName();
         }
-
+        
         // Access Token 및 Refresh Token 생성
         String access = jwtUtil.createJwt("access", nickName, 600000L); // 10분 유효
         String refresh = jwtUtil.createJwt("refresh", nickName, 86400000L); // 1일 유효
-
+        
         // Redis에 Refresh Token 저장
         String userKey = "refresh:" + userRepository.findIdByNickName(nickName);
         redisUtil.setex(userKey, refresh, 86400000L); // 1일 TTL
