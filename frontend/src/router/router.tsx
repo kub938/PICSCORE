@@ -3,7 +3,7 @@ import App from "../App";
 import Home from "../page/Home/Home";
 import Test from "../page/Test";
 import ErrorPage from "../page/Error/ErrorPage";
-import ImageUpload from "../page/ImageEval/ImageUpload";
+// import ImageUpload from "../page/ImageEval/ImageUpload";
 import RankingPage from "../page/Ranking/RankingPage";
 import { MyPage, UserDetailPage } from "../page/UserPage";
 import { ArchievePage } from "../page/Archieve";
@@ -13,7 +13,7 @@ import Contest from "../page/Contest/Contest";
 import Login from "../page/Login/Login";
 import TimeAttack from "../page/Timeattack/Timeattack";
 import TimeAttackResult from "../page/Timeattack/TimeAttackResult";
-import ImageEvalResult from "../page/ImageEval/ImageEvalResult";
+// import ImageEvalResult from "../page/ImageEval/ImageEvalResult";
 
 const router = createBrowserRouter([
   {
@@ -57,11 +57,11 @@ const router = createBrowserRouter([
         path: "/archieve",
         element: <ArchievePage />,
       },
-      {
-        path: "/image-upload",
-        element: <ImageUpload />,
-      },
-      { path: "/image-result", element: <ImageEvalResult /> },
+      // {
+      //   path: "/image-upload",
+      //   element: <ImageUpload />,
+      // },
+      // { path: "/image-result", element: <ImageEvalResult /> },
       {
         path: "/ranking",
         element: <RankingPage />,
