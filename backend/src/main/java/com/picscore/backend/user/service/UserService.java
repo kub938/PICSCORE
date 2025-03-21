@@ -8,6 +8,7 @@ import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.timeattack.model.entity.TimeAttack;
 import com.picscore.backend.timeattack.model.response.GetMyStaticResponse;
+import com.picscore.backend.timeattack.model.response.GetUserStaticResponse;
 import com.picscore.backend.timeattack.repository.TimeAttackRepository;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
@@ -217,12 +218,27 @@ public class UserService {
     public ResponseEntity<BaseResponse<GetMyStaticResponse>> getMyStatic(Long userId) {
         Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
 
+        float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
+        int minRank = stats.get("minRank") != null ? ((Number) stats.get("minRank")).intValue() : 0;
+
         GetMyStaticResponse response = new GetMyStaticResponse(
-                ((Double) stats.get("avgScore")).floatValue(),
-                (int) stats.get("minRank")
+                avgScore, minRank
         );
 
         return ResponseEntity.ok(BaseResponse.success("나의 통계 조회 성공", response));
+    }
+
+    public ResponseEntity<BaseResponse<GetUserStaticResponse>> getUserStatic(Long userId) {
+        Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
+
+        float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
+        int minRank = stats.get("minRank") != null ? ((Number) stats.get("minRank")).intValue() : 0;
+
+        GetUserStaticResponse response = new GetUserStaticResponse(
+                avgScore, minRank
+        );
+
+        return ResponseEntity.ok(BaseResponse.success("유저의 통계 조회 성공", response));
     }
 
 

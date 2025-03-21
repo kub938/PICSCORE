@@ -2,6 +2,7 @@ package com.picscore.backend.user.controller;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.timeattack.model.response.GetMyStaticResponse;
+import com.picscore.backend.timeattack.model.response.GetUserStaticResponse;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.request.SearchUsersRequest;
 import com.picscore.backend.user.model.request.UpdateMyProfileRequest;
@@ -209,5 +210,13 @@ public class UserController {
         Long userId = oAuthService.findIdByNickName(request);
 
         return userService.getMyStatic(userId);
+    }
+
+    @GetMapping("/static/{userId}")
+    public ResponseEntity<BaseResponse<GetUserStaticResponse>> getUserStatic(
+            @PathVariable Long userId
+    ) {
+
+        return userService.getUserStatic(userId);
     }
 }
