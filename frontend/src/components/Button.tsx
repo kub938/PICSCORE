@@ -1,19 +1,21 @@
+import { ReactNode } from "react";
+
 interface ButtonProps {
   color: "white" | "green" | "gray";
   width: number;
   height: number;
-  content: string;
   textSize?: "md" | "lg" | "xl" | "2xl";
   onClick?: () => void;
+  children: ReactNode;
 }
 
 function Button({
   color,
   width,
   height,
-  content,
   textSize,
   onClick,
+  children,
 }: ButtonProps) {
   const colorClasses = {
     green:
@@ -32,7 +34,7 @@ function Button({
       onClick={onClick}
       disabled={color === "gray"}
     >
-      {content}
+      {children}
     </button>
   );
 }
