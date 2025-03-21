@@ -60,24 +60,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             );
 
             userRepository.save(user);
-
-            // 새 사용자 정보를 UserDto에 매핑
-            UserDto userDto = new UserDto(
-                    oAuth2Response.getName(),
-                    "ROLE_USER"
-            );
-
-            return new CustomOAuth2User(userDto);
-        } else {
-            // 기존 데이터가 있을 경우 닉네임 업데이트 후 저장
-            existData.updateNickName(oAuth2Response.getName());
-            userRepository.save(existData);
-
-            // 기존 사용자 정보를 UserDto에 매핑
-            UserDto userDto = new UserDto(oAuth2Response.getName(), "ROLE_USER");
-
-            return new CustomOAuth2User(userDto);
         }
+
+        // 사용자 정보를 UserDto에 매핑 (새 사용자든 기존 사용자든 동일한 처리)
+        UserDto userDto = new UserDto(
+                oAuth2Response.getProviderId(),
+                oAuth2Response.getName(),
+                "ROLE_USER"
+        );
+
+        return new CustomOAuth2User(userDto);
     }
 }
 

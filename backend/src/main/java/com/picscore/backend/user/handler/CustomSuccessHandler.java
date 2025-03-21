@@ -35,13 +35,21 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        System.out.println("과연2");
-
+        // 인증 성공 후 리다이렉트
+        response.sendRedirect("http://localhost:5173?loginSuccess=true");
+        
         // OAuth2User 정보 가져오기
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
+        
+        String socialId = customUserDetails.getSocialId();
+        boolean isExist = userRepository.existsBySocialId(socialId);
 
-        // 사용자 닉네임 가져오기
-        String nickName = customUserDetails.getName();
+        String nickName = null;
+        if (isExist) {
+            nickName = userRepository.findNickNameBySocialId(socialId);
+        } else {
+            nickName = customUserDetails.getName();
+        }
 
         // Access Token 및 Refresh Token 생성
         String access = jwtUtil.createJwt("access", nickName, 600000L); // 10분 유효
@@ -61,7 +69,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 //        response.addCookie(createCookie("refresh", refresh));
 
         // 인증 성공 후 리다이렉트
-        // response.sendRedirect("http://localhost:5173?loginSuccess=true");
+//         response.sendRedirect("https://j12b104.p.ssafy.io");
     }
 
     /**
