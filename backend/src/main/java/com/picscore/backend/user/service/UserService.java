@@ -1,10 +1,16 @@
 package com.picscore.backend.user.service;
 
+import com.picscore.backend.badge.model.dto.ProfileBadgeDto;
+import com.picscore.backend.badge.model.entity.Badge;
+import com.picscore.backend.badge.model.entity.UserBadge;
+import com.picscore.backend.badge.repository.UserBadgeRepository;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
+import com.picscore.backend.user.model.response.GetMyProfileResponse;
 import com.picscore.backend.user.model.response.LoginInfoResponse;
 import com.picscore.backend.user.model.response.SearchUsersResponse;
+import com.picscore.backend.user.repository.FollowRepository;
 import com.picscore.backend.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,6 +33,8 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final FollowRepository followRepository;
+    private final UserBadgeRepository userBadgeRepository;
     private final JWTUtil jwtUtil;
 
     /**
@@ -97,6 +105,36 @@ public class UserService {
 
         // 3. 성공 응답 생성 및 반환
         return ResponseEntity.ok(BaseResponse.success("친구 검색 성공", response));
+    }
+
+    public ResponseEntity<BaseResponse<GetMyProfileResponse>> getMyProfile(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        int followerCnt = followRepository.countByFollowingId(userId);
+        int followingCnt = followRepository.countByFollowerId(userId);
+
+        List<UserBadge> userBadgeList = userBadgeRepository.findByUserId(userId);
+        List<ProfileBadgeDto> profileBadgeList =
+                userBadgeList.stream()
+                        .map(userBadge -> {
+                            Badge badge = userBadge.getBadge();
+                            return new ProfileBadgeDto(
+                                    badge.getId(),
+                                    badge.getName(),
+                                    badge.getImage()
+                            );
+                        })
+                        .collect(Collectors.toList());
+
+        GetMyProfileResponse response = new GetMyProfileResponse(
+                user.getId(), user.getNickName(), user.getProfileImage(),
+                user.getMessage(), user.getLevel(), user.getExperience(),
+                followerCnt, followingCnt, profileBadgeList
+        );
+
+        return ResponseEntity.ok(BaseResponse.success("내 프로필 조회 성공", response));
     }
 
 }
