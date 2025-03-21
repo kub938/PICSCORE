@@ -1,13 +1,23 @@
 package com.picscore.backend.user.service;
 
+import com.picscore.backend.badge.model.dto.ProfileBadgeDto;
+import com.picscore.backend.badge.model.entity.Badge;
+import com.picscore.backend.badge.model.entity.UserBadge;
+import com.picscore.backend.badge.repository.UserBadgeRepository;
 import com.picscore.backend.common.model.response.BaseResponse;
+import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
+import com.picscore.backend.user.model.request.UpdateMyProfileRequest;
+import com.picscore.backend.user.model.response.GetMyProfileResponse;
+import com.picscore.backend.user.model.response.GetUserProfileResponse;
 import com.picscore.backend.user.model.response.LoginInfoResponse;
 import com.picscore.backend.user.model.response.SearchUsersResponse;
+import com.picscore.backend.user.repository.FollowRepository;
 import com.picscore.backend.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +37,10 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final FollowRepository followRepository;
+    private final UserBadgeRepository userBadgeRepository;
     private final JWTUtil jwtUtil;
+    private final RedisUtil redisUtil;
 
     /**
      * 현재 로그인한 사용자의 정보를 가져오는 메서드
@@ -97,6 +110,119 @@ public class UserService {
 
         // 3. 성공 응답 생성 및 반환
         return ResponseEntity.ok(BaseResponse.success("친구 검색 성공", response));
+    }
+
+    public ResponseEntity<BaseResponse<GetMyProfileResponse>> getMyProfile(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        int followerCnt = followRepository.countByFollowingId(userId);
+        int followingCnt = followRepository.countByFollowerId(userId);
+
+        List<UserBadge> userBadgeList = userBadgeRepository.findByUserId(userId);
+        List<ProfileBadgeDto> profileBadgeList =
+                userBadgeList.stream()
+                        .map(userBadge -> {
+                            Badge badge = userBadge.getBadge();
+                            return new ProfileBadgeDto(
+                                    badge.getId(),
+                                    badge.getName(),
+                                    badge.getImage()
+                            );
+                        })
+                        .collect(Collectors.toList());
+
+        GetMyProfileResponse response = new GetMyProfileResponse(
+                user.getId(), user.getNickName(), user.getProfileImage(),
+                user.getMessage(), user.getLevel(), user.getExperience(),
+                followerCnt, followingCnt, profileBadgeList
+        );
+
+        return ResponseEntity.ok(BaseResponse.success("내 프로필 조회 성공", response));
+    }
+
+    public ResponseEntity<BaseResponse<GetUserProfileResponse>> getUserProfile(
+            Long myId, Long userId
+    ) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        int followerCnt = followRepository.countByFollowingId(userId);
+        int followingCnt = followRepository.countByFollowerId(userId);
+
+        boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, userId);
+
+        List<UserBadge> userBadgeList = userBadgeRepository.findByUserId(userId);
+        List<ProfileBadgeDto> profileBadgeList =
+                userBadgeList.stream()
+                        .map(userBadge -> {
+                            Badge badge = userBadge.getBadge();
+                            return new ProfileBadgeDto(
+                                    badge.getId(),
+                                    badge.getName(),
+                                    badge.getImage()
+                            );
+                        })
+                        .collect(Collectors.toList());
+
+        GetUserProfileResponse response = new GetUserProfileResponse(
+                user.getId(), user.getNickName(), user.getProfileImage(),
+                user.getMessage(), user.getLevel(), user.getExperience(),
+                followerCnt, followingCnt, isFollowing, profileBadgeList
+        );
+
+        return ResponseEntity.ok(BaseResponse.success("유저 프로필 조회 성공", response));
+    }
+
+    public ResponseEntity<BaseResponse<Void>> updateMyProfile(
+            Long userId, UpdateMyProfileRequest request, HttpServletResponse response
+    ) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        User existingUser = userRepository.findByNickName(request.getNickName());
+
+        if (existingUser != null && !existingUser.getId().equals(userId)) {
+            return ResponseEntity.ok(BaseResponse.error("닉네임 중복"));
+        }
+
+        String userKey = "refresh:" + userId;
+
+        // 새로운 액세스 및 리프레시 토큰 생성
+        String newAccess = jwtUtil.createJwt("access", request.getNickName(), 600000L); // 10분 유효
+        String newRefresh = jwtUtil.createJwt("refresh", request.getNickName(), 86400000L); // 1일 유효
+
+        // Redis에 새 리프레시 토큰 저장
+        redisUtil.setex(userKey, newRefresh, 86400000L);
+
+        // 클라이언트에 새 토큰 쿠키로 설정
+        response.addCookie(createCookie("access", newAccess));
+        response.addCookie(createCookie("refresh", newRefresh));
+
+        user.updateProfile(request.getNickName(), request.getProfileImage(), request.getMessage());
+        userRepository.save(user);
+        return ResponseEntity.ok(BaseResponse.error("프로필 수정 완료"));
+    }
+
+    /**
+     * 쿠키를 생성합니다.
+     *
+     * @param key 쿠키 이름
+     * @param value 쿠키 값
+     * @return 생성된 Cookie 객체
+     */
+    private Cookie createCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(60 * 60 * 60 * 60); // 쿠키 유효 기간 설정 (초 단위)
+        cookie.setSecure(true); // HTTPS 환경에서만 전송 (주석 처리 상태)
+        cookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능
+        cookie.setHttpOnly(true); // JavaScript에서 접근 불가 (보안 강화)
+
+        return cookie;
     }
 
 }

@@ -3,6 +3,7 @@ package com.picscore.backend.user.controller;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.request.SearchUsersRequest;
+import com.picscore.backend.user.model.request.UpdateMyProfileRequest;
 import com.picscore.backend.user.model.response.GetMyFollowersResponse;
 import com.picscore.backend.user.model.response.GetMyFollowingsResponse;
 import com.picscore.backend.user.model.response.GetUserFollowersResponse;
@@ -77,7 +78,7 @@ public class UserController {
      * @param request             HTTP 요청 객체
      * @return ResponseEntity<BaseResponse < Void>> 팔로우 상태 변경 결과 메시지
      */
-    @PostMapping("following/me")
+    @PostMapping("/following/me")
     public ResponseEntity<BaseResponse<Void>> toggleFollow(
             @RequestBody ToggleFollowRequest toggleFollowRequest,
             HttpServletRequest request) {
@@ -102,7 +103,7 @@ public class UserController {
      * @param request HTTP 요청 객체
      * @return ResponseEntity<BaseResponse < GetMyFollowersResponse>> 팔로워 목록 정보
      */
-    @GetMapping("follower/me")
+    @GetMapping("/follower/me")
     public ResponseEntity<BaseResponse<List<GetMyFollowersResponse>>> getMyFollowers(HttpServletRequest request) {
         // 현재 사용자의 ID를 토큰에서 추출
         Long userId = oAuthService.findIdByNickName(request);
@@ -117,7 +118,7 @@ public class UserController {
      * @param request HTTP 요청 객체
      * @return ResponseEntity<BaseResponse < GetMyFollowersResponse>> 팔로잉 목록 정보
      */
-    @GetMapping("following/me")
+    @GetMapping("/following/me")
     public ResponseEntity<BaseResponse<List<GetMyFollowingsResponse>>> getMyFollowings(HttpServletRequest request) {
         // 현재 사용자의 ID를 토큰에서 추출
         Long userId = oAuthService.findIdByNickName(request);
@@ -126,7 +127,7 @@ public class UserController {
         return followService.getMyFollowings(userId);
     }
 
-    @GetMapping("follower/{userId}")
+    @GetMapping("/follower/{userId}")
     public ResponseEntity<BaseResponse<List<GetUserFollowersResponse>>> getUserFollowers(
             HttpServletRequest request,
             @PathVariable Long userId) {
@@ -136,7 +137,7 @@ public class UserController {
         return followService.getUserFollowers(myId, userId);
     }
 
-    @GetMapping("following/{userId}")
+    @GetMapping("/following/{userId}")
     public ResponseEntity<BaseResponse<List<GetUserFollowingsResponse>>> getUserFollowings(
             HttpServletRequest request,
             @PathVariable Long userId
@@ -147,22 +148,55 @@ public class UserController {
         return followService.getUserFollowings(myId, userId);
     }
 
-    @DeleteMapping("follower/{userId}")
+    @DeleteMapping("/follower/{userId}")
     public ResponseEntity<BaseResponse<Void>> deleteMyFollower(
             HttpServletRequest request,
             @PathVariable Long userId
-            ) {
+    ) {
 
         Long myId = oAuthService.findIdByNickName(request);
 
         return followService.deleteMyFollower(myId, userId);
     }
 
-    @GetMapping("search")
+    @GetMapping("/search")
     public ResponseEntity<BaseResponse<List<SearchUsersResponse>>> searchUser(
             @RequestBody SearchUsersRequest request
     ) {
 
         return userService.searchUser(request.getSearchText());
+    }
+
+    @GetMapping("/profile/me")
+    public ResponseEntity<BaseResponse<GetMyProfileResponse>> getMyProfile(
+            HttpServletRequest request
+    ) {
+
+        Long userId = oAuthService.findIdByNickName(request);
+
+        return userService.getMyProfile(userId);
+    }
+
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<BaseResponse<GetUserProfileResponse>> getUserProfile(
+            HttpServletRequest request,
+            @PathVariable Long userId
+    ) {
+
+        Long myId = oAuthService.findIdByNickName(request);
+
+        return userService.getUserProfile(myId, userId);
+    }
+
+    @PatchMapping("/profile")
+    public ResponseEntity<BaseResponse<Void>> updateMyProfile(
+            HttpServletResponse response,
+            HttpServletRequest request,
+            @RequestBody UpdateMyProfileRequest updateMyProfileRequest
+            ) {
+
+        Long userId = oAuthService.findIdByNickName(request);
+
+        return userService.updateMyProfile(userId, updateMyProfileRequest, response);
     }
 }

@@ -15,7 +15,7 @@ pipeline {
                 script {
                     echo "현재 브랜치: ${env.BRANCH_NAME}"
                     echo "현재 워크스페이스: ${env.WORKSPACE}"
-                    def deployBranches = ['master', 'backend']
+                    def deployBranches = ['master', 'develop']
                     if (!deployBranches.contains(env.BRANCH_NAME)) {
                         error "현재 브랜치(${env.BRANCH_NAME})에서는 배포를 수행하지 않습니다."
                     }

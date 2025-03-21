@@ -25,7 +25,7 @@ public class OAuthController {
      */
     @GetMapping("/user")
     public void redirectToGoogleLogin(HttpServletResponse response) throws IOException {
-        System.out.println("과연1");
+
         response.sendRedirect("/oauth2/authorization/google");
     }
 
