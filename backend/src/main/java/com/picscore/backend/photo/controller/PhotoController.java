@@ -2,6 +2,8 @@ package com.picscore.backend.photo.controller;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.photo.model.entity.Photo;
+import com.picscore.backend.photo.model.request.GetPhotosRequest;
+import com.picscore.backend.photo.model.request.SearchPhotoRequest;
 import com.picscore.backend.photo.model.response.GetPhotoDetailResponse;
 import com.picscore.backend.photo.model.response.GetPhotosResponse;
 import com.picscore.backend.photo.model.request.UploadPhotoRequest;
@@ -28,8 +30,14 @@ public class PhotoController {
     private final OAuthService oAuthService;
     private final UserRepository userRepository;
 
+    // 주제 사진 검색
+    @GetMapping("/photo/search")
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> searchPhotosByHashtag(@RequestBody SearchPhotoRequest request) {
+    return photoService.searchPhotosByHashtag(request.getKeyword());
+    }
+
     // 공개-비공개 설정
-    @PatchMapping("photo/{photoId}")
+    @PatchMapping("/photo/{photoId}")
     public ResponseEntity<BaseResponse<Void>> togglePublic(HttpServletRequest request, @PathVariable Long photoId) {
         Long userId = oAuthService.findIdByNickName(request);
         return photoService.togglePublic(photoId, userId);
@@ -44,15 +52,17 @@ public class PhotoController {
 
     // 남 사진 조회
     @GetMapping("/user/photo/{userId}")
-    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(@PathVariable Long userId) {
-        return photoService.getPhotosByUserId(userId);
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>>
+    getPhotosByUserId(@PathVariable Long userId, @RequestBody GetPhotosRequest request) {
+        return photoService.getPhotosByUserId(userId, request.getIsPublic());
     }
     // 내 사진 조회
     @GetMapping("/user/photo/me")
-    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getMyPhotos(HttpServletRequest request) {
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>>
+    getMyPhotos(HttpServletRequest request, @RequestBody GetPhotosRequest body) {
         // 토큰에서 사용자 정보 추출
         Long userId = oAuthService.findIdByNickName(request);
-        return photoService.getPhotosByUserId(userId);
+        return photoService.getPhotosByUserId(userId, body.getIsPublic());
     }
     // 사진 업로드
     @PostMapping("/photo")
