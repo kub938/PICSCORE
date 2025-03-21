@@ -35,6 +35,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        // 인증 성공 후 리다이렉트
+        response.sendRedirect("https://j12b104.p.ssafy.io/");
         
         // OAuth2User 정보 가져오기
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
@@ -56,18 +58,13 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // Redis에 Refresh Token 저장
         String userKey = "refresh:" + userRepository.findIdByNickName(nickName);
         redisUtil.setex(userKey, refresh, 86400000L); // 1일 TTL
-
-        response.setHeader("Set-Cookie", "access=" + access + "; Path=/; HttpOnly; Secure; SameSite=None; Domain=j12b104.p.ssafy.io");
-        response.setHeader("Set-Cookie", "refresh=" + refresh + "; Path=/; HttpOnly; Secure; SameSite=None; Domain=j12b104.p.ssafy.io");
-        response.sendRedirect("https://j12b104.p.ssafy.io");
-
-
+        
         // 클라이언트에 Access Token 및 Refresh Token 쿠키로 설정
-//        response.addCookie(createCookie("access", access));
-//        response.addCookie(createCookie("refresh", refresh));
-
+        response.addCookie(createCookie("access", access));
+        response.addCookie(createCookie("refresh", refresh));
+        
         // 인증 성공 후 리다이렉트
-//         response.sendRedirect("https://j12b104.p.ssafy.io");
+        response.sendRedirect("https://j12b104.p.ssafy.io/");
     }
 
     /**
