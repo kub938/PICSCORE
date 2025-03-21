@@ -35,10 +35,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-
+        // 인증 성공 후 리다이렉트
+        response.sendRedirect("http://localhost:5173?loginSuccess=true");
+        
         // OAuth2User 정보 가져오기
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
-
+        
         String socialId = customUserDetails.getSocialId();
         boolean isExist = userRepository.existsBySocialId(socialId);
 
@@ -61,8 +63,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(createCookie("access", access));
         response.addCookie(createCookie("refresh", refresh));
 
-        // 인증 성공 후 리다이렉트
-         response.sendRedirect("http://localhost:5173?loginSuccess=true");
     }
 
     /**
