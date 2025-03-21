@@ -6,6 +6,10 @@ import com.picscore.backend.badge.model.entity.UserBadge;
 import com.picscore.backend.badge.repository.UserBadgeRepository;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
+import com.picscore.backend.timeattack.model.entity.TimeAttack;
+import com.picscore.backend.timeattack.model.response.GetMyStaticResponse;
+import com.picscore.backend.timeattack.model.response.GetUserStaticResponse;
+import com.picscore.backend.timeattack.repository.TimeAttackRepository;
 import com.picscore.backend.user.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.model.request.UpdateMyProfileRequest;
@@ -22,9 +26,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -39,6 +45,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
     private final UserBadgeRepository userBadgeRepository;
+    private final TimeAttackRepository timeAttackRepository;
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
 
@@ -176,6 +183,7 @@ public class UserService {
         return ResponseEntity.ok(BaseResponse.success("유저 프로필 조회 성공", response));
     }
 
+    @Transactional
     public ResponseEntity<BaseResponse<Void>> updateMyProfile(
             Long userId, UpdateMyProfileRequest request, HttpServletResponse response
     ) {
@@ -207,6 +215,33 @@ public class UserService {
         return ResponseEntity.ok(BaseResponse.error("프로필 수정 완료"));
     }
 
+    public ResponseEntity<BaseResponse<GetMyStaticResponse>> getMyStatic(Long userId) {
+        Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
+
+        float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
+        int minRank = stats.get("minRank") != null ? ((Number) stats.get("minRank")).intValue() : 0;
+
+        GetMyStaticResponse response = new GetMyStaticResponse(
+                avgScore, minRank
+        );
+
+        return ResponseEntity.ok(BaseResponse.success("나의 통계 조회 성공", response));
+    }
+
+    public ResponseEntity<BaseResponse<GetUserStaticResponse>> getUserStatic(Long userId) {
+        Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
+
+        float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
+        int minRank = stats.get("minRank") != null ? ((Number) stats.get("minRank")).intValue() : 0;
+
+        GetUserStaticResponse response = new GetUserStaticResponse(
+                avgScore, minRank
+        );
+
+        return ResponseEntity.ok(BaseResponse.success("유저의 통계 조회 성공", response));
+    }
+
+
     /**
      * 쿠키를 생성합니다.
      *
@@ -218,7 +253,7 @@ public class UserService {
 
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(60 * 60 * 60 * 60); // 쿠키 유효 기간 설정 (초 단위)
-        cookie.setSecure(true); // HTTPS 환경에서만 전송 (주석 처리 상태)
+//        cookie.setSecure(true); // HTTPS 환경에서만 전송 (주석 처리 상태)
         cookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능
         cookie.setHttpOnly(true); // JavaScript에서 접근 불가 (보안 강화)
 

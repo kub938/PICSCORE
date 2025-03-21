@@ -63,6 +63,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(createCookie("access", access));
         response.addCookie(createCookie("refresh", refresh));
 
+        // 인증 성공 후 리다이렉트
+//         response.sendRedirect("https://j12b104.p.ssafy.io");
     }
 
     /**
