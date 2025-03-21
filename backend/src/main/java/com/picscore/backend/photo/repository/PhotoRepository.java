@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface PhotoRepository extends JpaRepository<Photo, Long> {
 
-    @Query("SELECT p.id AS id, p.imageUrl AS imageUrl " +
+    @Query("SELECT new com.picscore.backend.photo.model.response.GetPhotosResponse(p.id, p.imageUrl) " +
             "FROM Photo p " +
             "JOIN PhotoHashtag ph ON p.id = ph.photo.id " +
             "JOIN Hashtag h ON ph.hashtag.id = h.id " +
