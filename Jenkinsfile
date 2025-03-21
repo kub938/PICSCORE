@@ -30,6 +30,12 @@ pipeline {
                         writeFile file: '.env', text: envContent
                     }
                 }
+                withCredentials([file(credentialsId: 'front-env-file-content', variable: 'FRONT_ENV_FILE_PATH')]) {
+                    script {
+                        def frontEnvContent = readFile(FRONT_ENV_FILE_PATH)
+                        writeFile file: '.env.front', text: frontEnvContent
+                    }
+                }
             }
         }
         stage('Build Frontend Docker Image') {
@@ -58,6 +64,7 @@ pipeline {
             steps {
                 sshagent(credentials: ['ec2-ssh-key']) {
                     sh "scp -o StrictHostKeyChecking=no .env ${DEPLOY_HOST}:${DEPLOY_PATH}/.env"
+                    sh "scp -o StrictHostKeyChecking=no .env.front ${DEPLOY_HOST}:${DEPLOY_PATH}/.env.front"
                     sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.yml"
                     sh "scp -o StrictHostKeyChecking=no ./nginx.conf ${DEPLOY_HOST}:${DEPLOY_PATH}/nginx.conf"
                     sh "scp -o StrictHostKeyChecking=no prometheus.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/prometheus.yml"

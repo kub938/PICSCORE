@@ -5,6 +5,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     image: rublin322/picscore-frontend:latest
+    env_file:
+      - .env.front
     ports:
       - "5173:80"
     networks:
