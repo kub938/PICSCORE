@@ -1,11 +1,10 @@
-package main.java.com.picscore.backend.controller;
+package com.picscore.backend.s3;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.회사명.프로젝트명.service.S3Service;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,9 +22,13 @@ public class FileController {
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
+            System.out.printf("업로드 시작");
             String fileUrl = s3Service.uploadFile(file);
+            System.out.printf("####################################################");
+            System.out.printf("업로드 성공");
             return ResponseEntity.ok(fileUrl);
         } catch (IOException e) {
+            System.out.printf("업로드 실패");
             return ResponseEntity.internalServerError().body("파일 업로드 실패: " + e.getMessage());
         }
     }

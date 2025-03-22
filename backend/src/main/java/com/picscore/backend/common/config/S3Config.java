@@ -1,4 +1,4 @@
-package main.java.com.picscore.backend.config;
+package com.picscore.backend.common.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

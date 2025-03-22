@@ -1,4 +1,4 @@
-package main.java.com.picscore.backend.service;
+package com.picscore.backend.s3;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
