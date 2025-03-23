@@ -1,15 +1,24 @@
 import { Outlet } from "react-router-dom";
 import BottomBar from "./components/BottomBar/BottomBar";
 import NavBar from "./components/NavBar/NavBar";
+import RouteListener from "./components/RouteListener";
+import useLayoutStore from "./store/layoutStore";
 function App() {
-  return (
-    <div className="border flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-      <NavBar />
+  const showBottomBar = useLayoutStore((state) => state.showBottomBar);
+  const showNavBar = useLayoutStore((state) => state.showNavBar);
 
-      <main className="flex flex-col justify-between flex-grow">
+  return (
+    <div className="box-content flex flex-col max-w-md mx-auto min-h-screen bg-gray-50 ">
+      {showNavBar && <NavBar />}
+      <RouteListener />
+      <main
+        className={`flex flex-1 justify-center items-center ${
+          showBottomBar ? "pb-16" : ""
+        }`}
+      >
         <Outlet />
       </main>
-      <BottomBar />
+      {showBottomBar && <BottomBar />}
     </div>
   );
 }
