@@ -1,6 +1,7 @@
 package com.picscore.backend.user.service;
 
 import com.picscore.backend.common.model.response.BaseResponse;
+import com.picscore.backend.common.service.NotificationService;
 import com.picscore.backend.user.model.response.GetMyFollowingsResponse;
 import com.picscore.backend.user.model.response.GetUserFollowersResponse;
 import com.picscore.backend.user.model.response.GetUserFollowingsResponse;
@@ -24,6 +25,7 @@ public class FollowService {
 
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
 
     /**
@@ -55,6 +57,13 @@ public class FollowService {
                     following
             );
             followRepository.save(follow);
+
+            // 팔로우 알림 전송
+            notificationService.sendNotification(
+                    following.getId(),
+                    follower.getNickName() + "님이 당신을 팔로우했습니다."
+            );
+
             return true;
         }
     }
