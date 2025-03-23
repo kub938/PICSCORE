@@ -8,11 +8,25 @@ import {
   ArrowUpTrayIcon,
   ShareIcon,
 } from "@heroicons/react/24/solid";
+import { useState } from "react";
+import ImageEvalDetail from "./ImageEvalDetail";
 
 function ImageEvalResult() {
   const score = 84;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen ">
+    <div className="flex flex-col items-center justify-center ">
+      <ImageEvalDetail isModalOpen={isModalOpen} closeModal={closeModal} />
+
       <img src={processResult} alt="결과" className="mb-5" />
       <div
         className="w-[95%] shadow p-3 rounded flex flex-col items-center"
@@ -31,7 +45,7 @@ function ImageEvalResult() {
       </div>
 
       <div className="flex  gap-10 mt-8 mb-5">
-        <Button color="white" width={30} height={10}>
+        <Button color="white" width={30} height={10} onClick={openModal}>
           <MagnifyingGlassIcon width={15} />
           <div className="ml-2">자세히</div>
         </Button>
@@ -42,7 +56,7 @@ function ImageEvalResult() {
       </div>
       <button className="cursor-pointer flex justify-center items-center gap-1 w-30  border border-pic-primary rounded-2xl text-pic-primary">
         <ShareIcon width={15} />
-        <div>공유하기</div>
+        <div className="text-sm my-1">공유하기</div>
       </button>
     </div>
   );
