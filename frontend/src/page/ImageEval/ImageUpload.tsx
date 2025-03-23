@@ -58,52 +58,52 @@
 //     }
 //   };
 
-//   return (
-//     <div
-//       className="flex flex-col items-center justify-center h-screen"
-//       onClick={modalClose}
-//     >
-//       {/* 사진 촬영 / 업로드 모달창 */}
-//       {modalState && (
-//         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-//           <div
-//             onClick={handleModalClick}
-//             style={{ boxShadow: "0 0 10px rgba(0, 0, 0, 0.3)" }}
-//             className="bg-gray-50 mt-10 flex justify-around text-xl rounded-2xl px-8 py-5 w-80 "
-//           >
-//             <div
-//               className="flex flex-col justify-center items-center"
-//               onClick={handleCameraCapture}
-//             >
-//               <CameraIcon className="text-pic-primary w-16" />
-//               <input
-//                 type="file"
-//                 hidden
-//                 ref={cameraRef}
-//                 onChange={getImageFile}
-//                 accept="image/*"
-//                 capture="environment"
-//               />
-//               <div className="text-[#3c3c3c] text-sm">사진 촬영</div>
-//             </div>
-//             <div className="border-l border-gray-300"></div>
-//             <div
-//               className="flex flex-col justify-center items-center"
-//               onClick={inputBtnClick}
-//             >
-//               <input
-//                 type="file"
-//                 hidden
-//                 ref={fileInputRef}
-//                 onChange={getImageFile}
-//                 className="h-full w-full"
-//               />
-//               <ArrowUpTrayIcon className="text-pic-primary w-16" />
-//               <div className="text-[#3c3c3c] text-sm">사진 업로드</div>
-//             </div>
-//           </div>
-//         </div>
-//       )}
+  return (
+    <div
+      className="flex flex-col items-center justify-center"
+      onClick={modalClose}
+    >
+      {/* 사진 촬영 / 업로드 모달창 */}
+      {modalState && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div
+            onClick={handleModalClick}
+            style={{ boxShadow: "0 0 10px rgba(0, 0, 0, 0.3)" }}
+            className="bg-gray-50 mt-10 flex justify-around text-xl rounded-2xl px-8 py-5 w-80 "
+          >
+            <div
+              className="flex flex-col justify-center items-center"
+              onClick={handleCameraCapture}
+            >
+              <CameraIcon className="text-pic-primary w-16" />
+              <input
+                type="file"
+                hidden
+                ref={cameraRef}
+                onChange={getImageFile}
+                accept="image/*"
+                capture="environment"
+              />
+              <div className="text-[#3c3c3c] text-sm">사진 촬영</div>
+            </div>
+            <div className="border-l border-gray-300"></div>
+            <div
+              className="flex flex-col justify-center items-center"
+              onClick={inputBtnClick}
+            >
+              <input
+                type="file"
+                hidden
+                ref={fileInputRef}
+                onChange={getImageFile}
+                className="h-full w-full"
+              />
+              <ArrowUpTrayIcon className="text-pic-primary w-16" />
+              <div className="text-[#3c3c3c] text-sm">사진 업로드</div>
+            </div>
+          </div>
+        </div>
+      )}
 
 //       <div className="mb-13">
 //         <img src={processEval} alt="" />
@@ -113,40 +113,41 @@
 //         <div className="mb-5">멋진 사진을 평가해 드립니다.</div>
 //       </div>
 
-//       <div
-//         className="w-[85%] max-w-xs sm:max-w-sm md:max-w-md aspect-square rounded-md border border-black flex flex-col items-center justify-center gap-6 sm:gap-10 mb-8 sm:mb-12"
-//         style={{ borderStyle: "dashed", borderSpacing: "40px" }}
-//         onClick={modalOpen}
-//       >
-//         {/* 이미지 미리보기 화면 */}
-//         {imagePreview ? (
-//           <img
-//             src={imagePreview}
-//             alt="업로드 이미지"
-//             className="h-full w-full rounded-md"
-//           />
-//         ) : (
-//           <>
-//             <div className="bg-white w-20 h-20 rounded-full flex justify-center ">
-//               <ArrowUpTrayIcon className="text-pic-primary w-10 " />
-//             </div>
-//             <div className="text-lg font-bold text-[#000000b9]">
-//               사진을 촬영 또는 업로드 해주세요
-//             </div>
-//           </>
-//         )}
-//       </div>
-//       <Link to="/Image-eval">
-//         <Button
-//           color={imageFile ? "green" : "gray"}
-//           width={32}
-//           height={12}
-//           textSize="lg"
-//           content="확인"
-//         ></Button>
-//       </Link>
-//     </div>
-//   );
-// }
+      <div
+        className="w-[85%] max-w-xs sm:max-w-sm md:max-w-md aspect-square rounded-md border border-black flex flex-col items-center justify-center gap-6 sm:gap-10 mb-8 sm:mb-12"
+        style={{ borderStyle: "dashed", borderSpacing: "40px" }}
+        onClick={modalOpen}
+      >
+        {/* 이미지 미리보기 화면 */}
+        {imagePreview ? (
+          <img
+            src={imagePreview}
+            alt="업로드 이미지"
+            className="h-full w-full rounded-md"
+          />
+        ) : (
+          <>
+            <div className="bg-white w-20 h-20 rounded-full flex justify-center ">
+              <ArrowUpTrayIcon className="text-pic-primary w-10 " />
+            </div>
+            <div className="text-lg font-bold text-[#000000b9]">
+              사진을 촬영 또는 업로드 해주세요
+            </div>
+          </>
+        )}
+      </div>
+      <Link to="/Image-eval">
+        <Button
+          color={imageFile ? "green" : "gray"}
+          width={32}
+          height={12}
+          textSize="lg"
+        >
+          확인
+        </Button>
+      </Link>
+    </div>
+  );
+}
 
 // export default ImageUpload;

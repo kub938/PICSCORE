@@ -97,9 +97,7 @@ const RankingPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-      <Header title="랭킹" />
-
+    <div className="flex flex-col max-w-md  min-h-screen bg-gray-50">
       {!loading && rankings.length >= 3 && (
         <div className="grid grid-cols-3 gap-2 p-4">
           <TrophyCard

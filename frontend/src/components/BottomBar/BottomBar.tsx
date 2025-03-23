@@ -14,41 +14,46 @@ const BottomBar: React.FC<{ activeTab?: string }> = ({
     { name: "Board", label: "게시글", path: "/board", icon: board_bar },
     { name: "Ranking", label: "랭킹", path: "/ranking", icon: ranking_bar },
     { name: "Home", label: "홈", path: "/", icon: Home_bar },
-    { name: "Camera", label: "카메라", path: "/camera", icon: Camera_bar },
+    {
+      name: "Camera",
+      label: "카메라",
+      path: "/image-upload",
+      icon: Camera_bar,
+    },
     { name: "Profile", label: "프로필", path: "/profile", icon: User_bar },
   ];
 
   return (
-    // <div className="fixed z-50 bottom-0 left-0 right-0 bg-white border-t border-gray-300 shadow-lg">
-    <div className="max-w-[480px] flex  justify-around  h-16">
-      {tabs.map((tab) => (
-        <Link
-          key={tab.name}
-          to={tab.path}
-          className={`flex flex-col items-center justify-center ${
-            activeTab === tab.name ? "text-blue-500" : "text-gray-500"
-          }`}
-        >
-          <div className="w-6 h-6 mb-1">
-            <img
-              src={tab.icon}
-              alt={`${tab.label} 아이콘`}
-              className={`w-full h-full ${
-                activeTab === tab.name ? "opacity-100" : "opacity-50"
-              }`}
-            />
-          </div>
-          <span
-            className={`text-xs ${
-              activeTab === tab.name ? "font-bold" : "font-normal"
+    <div className="fixed bottom-0 box-border bg-white border-t border-gray-100 max-w-md w-full">
+      <div className="flex justify-around h-16">
+        {tabs.map((tab) => (
+          <Link
+            key={tab.name}
+            to={tab.path}
+            className={`flex flex-col items-center justify-center ${
+              activeTab === tab.name ? "text-pic-primary" : "text-gray-500"
             }`}
           >
-            {tab.label}
-          </span>
-        </Link>
-      ))}
+            <div className="w-6 h-6 mb-1">
+              <img
+                src={tab.icon}
+                alt={`${tab.label} 아이콘`}
+                className={`w-full h-full ${
+                  activeTab === tab.name ? "opacity-100" : "opacity-50"
+                }`}
+              />
+            </div>
+            <span
+              className={`text-xs ${
+                activeTab === tab.name ? "font-bold" : "font-normal"
+              }`}
+            >
+              {tab.label}
+            </span>
+          </Link>
+        ))}
+      </div>
     </div>
-    // </div>
   );
 };
 

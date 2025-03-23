@@ -10,8 +10,7 @@ import ranking from "../../assets/ranking.png";
 function Home() {
   return (
     <>
-      <NavBar />
-      <div className=" w-full mx-auto bg-gradient-to-b from-white via-white to-pic-primary flex flex-col items-center flex-grow">
+      <div className="flex flex-col w-full items-center ">
         {/* 프로필 이미지 섹션 */}
         <div className="flex flex-col items-center mb-10">
           <div className="w-[150px] h-[150px] rounded-full overflow-hidden border-3 border-white mb-4">
@@ -37,7 +36,7 @@ function Home() {
           </Link>
         </div>
         {/* 메뉴 그리드 섹션 */}
-        <div className="grid grid-cols-2 gap-5 w-full max-w-[400px]">
+        <div className="grid grid-cols-2 gap-5 w-full p-4 max-w-[400px]">
           {/* 타임어택 */}
           <Link to="/time-attack">
             <div className="bg-white rounded-xl p-5 flex flex-col items-center shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
