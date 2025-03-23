@@ -31,9 +31,9 @@ function ImageEvalResult() {
         score={score}
       />
 
-      <img src={processResult} alt="결과" className="mb-5" />
+      <img src={processResult} alt="결과" className="mb-5 mt-5 " />
       <div
-        className="w-[95%] shadow p-3 rounded flex flex-col items-center"
+        className="w-[90%] shadow p-3 rounded flex flex-col items-center"
         style={{ boxShadow: "0px 0px 3px 0px rgba(0, 0, 0, 0.3)" }}
       >
         <img
@@ -45,7 +45,7 @@ function ImageEvalResult() {
         <div className="font-logo text-pic-primary text-5xl mb-2">
           {score}점
         </div>
-        <div className="mb-3">혹시... 전문 사진작가?</div>
+        <div className="mb-1">혹시... 전문 사진작가?</div>
       </div>
 
       <div className="flex  gap-10 mt-8 mb-5">
@@ -58,7 +58,7 @@ function ImageEvalResult() {
           <div className="ml-2">업로드</div>
         </Button>
       </div>
-      <button className="cursor-pointer flex justify-center items-center gap-1 w-30  border border-pic-primary rounded-2xl text-pic-primary">
+      <button className="cursor-pointer flex justify-center items-center gap-1 w-30  border border-pic-primary rounded-2xl text-pic-primary mb-5">
         <ShareIcon width={15} />
         <div className="text-sm my-1">공유하기</div>
       </button>
