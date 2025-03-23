@@ -5,6 +5,7 @@ import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.photo.model.request.GetPhotosRequest;
 import com.picscore.backend.photo.model.request.SearchPhotoRequest;
 import com.picscore.backend.photo.model.response.GetPhotoDetailResponse;
+import com.picscore.backend.photo.model.response.GetPhotoTop5Response;
 import com.picscore.backend.photo.model.response.GetPhotosResponse;
 import com.picscore.backend.photo.model.request.UploadPhotoRequest;
 import com.picscore.backend.photo.service.PhotoService;
@@ -33,7 +34,7 @@ public class PhotoController {
     // 주제 사진 검색
     @GetMapping("/photo/search")
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> searchPhotosByHashtag(@RequestBody SearchPhotoRequest request) {
-    return photoService.searchPhotosByHashtag(request.getKeyword());
+        return photoService.searchPhotosByHashtag(request.getKeyword());
     }
 
     // 공개-비공개 설정
@@ -42,6 +43,7 @@ public class PhotoController {
         Long userId = oAuthService.findIdByNickName(request);
         return photoService.togglePublic(photoId, userId);
     }
+
     // 사진 삭제
     @DeleteMapping("/photo/{photoId}")
     public ResponseEntity<BaseResponse<Void>> deletePhoto(HttpServletRequest request, @PathVariable Long photoId) {
@@ -56,6 +58,7 @@ public class PhotoController {
     getPhotosByUserId(@PathVariable Long userId, @RequestBody GetPhotosRequest request) {
         return photoService.getPhotosByUserId(userId, request.getIsPublic());
     }
+
     // 내 사진 조회
     @GetMapping("/user/photo/me")
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>>
@@ -64,6 +67,7 @@ public class PhotoController {
         Long userId = oAuthService.findIdByNickName(request);
         return photoService.getPhotosByUserId(userId, body.getIsPublic());
     }
+
     // 사진 업로드
     @PostMapping("/photo")
     public ResponseEntity<BaseResponse<HttpStatus>> savePhoto(HttpServletRequest request, @RequestBody UploadPhotoRequest payload) {
@@ -87,10 +91,16 @@ public class PhotoController {
     public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(@PathVariable Long photoId) {
         return photoService.getPhotoDetail(photoId);
     }
+
     // 전체 사진 조회
     @GetMapping("/photo")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos() {
         return photoService.getPaginatedPhotos();
+    }
+
+    @GetMapping("/photo/top5")
+    public ResponseEntity<BaseResponse<List<GetPhotoTop5Response>>> getPhotoTop5() {
+        return photoService.getPhotoTop5();
     }
 }
 

@@ -2,12 +2,14 @@ package com.picscore.backend.photo.repository;
 
 import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.photo.model.response.GetPhotosResponse;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 
@@ -32,4 +34,12 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
     @Transactional
     @Query("UPDATE Photo p SET p.isPublic = NOT p.isPublic WHERE p.id = :id")
     void togglePublic(@Param("id") Long id);
+
+    @Query("SELECT p, COUNT(pl) " +
+            "FROM Photo p " +
+            "LEFT JOIN PhotoLike pl ON p.id = pl.photo.id " +
+            "WHERE p.isPublic = true " + // ← 공개 사진만 필터링
+            "GROUP BY p.id " +
+            "ORDER BY COUNT(pl) DESC, p.createdAt DESC") // ← 동점시 최신순
+    List<Object[]> findTop5PhotosWithLikeCount(Pageable pageable);
 }
