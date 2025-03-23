@@ -6,8 +6,20 @@ import contest from "../../assets/contest.png";
 import time from "../../assets/time.png";
 import board from "../../assets/board.png";
 import ranking from "../../assets/ranking.png";
+import { useAuthStore } from "../../store/authStore";
+import { useEffect } from "react";
 
 function Home() {
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const login = useAuthStore((state) => state.login);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const loginSuccess = params.get("loginSuccess");
+    if (loginSuccess) {
+      login();
+    }
+  });
   return (
     <>
       <div className="flex flex-col w-full items-center ">
