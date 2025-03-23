@@ -8,7 +8,7 @@ function App() {
   const showNavBar = useLayoutStore((state) => state.showNavBar);
 
   return (
-    <div className="box-content flex flex-col max-w-md mx-auto min-h-screen bg-gray-50 ">
+    <div className="box-content flex flex-col max-w-md mx-auto min-h-screen bg-gray-50 relative">
       {showNavBar && <NavBar />}
       <RouteListener />
       <main
