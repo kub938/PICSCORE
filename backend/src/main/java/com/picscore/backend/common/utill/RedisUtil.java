@@ -12,6 +12,7 @@ public class RedisUtil {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
+
     /**
      * 키-값 쌍을 저장하고 만료 시간을 설정합니다. (SETEX 기능)
      *
@@ -23,6 +24,7 @@ public class RedisUtil {
         redisTemplate.opsForValue().set(key, value, seconds, TimeUnit.SECONDS);
     }
 
+
     /**
      * 키의 남은 만료 시간을 조회합니다.
      *
@@ -33,6 +35,7 @@ public class RedisUtil {
         return redisTemplate.getExpire(key);
     }
 
+
     /**
      * 키에 해당하는 값을 조회합니다.
      *
@@ -40,6 +43,7 @@ public class RedisUtil {
      * @return 저장된 값, 키가 없는 경우 null
      */
     public Object get(String key) {return redisTemplate.opsForValue().get(key);}
+
 
     /**
      * 키의 존재 여부를 확인합니다.
@@ -50,6 +54,7 @@ public class RedisUtil {
     public Boolean exists(String key) {
         return redisTemplate.hasKey(key);
     }
+
 
     /**
      * 지정된 키를 삭제합니다.
