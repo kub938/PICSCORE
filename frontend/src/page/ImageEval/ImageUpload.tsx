@@ -142,8 +142,9 @@ function ImageUpload() {
           width={32}
           height={12}
           textSize="lg"
-          content="확인"
-        ></Button>
+        >
+          확인
+        </Button>
       </Link>
     </div>
   );
