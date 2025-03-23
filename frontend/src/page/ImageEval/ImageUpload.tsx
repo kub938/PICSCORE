@@ -60,7 +60,7 @@ function ImageUpload() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center h-screen"
+      className="flex flex-col items-center justify-center"
       onClick={modalClose}
     >
       {/* 사진 촬영 / 업로드 모달창 */}
