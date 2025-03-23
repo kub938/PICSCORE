@@ -1,12 +1,34 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { GitGraph } from "lucide-react";
+import Chart from "./components/Chart";
 
 interface ImageEvalDetailProps {
   isModalOpen: boolean;
   closeModal: () => void;
+  score: number;
 }
 
-function ImageEvalDetail({ isModalOpen, closeModal }: ImageEvalDetailProps) {
-  const score = 89;
+interface ImageEvalData {
+  composition: number;
+  lighting: number;
+  color: number;
+  sharpness: number;
+  technique: number;
+}
+
+function ImageEvalDetail({
+  isModalOpen,
+  closeModal,
+  score,
+}: ImageEvalDetailProps) {
+  const evalData: ImageEvalData = {
+    composition: 85,
+    lighting: 78,
+    color: 92,
+    sharpness: 83,
+    technique: 88,
+  };
+
   return (
     <>
       {isModalOpen && (
@@ -82,7 +104,7 @@ function ImageEvalDetail({ isModalOpen, closeModal }: ImageEvalDetailProps) {
 
               <div className="bg-white rounded m-3 p-7 ">
                 <div className="font-bold mb-2 text-xl">요소 분석</div>
-                <div className="border-y-2  border-gray-200 h-80">그래프</div>
+                <Chart />
               </div>
             </div>
           </div>

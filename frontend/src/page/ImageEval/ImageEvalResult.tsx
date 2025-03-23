@@ -25,7 +25,11 @@ function ImageEvalResult() {
 
   return (
     <div className="flex flex-col items-center justify-center ">
-      <ImageEvalDetail isModalOpen={isModalOpen} closeModal={closeModal} />
+      <ImageEvalDetail
+        isModalOpen={isModalOpen}
+        closeModal={closeModal}
+        score={score}
+      />
 
       <img src={processResult} alt="결과" className="mb-5" />
       <div
