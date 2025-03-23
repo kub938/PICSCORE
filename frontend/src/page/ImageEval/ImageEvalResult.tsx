@@ -1,7 +1,7 @@
-// import { Share } from "lucide-react";
-// import processResult from "../../assets/ImageEval/process-result.svg";
-// import Button from "../../components/Button";
-// import testImage from "../../assets/ImageEval/test-image.jpg";
+import { Share } from "lucide-react";
+import processResult from "../../assets/ImageEval/process-result.svg";
+import Button from "../../components/Button";
+import testImage from "../../assets/ImageEval/test-image.jpg";
 
 import {
   MagnifyingGlassIcon,
@@ -25,7 +25,11 @@ function ImageEvalResult() {
 
   return (
     <div className="flex flex-col items-center justify-center ">
-      <ImageEvalDetail isModalOpen={isModalOpen} closeModal={closeModal} />
+      <ImageEvalDetail
+        isModalOpen={isModalOpen}
+        closeModal={closeModal}
+        score={score}
+      />
 
       <img src={processResult} alt="결과" className="mb-5" />
       <div
@@ -62,4 +66,4 @@ function ImageEvalResult() {
   );
 }
 
-// export default ImageEvalResult;
+export default ImageEvalResult;
