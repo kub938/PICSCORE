@@ -10,7 +10,6 @@ import ranking from "../../assets/ranking.png";
 function Home() {
   return (
     <>
-      <NavBar />
       <div className=" w-full mx-auto bg-gradient-to-b from-white via-white to-pic-primary flex flex-col items-center flex-grow">
         {/* 프로필 이미지 섹션 */}
         <div className="flex flex-col items-center mb-10">
