@@ -35,17 +35,24 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-
+        
         // OAuth2User 정보 가져오기
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
-
-        // 사용자 닉네임 가져오기
-        String nickName = customUserDetails.getName();
-
+        
+        String socialId = customUserDetails.getSocialId();
+        boolean isExist = userRepository.existsBySocialId(socialId);
+        
+        String nickName = null;
+        if (isExist) {
+            nickName = userRepository.findNickNameBySocialId(socialId);
+        } else {
+            nickName = customUserDetails.getName();
+        }
+        
         // Access Token 및 Refresh Token 생성
         String access = jwtUtil.createJwt("access", nickName, 600000L); // 10분 유효
         String refresh = jwtUtil.createJwt("refresh", nickName, 86400000L); // 1일 유효
-
+        
         // Redis에 Refresh Token 저장
         String userKey = "refresh:" + userRepository.findIdByNickName(nickName);
         redisUtil.setex(userKey, refresh, 86400000L); // 1일 TTL
@@ -54,8 +61,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(createCookie("access", access));
         response.addCookie(createCookie("refresh", refresh));
 
-        // 인증 성공 후 리다이렉트
-        response.sendRedirect("http://localhost:5173?loginSuccess=true");
+         //인증 성공 후 리다이렉트
+         response.sendRedirect("https://j12b104.p.ssafy.io");
     }
 
     /**
@@ -66,13 +73,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      * @return 생성된 Cookie 객체
      */
     private Cookie createCookie(String key, String value) {
-
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 60 * 60); // 쿠키 유효 기간 설정 (초 단위)
-        //cookie.setSecure(true); // HTTPS 환경에서만 전송 (주석 처리 상태)
-        cookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능
-        cookie.setHttpOnly(true); // JavaScript에서 접근 불가 (보안 강화)
-
+        cookie.setMaxAge(60 * 60 * 24); // 1일 유지
+//        cookie.setSecure(true); // HTTPS에서만 전송 (배포 환경에서는 필수)
+        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
+        cookie.setPath("/"); // 모든 경로에서 접근 가능
+    
         return cookie;
     }
 }

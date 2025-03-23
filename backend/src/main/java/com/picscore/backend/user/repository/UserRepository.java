@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    boolean existsBySocialId(String socialId);
+
     User findBySocialId(String socialId);
 
     User findByNickName(String nickName);
@@ -18,5 +20,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.nickName LIKE :searchText%")
     List<User> findByNickNameContaining(@Param("searchText") String searchText);
+
+    @Query("SELECT u.nickName FROM User u WHERE u.socialId = :socialId")
+    String findNickNameBySocialId(@Param("socialId") String socialId);
+
+    boolean existsByNickName(String nickName);
 
 }

@@ -1,7 +1,7 @@
-import { Share } from "lucide-react";
-import processResult from "../../assets/ImageEval/process-result.svg";
-import Button from "../../components/Button";
-import testImage from "../../assets/ImageEval/test-image.jpg";
+// import { Share } from "lucide-react";
+// import processResult from "../../assets/ImageEval/process-result.svg";
+// import Button from "../../components/Button";
+// import testImage from "../../assets/ImageEval/test-image.jpg";
 
 import {
   MagnifyingGlassIcon,
@@ -62,4 +62,4 @@ function ImageEvalResult() {
   );
 }
 
-export default ImageEvalResult;
+// export default ImageEvalResult;
