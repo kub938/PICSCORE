@@ -41,7 +41,7 @@ function ImageEvalDetail({
     <>
       {isModalOpen && (
         <div
-          className=" bottom-0 top-0 fixed w-full  bg-black/40 z-50 flex flex-col justify-center"
+          className=" bottom-0 top-0 fixed w-full bg-black/40 z-50 flex flex-col justify-center"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeModal();
           }}
