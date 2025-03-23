@@ -3,12 +3,14 @@ package com.picscore.backend.photo.service;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.photo.model.response.GetPhotoDetailResponse;
+import com.picscore.backend.photo.model.response.GetPhotoTop5Response;
 import com.picscore.backend.photo.model.response.GetPhotosResponse;
 import com.picscore.backend.photo.repository.PhotoHashtagRepository;
 import com.picscore.backend.photo.repository.PhotoLikeRepository;
 import com.picscore.backend.photo.repository.PhotoRepository;
 import com.picscore.backend.user.model.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -159,6 +161,29 @@ public class PhotoService {
         photoRepository.togglePublic(photoId);
         return ResponseEntity.ok(BaseResponse.withMessage("사진 설정 완료"));
 
+    }
+
+    public ResponseEntity<BaseResponse<List<GetPhotoTop5Response>>> getPhotoTop5() {
+
+        PageRequest pageRequest = PageRequest.of(0, 5);
+
+        List<Object[]> results = photoRepository.findTop5PhotosWithLikeCount(pageRequest);
+
+        List<GetPhotoTop5Response> responses =
+                results.stream()
+                        .map(result -> {
+                            Photo photo = (Photo) result[0];
+                            Long likeCount = (Long) result[1];
+                            return new GetPhotoTop5Response(
+                                    photo.getId(),
+                                    photo.getImageUrl(),
+                                    photo.getScore(),
+                                    likeCount
+                            );
+                        })
+                        .collect(Collectors.toList());
+
+        return ResponseEntity.ok(BaseResponse.success("Top5 사진 조회", responses));
     }
 }
 
