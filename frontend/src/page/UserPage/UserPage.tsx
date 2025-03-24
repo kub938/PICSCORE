@@ -84,6 +84,10 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
         const statsResponse = await userApi.getMyStatistics();
         const photosResponse = await userApi.getMyPhotos(true);
 
+        console.log("profileResponse", profileResponse);
+        console.log("statsResponse", statsResponse);
+        console.log("photosResponse", photosResponse);
+
         // 프로필 정보 처리
         setProfile({
           nickname: profileResponse.data.nickName,
