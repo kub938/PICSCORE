@@ -6,14 +6,26 @@ import useLayoutStore from "../store/layoutStore";
 interface LayoutConfig {
   showNavBar: boolean;
   showBottomBar: boolean;
+  content: string;
 }
 
 const routeLayouts: { [key: string]: LayoutConfig } = {
-  "/": { showNavBar: true, showBottomBar: false },
-  "/image-upload": { showNavBar: true, showBottomBar: false },
-  "/login": { showNavBar: false, showBottomBar: false },
-  "/detail": { showNavBar: true, showBottomBar: false },
-  "/settings": { showNavBar: true, showBottomBar: true },
+  "/": { showNavBar: false, showBottomBar: false, content: "" },
+  "/image-upload": {
+    showNavBar: true,
+    showBottomBar: false,
+    content: "사진 분석",
+  },
+  "/login": {
+    showNavBar: false,
+    showBottomBar: false,
+    content: "로그인",
+  },
+  "/image-result": {
+    showNavBar: true,
+    showBottomBar: true,
+    content: "분석 결과",
+  },
 };
 
 function RouteListener() {
@@ -33,7 +45,11 @@ function RouteListener() {
     if (currentPath) {
       setLayoutVisibility(routeLayouts[currentPath]);
     } else {
-      setLayoutVisibility({ showNavBar: true, showBottomBar: true });
+      setLayoutVisibility({
+        showNavBar: true,
+        showBottomBar: true,
+        content: "안됐어요",
+      });
     }
   }, [location, setLayoutVisibility]);
 
