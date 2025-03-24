@@ -2,18 +2,23 @@ package com.picscore.backend.timeattack.service;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.timeattack.model.entity.TimeAttack;
+import com.picscore.backend.timeattack.model.response.AnalysisPhotoResponse;
+import com.picscore.backend.timeattack.model.response.AzureVisionResponse;
 import com.picscore.backend.timeattack.model.response.GetRankingResponse;
 import com.picscore.backend.timeattack.repository.TimeAttackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * TimeAttack 관련 비즈니스 로직을 처리하는 서비스 클래스
@@ -23,6 +28,7 @@ import java.util.Map;
 public class TimeAttackService {
 
     private final TimeAttackRepository timeAttackRepository;
+    private final RestTemplate restTemplate;
 
 
     /**
@@ -60,6 +66,34 @@ public class TimeAttackService {
 
         // 성공 응답 반환
         return ResponseEntity.ok(BaseResponse.success("랭킹 전체 목록 조회 성공", responseData));
+    }
+
+    public ResponseEntity<BaseResponse<List<AnalysisPhotoResponse>>> analysisPhoto(byte[] imageBlob) {
+        String url = "https://kimsunjin.cognitiveservices.azure.com/" + "vision/v3.2/analyze?visualFeatures=Tags";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.set("Ocp-Apim-Subscription-Key", "FzJP7P9AkOYKLLbb3PL1aVLX66PDEufr49SbMsxRmD7OZGB2wXJsJQQJ99BCACNns7RXJ3w3AAAFACOGILsq");
+
+        HttpEntity<byte[]> requestEntity = new HttpEntity<>(imageBlob, headers);
+
+        try {
+            ResponseEntity<AzureVisionResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    requestEntity,
+                    AzureVisionResponse.class
+            );
+
+            List<AnalysisPhotoResponse> analysisResults = response.getBody().getTags().stream()
+                    .map(tag -> new AnalysisPhotoResponse(tag.getName(), tag.getConfidence()))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(BaseResponse.success("이미지 분석 성공", analysisResults));
+        } catch (RestClientException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(BaseResponse.error("이미지 분석 실패: " + e.getMessage()));
+        }
     }
 }
 
