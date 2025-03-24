@@ -1,7 +1,7 @@
-package com.picscore.backend.user.handler;
+package com.picscore.backend.common.handler;
 
 import com.picscore.backend.common.utill.RedisUtil;
-import com.picscore.backend.user.jwt.JWTUtil;
+import com.picscore.backend.common.jwt.JWTUtil;
 import com.picscore.backend.user.model.dto.CustomOAuth2User;
 import com.picscore.backend.user.repository.UserRepository;
 import jakarta.servlet.ServletException;
@@ -62,7 +62,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(createCookie("refresh", refresh));
 
          //인증 성공 후 리다이렉트
-         response.sendRedirect("https://j12b104.p.ssafy.io?loginSuccess=true");
+//         response.sendRedirect("https://j12b104.p.ssafy.io?loginSuccess=true");
     }
 
     /**
