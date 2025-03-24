@@ -10,7 +10,9 @@ import com.picscore.backend.photo.repository.PhotoLikeRepository;
 import com.picscore.backend.photo.repository.PhotoRepository;
 import com.picscore.backend.user.model.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -78,39 +80,26 @@ public class PhotoService {
     /**
      * 전체 사진을 페이징 처리하여 조회하는 메서드
      *
+     * @param pageNum 조회할 페이지 번호 (1부터 시작)
      * @return ResponseEntity<BaseResponse<Map<String, Object>>> 페이징된 사진 목록
      */
-    public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos() {
-        // 사진 목록 조회
-        List<Photo> photos = photoRepository.getAllWithoutPublic();
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos(int pageNum) {
 
-        // createdAt 기준으로 내림차순 정렬
-        List<Photo> sortedPhotos = photos.stream()
-                .sorted(Comparator.comparing(Photo::getCreatedAt).reversed())
+        // PageRequest 객체 생성 (0부터 시작하는 페이지 번호 사용)
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        // 레포지토리에서 페이징된 데이터 조회
+        Page<Photo> photoPage = photoRepository.findAllWithPublic(pageRequest);
+
+        // DTO 변환
+        List<GetPhotosResponse> photoResponses = photoPage.getContent().stream()
+                .map(photo -> new GetPhotosResponse(photo.getId(), photo.getImageUrl()))
                 .collect(Collectors.toList());
 
-        // 고정된 페이지 크기 설정
-        int size = 2; // 한 페이지당 사진 개수
-        int totalPages = (int) Math.ceil((double) sortedPhotos.size() / size); // 전체 페이지 수 계산
-
-        // 페이지별 데이터 저장
-        Map<Integer, List<GetPhotosResponse>> paginatedPhotos = new HashMap<>();
-        for (int page = 0; page < totalPages; page++) {
-            int start = page * size;
-            int end = Math.min((page + 1) * size, sortedPhotos.size()); // 마지막 페이지 처리
-            List<Photo> pagePhotos = sortedPhotos.subList(start, end);
-
-            // DTO 변환
-            List<GetPhotosResponse> getPhotoResponses = pagePhotos.stream()
-                    .map(photo -> new GetPhotosResponse(photo.getId(), photo.getImageUrl()))
-                    .collect(Collectors.toList());
-
-            paginatedPhotos.put(page + 1, getPhotoResponses); // 페이지 번호는 1부터 시작하도록 설정
-        }
         // 응답 데이터 구성
         Map<String, Object> responseData = new HashMap<>();
-        responseData.put("totalPages", totalPages); // 전체 페이지 수
-        responseData.put("photos", paginatedPhotos); // 페이지별 사진 리스트
+        responseData.put("totalPages", photoPage.getTotalPages());
+        responseData.put("photos", photoResponses);
 
         // 응답 반환
         return ResponseEntity.ok(BaseResponse.success("사진 리스트 조회 성공", responseData));

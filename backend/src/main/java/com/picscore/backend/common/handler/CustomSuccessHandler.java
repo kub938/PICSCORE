@@ -1,7 +1,7 @@
-package com.picscore.backend.user.handler;
+package com.picscore.backend.common.handler;
 
 import com.picscore.backend.common.utill.RedisUtil;
-import com.picscore.backend.user.jwt.JWTUtil;
+import com.picscore.backend.common.jwt.JWTUtil;
 import com.picscore.backend.user.model.dto.CustomOAuth2User;
 import com.picscore.backend.user.repository.UserRepository;
 import jakarta.servlet.ServletException;

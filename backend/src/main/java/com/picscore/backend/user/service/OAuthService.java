@@ -2,7 +2,7 @@ package com.picscore.backend.user.service;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
-import com.picscore.backend.user.jwt.JWTUtil;
+import com.picscore.backend.common.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.model.response.ReissueResponse;
 import com.picscore.backend.user.repository.UserRepository;
