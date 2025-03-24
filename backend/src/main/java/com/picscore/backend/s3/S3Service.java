@@ -126,9 +126,10 @@ public class S3Service {
     
     // 파일 다운로드 (바이트 배열로 반환)
     public byte[] downloadFile(String fileName) {
+        String permanentFolder = "permanent/";
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
-                .key(fileName)
+                .key(permanentFolder+fileName)
                 .build();
                 
         return s3Client.getObjectAsBytes(getObjectRequest).asByteArray();
