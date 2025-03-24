@@ -56,79 +56,60 @@ interface UpdateProfileRequest {
 }
 
 // Base response wrapper used by the API
-interface BaseResponse<T> {
-  timeStamp: string;
-  message: string;
-  data: T;
-}
 
 export const userApi = {
   // User profile endpoints
   getMyProfile: () => {
-    return api.get<BaseResponse<UserProfile>>("/api/v1/user/profile/me");
+    return api.get<UserProfile>("/api/v1/user/profile/me");
   },
 
   getUserProfile: (userId: number) => {
-    return api.get<BaseResponse<UserProfileWithFollowing>>(
-      `/api/v1/user/profile/${userId}`
-    );
+    return api.get<UserProfileWithFollowing>(`/api/v1/user/profile/${userId}`);
   },
 
   updateProfile: (data: UpdateProfileRequest) => {
-    return api.patch<BaseResponse<void>>("/api/v1/user/profile", data);
+    return api.patch<void>("/api/v1/user/profile", data);
   },
 
   // Follower/Following endpoints
   getMyFollowers: () => {
-    return api.get<BaseResponse<FollowerResponse[]>>(
-      "/api/v1/user/follower/me"
-    );
+    return api.get<FollowerResponse[]>("/api/v1/user/follower/me");
   },
 
   getMyFollowings: () => {
-    return api.get<BaseResponse<FollowingResponse[]>>(
-      "/api/v1/user/following/me"
-    );
+    return api.get<FollowingResponse[]>("/api/v1/user/following/me");
   },
 
   getUserFollowers: (userId: number) => {
-    return api.get<BaseResponse<FollowerResponse[]>>(
-      `/api/v1/user/follower/${userId}`
-    );
+    return api.get<FollowerResponse[]>(`/api/v1/user/follower/${userId}`);
   },
 
   getUserFollowings: (userId: number) => {
-    return api.get<BaseResponse<FollowerResponse[]>>(
-      `/api/v1/user/following/${userId}`
-    );
+    return api.get<FollowerResponse[]>(`/api/v1/user/following/${userId}`);
   },
 
   toggleFollow: (followingId: number) => {
-    return api.post<BaseResponse<void>>("/api/v1/user/following/me", {
+    return api.post<void>("/api/v1/user/following/me", {
       followingId,
     });
   },
 
   deleteFollower: (userId: number) => {
-    return api.delete<BaseResponse<void>>(`/api/v1/user/follower/${userId}`);
+    return api.delete<void>(`/api/v1/user/follower/${userId}`);
   },
 
   // Search functionality
   searchUser: (searchText: string) => {
-    return api.get<BaseResponse<SearchUserResponse[]>>(
-      `/api/v1/user/search/${searchText}`
-    );
+    return api.get<SearchUserResponse[]>(`/api/v1/user/search/${searchText}`);
   },
 
   // Statistics endpoints
   getMyStatistics: () => {
-    return api.get<BaseResponse<UserStatistics>>("/api/v1/user/static/me");
+    return api.get<UserStatistics>("/api/v1/user/static/me");
   },
 
   getUserStatistics: (userId: number) => {
-    return api.get<BaseResponse<UserStatistics>>(
-      `/api/v1/user/static/${userId}`
-    );
+    return api.get<UserStatistics>(`/api/v1/user/static/${userId}`);
   },
 
   // User photos endpoints
