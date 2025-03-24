@@ -42,7 +42,6 @@ public class S3Test implements CommandLineRunner {
             ListObjectsV2Response response = s3Client.listObjectsV2(request);
             if (!response.contents().isEmpty()) {
                 System.out.println("S3 버킷에 접근 가능합니다. 버킷 내 파일 목록:");
-                System.out.println(response.contents());
                 for (S3Object obj : response.contents()) {
                     System.out.println(obj.key());
                 }
