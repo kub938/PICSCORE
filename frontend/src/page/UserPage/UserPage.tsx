@@ -90,11 +90,11 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
 
         // 프로필 정보 처리
         setProfile({
-          nickname: profileResponse.data.data.nickName,
-          statusMessage: profileResponse.data.data.message,
-          profileImage: profileResponse.data.data.profileImage,
-          followerCount: profileResponse.data.data.followerCnt,
-          followingCount: profileResponse.data.data.followingCnt,
+          nickname: profileResponse.data.nickName,
+          statusMessage: profileResponse.data.message,
+          profileImage: profileResponse.data.profileImage,
+          followerCount: profileResponse.data.followerCnt,
+          followingCount: profileResponse.data.followingCnt,
           isMyProfile: true,
           isFollowing: false,
           displayBadgeId: localStorage.getItem("selectedBadgeId") || undefined,
@@ -102,9 +102,9 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
 
         // 통계 정보 처리
         setUserStats({
-          averageScore: statsResponse.data.data.scoreAvg,
+          averageScore: statsResponse.data.scoreAvg,
           contestRank: "N/A",
-          timeAttackRank: statsResponse.data.data.timeAttackRank.toString(),
+          timeAttackRank: statsResponse.data.timeAttackRank.toString(),
           arenaRank: "N/A",
         });
 
@@ -130,21 +130,21 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
 
         // 프로필 정보 처리
         setProfile({
-          nickname: profileResponse.data.data.nickName,
+          nickname: profileResponse.data.nickName,
           statusMessage: profileResponse.data.message,
-          profileImage: profileResponse.data.data.profileImage,
-          followerCount: profileResponse.data.data.followerCnt,
-          followingCount: profileResponse.data.data.followingCnt,
+          profileImage: profileResponse.data.profileImage,
+          followerCount: profileResponse.data.followerCnt,
+          followingCount: profileResponse.data.followingCnt,
           isMyProfile: false,
-          isFollowing: profileResponse.data.data.isFollowing,
+          isFollowing: profileResponse.data.isFollowing,
           displayBadgeId: undefined,
         });
 
         // 통계 정보 처리
         setUserStats({
-          averageScore: statsResponse.data.data.scoreAvg,
+          averageScore: statsResponse.data.scoreAvg,
           contestRank: "N/A",
-          timeAttackRank: statsResponse.data.data.timeAttackRank.toString(),
+          timeAttackRank: statsResponse.data.timeAttackRank.toString(),
           arenaRank: "N/A",
         });
 
