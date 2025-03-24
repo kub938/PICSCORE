@@ -8,6 +8,7 @@ import { useAuthStore, UserInfoState } from "../../store/authStore";
 import { api } from "../../api/api";
 import { useQuery } from "@tanstack/react-query";
 import HomeNavBar from "../../components/NavBar/HomeNavBar";
+import { useEffect } from "react";
 
 function Home() {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
@@ -18,11 +19,17 @@ function Home() {
   const { isLoading, isError, data } = useQuery({
     queryKey: ["user"],
     queryFn: async () => {
-      const response = await api.get<UserInfoState>("/api/v1/user/info");
-      return response;
+      const response = await api.get("/api/v1/user/info");
+      return response.data.data;
     },
     enabled: !!loginSuccess, // loginSuccess가 true일 때만 쿼리 실행
   });
+
+  useEffect(() => {
+    if (data) {
+      login(data);
+    }
+  }, [data]);
 
   if (isLoading) {
     return <>로딩중..</>;
@@ -31,7 +38,6 @@ function Home() {
     return <>유저 정보 호출 에러</>;
   }
 
-  console.log(data);
   return (
     <>
       <div className="flex flex-col w-full items-center ">
