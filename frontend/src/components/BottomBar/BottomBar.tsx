@@ -20,7 +20,7 @@ const BottomBar: React.FC<{ activeTab?: string }> = ({
       path: "/image-upload",
       icon: Camera_bar,
     },
-    { name: "Profile", label: "프로필", path: "/profile", icon: User_bar },
+    { name: "Profile", label: "프로필", path: "/mypage", icon: User_bar },
   ];
 
   return (
