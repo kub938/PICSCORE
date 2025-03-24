@@ -2,14 +2,16 @@
 
 // 사용자 프로필 데이터 인터페이스
 export interface UserProfileData {
-  nickname: string;
-  statusMessage: string;
-  profileImage: string | null;
-  followerCount: number;
-  followingCount: number;
-  isMyProfile: boolean;
-  isFollowing: boolean;
-  displayBadgeId?: string; // 표시할 뱃지 ID
+  data: {
+    nickname: string;
+    statusMessage: string;
+    profileImage: string | null;
+    followerCount: number;
+    followingCount: number;
+    isMyProfile: boolean;
+    isFollowing: boolean;
+    displayBadgeId?: string; // 표시할 뱃지 ID
+  };
 }
 
 // 사용자 통계 데이터 인터페이스
