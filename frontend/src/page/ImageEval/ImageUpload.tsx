@@ -60,7 +60,7 @@ function ImageUpload() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center h-screen"
+      className="flex flex-col items-center justify-center"
       onClick={modalClose}
     >
       {/* 사진 촬영 / 업로드 모달창 */}
@@ -104,7 +104,6 @@ function ImageUpload() {
           </div>
         </div>
       )}
-
       <div className="mb-13">
         <img src={processEval} alt="" />
       </div>
@@ -112,7 +111,6 @@ function ImageUpload() {
         <div className="text-3xl font-bold mb-1">사진을 올려주세요!</div>
         <div className="mb-5">멋진 사진을 평가해 드립니다.</div>
       </div>
-
       <div
         className="w-[85%] max-w-xs sm:max-w-sm md:max-w-md aspect-square rounded-md border border-black flex flex-col items-center justify-center gap-6 sm:gap-10 mb-8 sm:mb-12"
         style={{ borderStyle: "dashed", borderSpacing: "40px" }}
@@ -142,8 +140,9 @@ function ImageUpload() {
           width={32}
           height={12}
           textSize="lg"
-          content="확인"
-        ></Button>
+        >
+          확인
+        </Button>
       </Link>
     </div>
   );

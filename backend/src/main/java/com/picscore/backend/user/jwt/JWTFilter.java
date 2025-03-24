@@ -72,11 +72,13 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         // 토큰에서 사용자 정보 추출
+        String socialId = jwtUtil.getSocialId(accessToken);
         String nickName = jwtUtil.getNickName(accessToken);
         String role = jwtUtil.getRole(accessToken);
 
         // UserDto 생성 및 설정
         UserDto userDto = new UserDto(
+                socialId,
                 nickName,
                 role
         );

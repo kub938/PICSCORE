@@ -2,7 +2,10 @@ package com.picscore.backend.photo.controller;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.photo.model.entity.Photo;
+import com.picscore.backend.photo.model.request.GetPhotosRequest;
+import com.picscore.backend.photo.model.request.SearchPhotoRequest;
 import com.picscore.backend.photo.model.response.GetPhotoDetailResponse;
+import com.picscore.backend.photo.model.response.GetPhotoTop5Response;
 import com.picscore.backend.photo.model.response.GetPhotosResponse;
 import com.picscore.backend.photo.model.request.UploadPhotoRequest;
 import com.picscore.backend.photo.service.PhotoService;
@@ -27,18 +30,44 @@ public class PhotoController {
     private final PhotoService photoService;
     private final OAuthService oAuthService;
     private final UserRepository userRepository;
+
+    // 주제 사진 검색
+    @GetMapping("/photo/search")
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> searchPhotosByHashtag(@RequestBody SearchPhotoRequest request) {
+        return photoService.searchPhotosByHashtag(request.getKeyword());
+    }
+
+    // 공개-비공개 설정
+    @PatchMapping("/photo/{photoId}")
+    public ResponseEntity<BaseResponse<Void>> togglePublic(HttpServletRequest request, @PathVariable Long photoId) {
+        Long userId = oAuthService.findIdByNickName(request);
+        return photoService.togglePublic(photoId, userId);
+    }
+
+    // 사진 삭제
+    @DeleteMapping("/photo/{photoId}")
+    public ResponseEntity<BaseResponse<Void>> deletePhoto(HttpServletRequest request, @PathVariable Long photoId) {
+        Long userId = oAuthService.findIdByNickName(request);
+
+        return photoService.deletePhoto(photoId, userId);
+    }
+
     // 남 사진 조회
     @GetMapping("/user/photo/{userId}")
-    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(@PathVariable Long userId) {
-        return photoService.getPhotosByUserId(userId);
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>>
+    getPhotosByUserId(@PathVariable Long userId, @RequestBody GetPhotosRequest request) {
+        return photoService.getPhotosByUserId(userId, request.getIsPublic());
     }
+
     // 내 사진 조회
     @GetMapping("/user/photo/me")
-    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getMyPhotos(HttpServletRequest request) {
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>>
+    getMyPhotos(HttpServletRequest request, @RequestBody GetPhotosRequest body) {
         // 토큰에서 사용자 정보 추출
         Long userId = oAuthService.findIdByNickName(request);
-        return photoService.getPhotosByUserId(userId);
+        return photoService.getPhotosByUserId(userId, body.getIsPublic());
     }
+
     // 사진 업로드
     @PostMapping("/photo")
     public ResponseEntity<BaseResponse<HttpStatus>> savePhoto(HttpServletRequest request, @RequestBody UploadPhotoRequest payload) {
@@ -62,10 +91,16 @@ public class PhotoController {
     public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(@PathVariable Long photoId) {
         return photoService.getPhotoDetail(photoId);
     }
+
     // 전체 사진 조회
     @GetMapping("/photo")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos() {
         return photoService.getPaginatedPhotos();
+    }
+
+    @GetMapping("/photo/top5")
+    public ResponseEntity<BaseResponse<List<GetPhotoTop5Response>>> getPhotoTop5() {
+        return photoService.getPhotoTop5();
     }
 }
 

@@ -3,7 +3,6 @@ import App from "../App";
 import Home from "../page/Home/Home";
 import Test from "../page/Test";
 import ErrorPage from "../page/Error/ErrorPage";
-import ImageUpload from "../page/ImageEval/ImageUpload";
 import RankingPage from "../page/Ranking/RankingPage";
 import { MyPage, UserDetailPage } from "../page/UserPage";
 import { ArchievePage } from "../page/Archieve";
@@ -13,7 +12,10 @@ import Contest from "../page/Contest/Contest";
 import Login from "../page/Login/Login";
 import TimeAttack from "../page/Timeattack/Timeattack";
 import TimeAttackResult from "../page/Timeattack/TimeAttackResult";
+import ImageUpload from "../page/ImageEval/ImageUpload";
 import ImageEvalResult from "../page/ImageEval/ImageEvalResult";
+import Following from "../page/UserPage/Following";
+// import Follower from "../page/UserPage/Follower";
 
 const router = createBrowserRouter([
   {
@@ -61,7 +63,6 @@ const router = createBrowserRouter([
         path: "/image-upload",
         element: <ImageUpload />,
       },
-      { path: "/image-result", element: <ImageEvalResult /> },
       {
         path: "/ranking",
         element: <RankingPage />,
@@ -78,6 +79,18 @@ const router = createBrowserRouter([
         path: "/login",
         element: <Login />,
       },
+      {
+        path: "/result",
+        element: <ImageEvalResult />,
+      },
+      {
+        path: "/following",
+        element: <Following />,
+      },
+      // {
+      //   path: "/follower",
+      //   element: <Follower />,
+      // },
     ],
   },
 ]);
