@@ -15,7 +15,7 @@ import TimeAttackResult from "../page/Timeattack/TimeAttackResult";
 import ImageUpload from "../page/ImageEval/ImageUpload";
 import ImageEvalResult from "../page/ImageEval/ImageEvalResult";
 import Following from "../page/UserPage/Following";
-// import Follower from "../page/UserPage/Follower";
+import Follower from "../page/UserPage/Follower";
 
 const router = createBrowserRouter([
   {
@@ -87,10 +87,10 @@ const router = createBrowserRouter([
         path: "/following",
         element: <Following />,
       },
-      // {
-      //   path: "/follower",
-      //   element: <Follower />,
-      // },
+      {
+        path: "/follower",
+        element: <Follower />,
+      },
     ],
   },
 ]);
