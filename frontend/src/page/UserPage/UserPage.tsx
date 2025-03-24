@@ -82,9 +82,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
         // 내 프로필 데이터 조회
         const profileResponse = await userApi.getMyProfile();
         const statsResponse = await userApi.getMyStatistics();
-        const photosResponse = await userApi.getMyPhotos(
-          activeTab !== "hidden"
-        );
+        const photosResponse = await userApi.getMyPhotos(true);
 
         // 프로필 정보 처리
         setProfile({
