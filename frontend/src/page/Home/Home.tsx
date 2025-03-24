@@ -1,28 +1,41 @@
 import { Link } from "react-router-dom";
-import BottomBar from "../../components/BottomBar/BottomBar";
-import NavBar from "../../components/NavBar/NavBar";
 import profileImage from "../../assets/profile.jpg";
 import contest from "../../assets/contest.png";
 import time from "../../assets/time.png";
 import board from "../../assets/board.png";
 import ranking from "../../assets/ranking.png";
-import { useAuthStore } from "../../store/authStore";
-import { useEffect } from "react";
+import { useAuthStore, UserInfoState } from "../../store/authStore";
+import { api } from "../../api/api";
+import { useQuery } from "@tanstack/react-query";
+import HomeNavBar from "../../components/NavBar/HomeNavBar";
 
 function Home() {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const login = useAuthStore((state) => state.login);
+  const params = new URLSearchParams(window.location.search);
+  const loginSuccess = params.get("loginSuccess");
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const loginSuccess = params.get("loginSuccess");
-    if (loginSuccess) {
-      login();
-    }
+  const { isLoading, isError, data } = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const response = await api.get<UserInfoState>("/api/v1/user/info");
+      return response;
+    },
+    enabled: !!loginSuccess, // loginSuccess가 true일 때만 쿼리 실행
   });
+
+  if (isLoading) {
+    return <>로딩중..</>;
+  }
+  if (isError) {
+    return <>유저 정보 호출 에러</>;
+  }
+
+  console.log(data);
   return (
     <>
       <div className="flex flex-col w-full items-center ">
+        <HomeNavBar />
         {/* 프로필 이미지 섹션 */}
         <div className="flex flex-col items-center mb-10">
           <div className="w-[150px] h-[150px] rounded-full overflow-hidden border-3 border-white mb-4">
