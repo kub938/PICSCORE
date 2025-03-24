@@ -5,6 +5,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     image: rublin322/picscore-frontend:latest
+    env_file:
+      - .env.front
     ports:
       - "5173:80"
     networks:
@@ -67,8 +69,8 @@ services:
   redis:
     container_name: redis
     image: redis:7.4-alpine
-    env_file:
-      - .env
+    # env_file:
+    #   - .env
     ports:
       - "6379:6379"
     healthcheck:

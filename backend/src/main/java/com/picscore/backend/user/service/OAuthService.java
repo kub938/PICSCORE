@@ -2,7 +2,7 @@ package com.picscore.backend.user.service;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
-import com.picscore.backend.user.jwt.JWTUtil;
+import com.picscore.backend.common.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.model.response.ReissueResponse;
 import com.picscore.backend.user.repository.UserRepository;
@@ -105,12 +105,11 @@ public class OAuthService {
      * @return 생성된 Cookie 객체
      */
     private Cookie createCookie(String key, String value) {
-
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 60 * 60); // 쿠키 유효 기간 설정 (초 단위)
-        //cookie.setSecure(true); // HTTPS 환경에서만 전송 (주석 처리 상태)
-        cookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능
-        cookie.setHttpOnly(true); // JavaScript에서 접근 불가 (보안 강화)
+        cookie.setMaxAge(60 * 60 * 24); // 1일 유지
+//        cookie.setSecure(true); // HTTPS에서만 전송 (배포 환경에서는 필수)
+        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
+        cookie.setPath("/"); // 모든 경로에서 접근 가능
 
         return cookie;
     }

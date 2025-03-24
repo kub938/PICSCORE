@@ -15,7 +15,7 @@ pipeline {
                 script {
                     echo "현재 브랜치: ${env.BRANCH_NAME}"
                     echo "현재 워크스페이스: ${env.WORKSPACE}"
-                    def deployBranches = ['master', 'backend']
+                    def deployBranches = ['master', 'develop']
                     if (!deployBranches.contains(env.BRANCH_NAME)) {
                         error "현재 브랜치(${env.BRANCH_NAME})에서는 배포를 수행하지 않습니다."
                     }
@@ -28,6 +28,12 @@ pipeline {
                     script {
                         def envContent = readFile(ENV_FILE_PATH)
                         writeFile file: '.env', text: envContent
+                    }
+                }
+                withCredentials([file(credentialsId: 'front-env-file-content', variable: 'FRONT_ENV_FILE_PATH')]) {
+                    script {
+                        def frontEnvContent = readFile(FRONT_ENV_FILE_PATH)
+                        writeFile file: '.env.front', text: frontEnvContent
                     }
                 }
             }
@@ -58,6 +64,7 @@ pipeline {
             steps {
                 sshagent(credentials: ['ec2-ssh-key']) {
                     sh "scp -o StrictHostKeyChecking=no .env ${DEPLOY_HOST}:${DEPLOY_PATH}/.env"
+                    sh "scp -o StrictHostKeyChecking=no .env.front ${DEPLOY_HOST}:${DEPLOY_PATH}/.env.front"
                     sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.yml"
                     sh "scp -o StrictHostKeyChecking=no ./nginx.conf ${DEPLOY_HOST}:${DEPLOY_PATH}/nginx.conf"
                     sh "scp -o StrictHostKeyChecking=no prometheus.yml ${DEPLOY_HOST}:${DEPLOY_PATH}/prometheus.yml"

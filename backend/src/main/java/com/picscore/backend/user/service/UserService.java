@@ -1,20 +1,35 @@
 package com.picscore.backend.user.service;
 
+import com.picscore.backend.badge.model.dto.ProfileBadgeDto;
+import com.picscore.backend.badge.model.entity.Badge;
+import com.picscore.backend.badge.model.entity.UserBadge;
+import com.picscore.backend.badge.repository.UserBadgeRepository;
 import com.picscore.backend.common.model.response.BaseResponse;
-import com.picscore.backend.user.jwt.JWTUtil;
+import com.picscore.backend.common.utill.RedisUtil;
+import com.picscore.backend.timeattack.model.response.GetMyStaticResponse;
+import com.picscore.backend.timeattack.model.response.GetUserStaticResponse;
+import com.picscore.backend.timeattack.repository.TimeAttackRepository;
+import com.picscore.backend.common.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
+import com.picscore.backend.user.model.request.UpdateMyProfileRequest;
+import com.picscore.backend.user.model.response.GetMyProfileResponse;
+import com.picscore.backend.user.model.response.GetUserProfileResponse;
 import com.picscore.backend.user.model.response.LoginInfoResponse;
 import com.picscore.backend.user.model.response.SearchUsersResponse;
+import com.picscore.backend.user.repository.FollowRepository;
 import com.picscore.backend.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -27,7 +42,12 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final FollowRepository followRepository;
+    private final UserBadgeRepository userBadgeRepository;
+    private final TimeAttackRepository timeAttackRepository;
     private final JWTUtil jwtUtil;
+    private final RedisUtil redisUtil;
+
 
     /**
      * 현재 로그인한 사용자의 정보를 가져오는 메서드
@@ -36,20 +56,36 @@ public class UserService {
      * @return ResponseEntity<BaseResponse<LoginInfoResponse>>
      *         - 로그인 정보를 포함하는 응답 객체
      */
-    public ResponseEntity<BaseResponse<LoginInfoResponse>> LoginInfo(HttpServletRequest request) {
-        // 쿠키에서 AccessToken 찾기
-        Optional<Cookie> accessTokenCookie = Arrays.stream(request.getCookies())
-                .filter(cookie -> "access".equals(cookie.getName()))
-                .findFirst();
+    public ResponseEntity<BaseResponse<LoginInfoResponse>> LoginInfo(HttpServletRequest request, HttpServletResponse responses) {
+//        // 쿠키에서 AccessToken 찾기
+//        Optional<Cookie> accessTokenCookie = Arrays.stream(request.getCookies())
+//                .filter(cookie -> "access".equals(cookie.getName()))
+//                .findFirst();
+//
+//        // AccessToken 쿠키가 없는 경우
+//        if (accessTokenCookie.isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//                    .body(BaseResponse.error("AccessToken 쿠키 없음"));
+//        }
+//
+//        // JWT에서 닉네임(유저 식별자) 추출
+//        String accessToken = accessTokenCookie.get().getValue();
+        // 헤더에서 Authorization 값 추출
+        String authHeader = request.getHeader("Authorization");
 
-        // AccessToken 쿠키가 없는 경우
-        if (accessTokenCookie.isEmpty()) {
+        // Authorization 헤더가 없거나 'Bearer '로 시작하지 않는 경우
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("AccessToken 쿠키 없음"));
+                    .body(BaseResponse.error("유효한 Authorization 헤더 없음"));
         }
 
-        // JWT에서 닉네임(유저 식별자) 추출
-        String accessToken = accessTokenCookie.get().getValue();
+        // 'Bearer ' 접두사 제거하여 실제 토큰 추출
+        String accessToken = authHeader.substring(7);
+
+        responses.addCookie(createCookie("access", accessToken));
+        // 여기까지 개발 환경
+
+
         String nickName = jwtUtil.getNickName(accessToken);
 
         // 유효하지 않은 토큰인 경우
@@ -67,9 +103,12 @@ public class UserService {
         }
 
         // 유저 정보 + 토큰 반환
-        LoginInfoResponse response = new LoginInfoResponse(user.getId(), user.getNickName(), accessToken);
+        LoginInfoResponse response = new LoginInfoResponse(
+                user.getId(), user.getNickName(), user.getMessage(),
+                user.getLevel(), user.getExperience());
         return ResponseEntity.ok(BaseResponse.success("로그인 성공", response));
     }
+
 
     /**
      * 사용자 검색 기능을 제공하는 메서드
@@ -97,6 +136,187 @@ public class UserService {
 
         // 3. 성공 응답 생성 및 반환
         return ResponseEntity.ok(BaseResponse.success("친구 검색 성공", response));
+    }
+
+
+    /**
+     * 현재 사용자의 프로필 정보를 조회하는 메서드
+     *
+     * @param userId 조회할 사용자의 ID
+     * @return ResponseEntity<BaseResponse<GetMyProfileResponse>> 사용자 프로필 정보 응답
+     * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
+     */
+    public ResponseEntity<BaseResponse<GetMyProfileResponse>> getMyProfile(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        int followerCnt = followRepository.countByFollowingId(userId);
+        int followingCnt = followRepository.countByFollowerId(userId);
+
+        List<UserBadge> userBadgeList = userBadgeRepository.findByUserId(userId);
+        List<ProfileBadgeDto> profileBadgeList =
+                userBadgeList.stream()
+                        .map(userBadge -> {
+                            Badge badge = userBadge.getBadge();
+                            return new ProfileBadgeDto(
+                                    badge.getId(),
+                                    badge.getName(),
+                                    badge.getImage()
+                            );
+                        })
+                        .collect(Collectors.toList());
+
+        GetMyProfileResponse response = new GetMyProfileResponse(
+                user.getId(), user.getNickName(), user.getProfileImage(),
+                user.getMessage(), user.getLevel(), user.getExperience(),
+                followerCnt, followingCnt, profileBadgeList
+        );
+
+        return ResponseEntity.ok(BaseResponse.success("내 프로필 조회 성공", response));
+    }
+
+
+    /**
+     * 특정 사용자의 프로필 정보를 조회하는 메서드
+     *
+     * @param myId 현재 로그인한 사용자의 ID
+     * @param userId 조회할 사용자의 ID
+     * @return ResponseEntity<BaseResponse<GetUserProfileResponse>> 사용자 프로필 정보 응답
+     * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
+     */
+    public ResponseEntity<BaseResponse<GetUserProfileResponse>> getUserProfile(
+            Long myId, Long userId
+    ) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        int followerCnt = followRepository.countByFollowingId(userId);
+        int followingCnt = followRepository.countByFollowerId(userId);
+
+        boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, userId);
+
+        List<UserBadge> userBadgeList = userBadgeRepository.findByUserId(userId);
+        List<ProfileBadgeDto> profileBadgeList =
+                userBadgeList.stream()
+                        .map(userBadge -> {
+                            Badge badge = userBadge.getBadge();
+                            return new ProfileBadgeDto(
+                                    badge.getId(),
+                                    badge.getName(),
+                                    badge.getImage()
+                            );
+                        })
+                        .collect(Collectors.toList());
+
+        GetUserProfileResponse response = new GetUserProfileResponse(
+                user.getId(), user.getNickName(), user.getProfileImage(),
+                user.getMessage(), user.getLevel(), user.getExperience(),
+                followerCnt, followingCnt, isFollowing, profileBadgeList
+        );
+
+        return ResponseEntity.ok(BaseResponse.success("유저 프로필 조회 성공", response));
+    }
+
+
+    /**
+     * 현재 사용자의 프로필 정보를 수정하는 메서드
+     *
+     * @param userId 수정할 사용자의 ID
+     * @param request 수정할 프로필 정보
+     * @param response HTTP 응답 객체
+     * @return ResponseEntity<BaseResponse<Void>> 수정 결과 응답
+     * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
+     */
+    @Transactional
+    public ResponseEntity<BaseResponse<Void>> updateMyProfile(
+            Long userId, UpdateMyProfileRequest request, HttpServletResponse response
+    ) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        User existingUser = userRepository.findByNickName(request.getNickName());
+
+        if (existingUser != null && !existingUser.getId().equals(userId)) {
+            return ResponseEntity.ok(BaseResponse.error("닉네임 중복"));
+        }
+
+        String userKey = "refresh:" + userId;
+
+        // 새로운 액세스 및 리프레시 토큰 생성
+        String newAccess = jwtUtil.createJwt("access", request.getNickName(), 600000L); // 10분 유효
+        String newRefresh = jwtUtil.createJwt("refresh", request.getNickName(), 86400000L); // 1일 유효
+
+        // Redis에 새 리프레시 토큰 저장
+        redisUtil.setex(userKey, newRefresh, 86400000L);
+
+        // 클라이언트에 새 토큰 쿠키로 설정
+        response.addCookie(createCookie("access", newAccess));
+        response.addCookie(createCookie("refresh", newRefresh));
+
+        user.updateProfile(request.getNickName(), request.getProfileImage(), request.getMessage());
+        userRepository.save(user);
+        return ResponseEntity.ok(BaseResponse.error("프로필 수정 완료"));
+    }
+
+
+    /**
+     * 현재 사용자의 통계 정보를 조회하는 메서드
+     *
+     * @param userId 조회할 사용자의 ID
+     * @return ResponseEntity<BaseResponse<GetMyStaticResponse>> 사용자 통계 정보 응답
+     */
+    public ResponseEntity<BaseResponse<GetMyStaticResponse>> getMyStatic(Long userId) {
+        Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
+
+        float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
+        int minRank = stats.get("minRank") != null ? ((Number) stats.get("minRank")).intValue() : 0;
+
+        GetMyStaticResponse response = new GetMyStaticResponse(
+                avgScore, minRank
+        );
+
+        return ResponseEntity.ok(BaseResponse.success("나의 통계 조회 성공", response));
+    }
+
+
+    /**
+     * 특정 사용자의 통계 정보를 조회하는 메서드
+     *
+     * @param userId 조회할 사용자의 ID
+     * @return ResponseEntity<BaseResponse<GetUserStaticResponse>> 사용자 통계 정보 응답
+     */
+    public ResponseEntity<BaseResponse<GetUserStaticResponse>> getUserStatic(Long userId) {
+        Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
+
+        float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
+        int minRank = stats.get("minRank") != null ? ((Number) stats.get("minRank")).intValue() : 0;
+
+        GetUserStaticResponse response = new GetUserStaticResponse(
+                avgScore, minRank
+        );
+
+        return ResponseEntity.ok(BaseResponse.success("유저의 통계 조회 성공", response));
+    }
+
+
+    /**
+     * 쿠키를 생성합니다.
+     *
+     * @param key 쿠키 이름
+     * @param value 쿠키 값
+     * @return 생성된 Cookie 객체
+     */
+    private Cookie createCookie(String key, String value) {
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(60 * 60 * 24); // 1일 유지
+//        cookie.setSecure(true); // HTTPS에서만 전송 (배포 환경에서는 필수)
+        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
+        cookie.setPath("/"); // 모든 경로에서 접근 가능
+
+        return cookie;
     }
 
 }
