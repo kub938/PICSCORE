@@ -7,6 +7,8 @@ import com.picscore.backend.timeattack.model.response.AzureVisionResponse;
 import com.picscore.backend.timeattack.model.response.GetRankingResponse;
 import com.picscore.backend.timeattack.repository.TimeAttackRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.*;
@@ -29,6 +31,13 @@ public class TimeAttackService {
 
     private final TimeAttackRepository timeAttackRepository;
     private final RestTemplate restTemplate;
+
+    @Value("${VISION_API_URL}")  // 환경 변수에서 API URL 가져오기
+    private String visionApiUrl;
+
+    @Value("${VISION_API_KEY}")  // 환경 변수에서 API Key 가져오기
+    private String visionApiKey;
+
 
 
     /**

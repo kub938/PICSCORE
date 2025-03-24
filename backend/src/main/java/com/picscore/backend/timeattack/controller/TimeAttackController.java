@@ -4,6 +4,7 @@ import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.timeattack.model.response.AnalysisPhotoResponse;
 import com.picscore.backend.timeattack.service.TimeAttackService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +36,7 @@ public class TimeAttackController {
         return timeAttackService.getRanking(pageNum);
     }
 
-    @PostMapping("/analysis")
+    @PostMapping(value = "/analysis", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<BaseResponse<List<AnalysisPhotoResponse>>> analysisPhoto(
             @RequestBody byte[] imageBlob
     ) {
