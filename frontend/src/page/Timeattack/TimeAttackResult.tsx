@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { useRecoilState } from "recoil";
-// import { timeAttackResultState } from '../../recoil/atoms';
+import { useTimeAttackStore } from "../../store/timeAttackStore";
 import trophyVideo from "../../assets/trophy.mp4";
 
 // 컴포넌트 임포트
@@ -16,44 +15,40 @@ import { TimeAttackResultData } from "../../types";
 
 const TimeAttackResult: React.FC = () => {
   const location = useLocation() as LocationState;
-  const [result, setResult] = useState<TimeAttackResultData | null>(null);
+  // Zustand 상태 사용
+  const result = useTimeAttackStore((state) => state.result);
+
+  const [localResult, setLocalResult] = useState<TimeAttackResultData | null>(
+    null
+  );
   const [showVideo, setShowVideo] = useState<boolean>(true);
   const [showXpGained, setShowXpGained] = useState<boolean>(false);
   const [showTotalXp, setShowTotalXp] = useState<boolean>(false);
+
   const videoTimerRef = useRef<number | null>(null);
   const xpGainedTimerRef = useRef<number | null>(null);
   const totalXpTimerRef = useRef<number | null>(null);
 
-  // If using Recoil
-  // const [timeAttackResult, setTimeAttackResult] = useRecoilState(timeAttackResultState);
-
   useEffect(() => {
     // Check if we have result data passed through location state
     if (location.state?.result) {
-      setResult(location.state.result);
+      setLocalResult(location.state.result);
 
       // If it's a failure, don't show the success video
       if (location.state.result.success === false) {
         setShowVideo(false);
       }
     } else {
-      // If not, we might want to fetch it or redirect back to the time attack page
-      // For demo purposes, we'll use mock data
-      setResult({
-        score: 85,
-        topicAccuracy: 92,
-        analysisData: {
-          composition: 88,
-          lighting: 82,
-          subject: 90,
-          color: 84,
-          creativity: 87,
-        },
-        image: null,
-        topic: "다람쥐",
-        ranking: 5,
-        xpEarned: 97,
-        success: true,
+      // 만약 location.state에 결과가 없으면 Zustand에 저장된 결과 사용
+      setLocalResult({
+        score: result.score,
+        topicAccuracy: result.topicAccuracy,
+        analysisData: result.analysisData,
+        image: result.image,
+        topic: result.topic,
+        ranking: result.ranking,
+        xpEarned: 97, // 가정
+        success: result.score > 0, // 점수가 있으면 성공으로 간주
       });
     }
 
@@ -81,27 +76,27 @@ const TimeAttackResult: React.FC = () => {
       if (xpGainedTimerRef.current) clearTimeout(xpGainedTimerRef.current);
       if (totalXpTimerRef.current) clearTimeout(totalXpTimerRef.current);
     };
-  }, [location]);
+  }, [location, result]);
 
   // Handle video ended event (as a backup if setTimeout fails)
   const handleVideoEnded = () => {
     setShowVideo(false);
   };
 
-  if (!result) {
+  if (!localResult) {
     return <LoadingState />;
   }
 
   // Failure screen
-  if (result.success === false) {
+  if (localResult.success === false) {
     return (
       <Container>
         <Header title="타임어택 결과" />
         <FailureResult
           message={
-            result.message || "제한 시간 내에 사진을 제출하지 못했습니다."
+            localResult.message || "제한 시간 내에 사진을 제출하지 못했습니다."
           }
-          topic={result.topic}
+          topic={localResult.topic}
         />
       </Container>
     );
@@ -112,7 +107,7 @@ const TimeAttackResult: React.FC = () => {
     return (
       <VideoAnimation
         videoSrc={trophyVideo}
-        xpGained={result.xpEarned || 97}
+        xpGained={localResult.xpEarned || 97}
         showXpGained={showXpGained}
         showTotalXp={showTotalXp}
         onVideoEnd={handleVideoEnded}
@@ -125,16 +120,18 @@ const TimeAttackResult: React.FC = () => {
     <Container>
       <Header title="타임어택 결과" />
       <main className="flex-1 p-4">
-        {result.score && result.topicAccuracy && result.analysisData && (
-          <SuccessResult
-            score={result.score}
-            topicAccuracy={result.topicAccuracy}
-            analysisData={result.analysisData}
-            image={result.image || null}
-            topic={result.topic || ""}
-            ranking={result.ranking || 0}
-          />
-        )}
+        {localResult.score &&
+          localResult.topicAccuracy &&
+          localResult.analysisData && (
+            <SuccessResult
+              score={localResult.score}
+              topicAccuracy={localResult.topicAccuracy}
+              analysisData={localResult.analysisData}
+              image={localResult.image || null}
+              topic={localResult.topic || ""}
+              ranking={localResult.ranking || 0}
+            />
+          )}
       </main>
     </Container>
   );
