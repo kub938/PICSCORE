@@ -9,5 +9,7 @@ import lombok.Getter;
 public class LoginInfoResponse {
     private Long userId;
     private String nickname;
-    private String accessToken;
+    private String message;
+    private int level;
+    private int experience;
 }

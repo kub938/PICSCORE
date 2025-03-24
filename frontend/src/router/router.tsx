@@ -80,7 +80,7 @@ const router = createBrowserRouter([
         element: <Login />,
       },
       {
-        path: "/result",
+        path: "/image-result",
         element: <ImageEvalResult />,
       },
       {

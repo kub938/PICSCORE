@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useRecoilState } from "recoil";
-// import { userState } from "../../recoil/atoms";
-import Header from "./components/Header";
+import { useUserStore } from "../../store/userStore";
+
+// 컴포넌트
 import ProfileHeader from "./components/ProfileHeader";
 import FollowerStats from "./components/FollowerStats";
 import StatsGrid from "./components/StatsGrid";
 import TabNavigation from "./components/TabNavigation";
 import PhotoGrid from "./components/PhotoGrid";
 import NoAuthMessage from "./components/NoAuthMessage";
+
+// API
+import { userApi } from "../../api/userApi";
+
 import {
   UserPageProps,
   UserProfileData,
   UserStatsData,
   PhotoItem,
-  Tab,
 } from "./types";
 
 // Main UserPage Component
 const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  // const [user, setUser] = useRecoilState(userState);
 
   const isMyProfile = userId === null;
 
@@ -33,7 +35,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
     followingCount: 0,
     isMyProfile: isMyProfile,
     isFollowing: false,
-    displayBadgeId: undefined, // 표시할 뱃지 ID 필드 추가
+    displayBadgeId: undefined,
   });
 
   const [userStats, setUserStats] = useState<UserStatsData>({
@@ -49,7 +51,6 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
 
   // 업적 페이지에서 선택한 뱃지 처리
   useEffect(() => {
-    // 업적 페이지에서 뱃지 선택 후 돌아온 경우, 선택된 뱃지 ID 업데이트
     if (
       location.state &&
       location.state.updatedProfile &&
@@ -60,149 +61,126 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
         displayBadgeId: location.state.updatedProfile.displayBadgeId,
       }));
 
-      // 선택된 뱃지 ID를 localStorage에 저장
       localStorage.setItem(
         "selectedBadgeId",
         location.state.updatedProfile.displayBadgeId
       );
 
-      // 업데이트 후 state 초기화 (중복 처리 방지)
       window.history.replaceState({}, document.title);
     }
   }, [location]);
 
   useEffect(() => {
-    // Fetch user profile, stats and photos from API
     fetchUserData();
   }, [userId, activeTab, apiEndpoint]);
 
   const fetchUserData = async () => {
     setLoading(true);
+
     try {
-      // In a real implementation, these would be API calls
-      // const profileResponse = await axios.get(apiEndpoint);
-      // const statsEndpoint = isMyProfile ? 'api/v1/user/static/me' : `api/v1/user/static/${userId}`;
-      // const statsResponse = await axios.get(statsEndpoint);
-      // const photosEndpoint = isMyProfile ? 'api/v1/user/photo/me' : `api/v1/user/photo/${userId}`;
-      // const photosResponse = await axios.get(`${photosEndpoint}?tab=${activeTab}`);
+      if (isMyProfile) {
+        // 내 프로필 데이터 조회
+        const profileResponse = await userApi.getMyProfile();
+        const statsResponse = await userApi.getMyStatistics();
+        const photosResponse = await userApi.getMyPhotos(
+          activeTab !== "hidden"
+        );
 
-      // setProfile(profileResponse.data);
-      // setUserStats(statsResponse.data);
-      // setPhotos(photosResponse.data);
-
-      // Mock data for demonstration
-      setTimeout(() => {
+        // 프로필 정보 처리
         setProfile({
-          nickname: isMyProfile ? "김선진" : "김윤배",
-          statusMessage: "상태메세지는 입력하는 창인데 표시할게요",
-          profileImage: null,
-          followerCount: 128,
-          followingCount: 95,
-          isMyProfile: isMyProfile,
-          isFollowing: !isMyProfile && Math.random() > 0.5,
-          // 마이페이지의 경우 사용자가 선택한 뱃지 ID 사용
-          displayBadgeId: isMyProfile
-            ? localStorage.getItem("selectedBadgeId") || undefined
-            : undefined,
+          nickname: profileResponse.data.nickName,
+          statusMessage: profileResponse.data.message,
+          profileImage: profileResponse.data.profileImage,
+          followerCount: profileResponse.data.followerCnt,
+          followingCount: profileResponse.data.followingCnt,
+          isMyProfile: true,
+          isFollowing: false,
+          displayBadgeId: localStorage.getItem("selectedBadgeId") || undefined,
         });
 
+        // 통계 정보 처리
         setUserStats({
-          averageScore: 78.5,
-          contestRank: "10",
-          timeAttackRank: "15",
-          arenaRank: "20",
+          averageScore: statsResponse.data.scoreAvg,
+          contestRank: "N/A",
+          timeAttackRank: statsResponse.data.timeAttackRank.toString(),
+          arenaRank: "N/A",
         });
 
-        // Mock photos based on active tab
-        let mockPhotos: PhotoItem[] = [];
+        // 사진 정보 처리
+        const photoItems: PhotoItem[] = photosResponse.data.map(
+          (photo: any) => ({
+            id: photo.id.toString(),
+            imageUrl: photo.imageUrl,
+            score: photo.score,
+            isPrivate: !photo.isPublic,
+          })
+        );
 
-        if (activeTab === "gallery") {
-          mockPhotos = [
-            {
-              id: "1",
-              imageUrl: "https://via.placeholder.com/300",
-              score: 89,
-              isPrivate: false,
-            },
-            {
-              id: "2",
-              imageUrl: "https://via.placeholder.com/300",
-              score: 76,
-              isPrivate: isMyProfile,
-            },
-            {
-              id: "3",
-              imageUrl: "https://via.placeholder.com/300",
-              score: 92,
-              isPrivate: false,
-            },
-            {
-              id: "4",
-              imageUrl: "https://via.placeholder.com/300",
-              score: 84,
-              isPrivate: false,
-            },
-            {
-              id: "5",
-              imageUrl: "https://via.placeholder.com/300",
-              score: 77,
-              isPrivate: false,
-            },
-            {
-              id: "6",
-              imageUrl: "https://via.placeholder.com/300",
-              score: 95,
-              isPrivate: false,
-            },
-          ];
-        } else if (activeTab === "hidden" && isMyProfile) {
-          mockPhotos = [
-            {
-              id: "2",
-              imageUrl: "https://via.placeholder.com/300",
-              score: 76,
-              isPrivate: true,
-            },
-          ];
-        } else if (activeTab === "contest") {
-          mockPhotos = [
-            {
-              id: "3",
-              imageUrl: "https://via.placeholder.com/300",
-              score: 92,
-              isPrivate: false,
-            },
-            {
-              id: "6",
-              imageUrl: "https://via.placeholder.com/300",
-              score: 95,
-              isPrivate: false,
-            },
-          ];
-        }
+        setPhotos(photoItems);
+      } else if (userId) {
+        // 다른 사용자 프로필 데이터 조회
+        const profileResponse = await userApi.getUserProfile(parseInt(userId));
+        const statsResponse = await userApi.getUserStatistics(parseInt(userId));
+        const photosResponse = await userApi.getUserPhotos(
+          parseInt(userId),
+          true
+        );
 
-        setPhotos(mockPhotos);
-        setLoading(false);
-      }, 500);
+        // 프로필 정보 처리
+        setProfile({
+          nickname: profileResponse.data.nickName,
+          statusMessage: profileResponse.data.message,
+          profileImage: profileResponse.data.profileImage,
+          followerCount: profileResponse.data.followerCnt,
+          followingCount: profileResponse.data.followingCnt,
+          isMyProfile: false,
+          isFollowing: profileResponse.data.isFollowing,
+          displayBadgeId: undefined,
+        });
+
+        // 통계 정보 처리
+        setUserStats({
+          averageScore: statsResponse.data.scoreAvg,
+          contestRank: "N/A",
+          timeAttackRank: statsResponse.data.timeAttackRank.toString(),
+          arenaRank: "N/A",
+        });
+
+        // 사진 정보 처리
+        const photoItems: PhotoItem[] = photosResponse.data.map(
+          (photo: any) => ({
+            id: photo.id.toString(),
+            imageUrl: photo.imageUrl,
+            score: photo.score,
+            isPrivate: false,
+          })
+        );
+
+        setPhotos(photoItems);
+      }
     } catch (error) {
       console.error("Error fetching user data:", error);
+    } finally {
       setLoading(false);
     }
   };
 
-  const handleFollowClick = () => {
-    // Toggle follow state
-    setProfile((prev) => ({
-      ...prev,
-      isFollowing: !prev.isFollowing,
-    }));
+  const handleFollowClick = async () => {
+    if (userId) {
+      try {
+        await userApi.toggleFollow(parseInt(userId));
 
-    // In a real implementation, this would be an API call
-    // axios.post(`api/v1/user/following/me`, { userId: userId });
+        setProfile((prev) => ({
+          ...prev,
+          isFollowing: !prev.isFollowing,
+        }));
+      } catch (error) {
+        console.error("팔로우 요청 실패:", error);
+      }
+    }
   };
 
   const handleEditClick = () => {
-    // Navigate to profile edit page
     navigate("/change-info");
   };
 
@@ -210,7 +188,6 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
     setActiveTab(tab);
   };
 
-  // Get available tabs based on whether it's mypage or userdetail
   const getTabs = () => {
     if (isMyProfile) {
       return [
@@ -227,9 +204,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
   };
 
   return (
-    <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-      <Header title={profile.isMyProfile ? "마이페이지" : profile.nickname} />
-
+    <div className="w-full flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
       <ProfileHeader
         profile={profile}
         onFollowClick={handleFollowClick}

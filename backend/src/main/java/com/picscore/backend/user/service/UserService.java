@@ -6,11 +6,10 @@ import com.picscore.backend.badge.model.entity.UserBadge;
 import com.picscore.backend.badge.repository.UserBadgeRepository;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
-import com.picscore.backend.timeattack.model.entity.TimeAttack;
 import com.picscore.backend.timeattack.model.response.GetMyStaticResponse;
 import com.picscore.backend.timeattack.model.response.GetUserStaticResponse;
 import com.picscore.backend.timeattack.repository.TimeAttackRepository;
-import com.picscore.backend.user.jwt.JWTUtil;
+import com.picscore.backend.common.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.model.request.UpdateMyProfileRequest;
 import com.picscore.backend.user.model.response.GetMyProfileResponse;
@@ -48,6 +47,7 @@ public class UserService {
     private final TimeAttackRepository timeAttackRepository;
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
+
 
     /**
      * 현재 로그인한 사용자의 정보를 가져오는 메서드
@@ -87,9 +87,12 @@ public class UserService {
         }
 
         // 유저 정보 + 토큰 반환
-        LoginInfoResponse response = new LoginInfoResponse(user.getId(), user.getNickName(), accessToken);
+        LoginInfoResponse response = new LoginInfoResponse(
+                user.getId(), user.getNickName(), user.getMessage(),
+                user.getLevel(), user.getExperience());
         return ResponseEntity.ok(BaseResponse.success("로그인 성공", response));
     }
+
 
     /**
      * 사용자 검색 기능을 제공하는 메서드
@@ -119,6 +122,14 @@ public class UserService {
         return ResponseEntity.ok(BaseResponse.success("친구 검색 성공", response));
     }
 
+
+    /**
+     * 현재 사용자의 프로필 정보를 조회하는 메서드
+     *
+     * @param userId 조회할 사용자의 ID
+     * @return ResponseEntity<BaseResponse<GetMyProfileResponse>> 사용자 프로필 정보 응답
+     * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
+     */
     public ResponseEntity<BaseResponse<GetMyProfileResponse>> getMyProfile(Long userId) {
 
         User user = userRepository.findById(userId)
@@ -149,6 +160,15 @@ public class UserService {
         return ResponseEntity.ok(BaseResponse.success("내 프로필 조회 성공", response));
     }
 
+
+    /**
+     * 특정 사용자의 프로필 정보를 조회하는 메서드
+     *
+     * @param myId 현재 로그인한 사용자의 ID
+     * @param userId 조회할 사용자의 ID
+     * @return ResponseEntity<BaseResponse<GetUserProfileResponse>> 사용자 프로필 정보 응답
+     * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
+     */
     public ResponseEntity<BaseResponse<GetUserProfileResponse>> getUserProfile(
             Long myId, Long userId
     ) {
@@ -183,6 +203,16 @@ public class UserService {
         return ResponseEntity.ok(BaseResponse.success("유저 프로필 조회 성공", response));
     }
 
+
+    /**
+     * 현재 사용자의 프로필 정보를 수정하는 메서드
+     *
+     * @param userId 수정할 사용자의 ID
+     * @param request 수정할 프로필 정보
+     * @param response HTTP 응답 객체
+     * @return ResponseEntity<BaseResponse<Void>> 수정 결과 응답
+     * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
+     */
     @Transactional
     public ResponseEntity<BaseResponse<Void>> updateMyProfile(
             Long userId, UpdateMyProfileRequest request, HttpServletResponse response
@@ -215,6 +245,13 @@ public class UserService {
         return ResponseEntity.ok(BaseResponse.error("프로필 수정 완료"));
     }
 
+
+    /**
+     * 현재 사용자의 통계 정보를 조회하는 메서드
+     *
+     * @param userId 조회할 사용자의 ID
+     * @return ResponseEntity<BaseResponse<GetMyStaticResponse>> 사용자 통계 정보 응답
+     */
     public ResponseEntity<BaseResponse<GetMyStaticResponse>> getMyStatic(Long userId) {
         Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
 
@@ -228,6 +265,13 @@ public class UserService {
         return ResponseEntity.ok(BaseResponse.success("나의 통계 조회 성공", response));
     }
 
+
+    /**
+     * 특정 사용자의 통계 정보를 조회하는 메서드
+     *
+     * @param userId 조회할 사용자의 ID
+     * @return ResponseEntity<BaseResponse<GetUserStaticResponse>> 사용자 통계 정보 응답
+     */
     public ResponseEntity<BaseResponse<GetUserStaticResponse>> getUserStatic(Long userId) {
         Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
 
