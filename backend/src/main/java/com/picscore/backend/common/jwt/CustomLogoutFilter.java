@@ -1,4 +1,4 @@
-package com.picscore.backend.user.jwt;
+package com.picscore.backend.common.jwt;
 
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.user.repository.UserRepository;
