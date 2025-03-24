@@ -188,14 +188,14 @@ public class UserController {
     /**
      * 사용자를 검색하는 엔드포인트
      *
-     * @param request 검색 요청 객체 (검색어 포함)
+     * @param searchText 검색어 텍스트
      * @return ResponseEntity<BaseResponse<List<SearchUsersResponse>>> 검색 결과 응답
      */
-    @GetMapping("/search")
+    @GetMapping("/search/{searchText}")
     public ResponseEntity<BaseResponse<List<SearchUsersResponse>>> searchUser(
-            @RequestBody SearchUsersRequest request
+            @PathVariable String searchText
     ) {
-        return userService.searchUser(request.getSearchText());
+        return userService.searchUser(searchText);
     }
 
 

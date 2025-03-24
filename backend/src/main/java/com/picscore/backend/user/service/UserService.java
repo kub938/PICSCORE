@@ -88,7 +88,9 @@ public class UserService {
         }
 
         // 유저 정보 + 토큰 반환
-        LoginInfoResponse response = new LoginInfoResponse(user.getId(), user.getNickName(), accessToken);
+        LoginInfoResponse response = new LoginInfoResponse(
+                user.getId(), user.getNickName(), user.getMessage(),
+                user.getLevel(), user.getExperience());
         return ResponseEntity.ok(BaseResponse.success("로그인 성공", response));
     }
 
