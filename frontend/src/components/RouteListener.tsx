@@ -9,6 +9,7 @@ interface LayoutConfig {
 }
 
 const routeLayouts: { [key: string]: LayoutConfig } = {
+  "/": { showNavBar: true, showBottomBar: false },
   "/image-upload": { showNavBar: true, showBottomBar: false },
   "/login": { showNavBar: false, showBottomBar: false },
   "/detail": { showNavBar: true, showBottomBar: false },

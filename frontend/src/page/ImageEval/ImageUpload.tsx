@@ -4,6 +4,9 @@ import { CameraIcon } from "@heroicons/react/24/outline";
 import Button from "../../components/Button";
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "../../api/api";
+import { boardApi } from "../../api/boardApi";
 
 function ImageUpload() {
   const [modalState, setModalState] = useState(false);
@@ -60,7 +63,7 @@ function ImageUpload() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center"
+      className="flex flex-col w-full items-center justify-center"
       onClick={modalClose}
     >
       {/* 사진 촬영 / 업로드 모달창 */}
@@ -134,7 +137,7 @@ function ImageUpload() {
           </>
         )}
       </div>
-      <Link to="/Image-eval">
+      <Link to="/image-result">
         <Button
           color={imageFile ? "green" : "gray"}
           width={32}
