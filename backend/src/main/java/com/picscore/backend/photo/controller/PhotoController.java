@@ -98,9 +98,9 @@ public class PhotoController {
      */
     @GetMapping("/user/photo/me")
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>>
-    getMyPhotos(HttpServletRequest request, @RequestBody GetPhotosRequest body) {
+    getMyPhotos(HttpServletRequest request, @RequestParam(required = false) Boolean isPublic) {
         Long userId = oAuthService.findIdByNickName(request);
-        return photoService.getPhotosByUserId(userId, body.getIsPublic());
+        return photoService.getPhotosByUserId(userId, isPublic);
     }
 
 
