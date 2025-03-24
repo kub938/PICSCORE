@@ -51,8 +51,8 @@ public class UserController {
      * - 사용자 정보를 포함하는 응답 객체
      */
     @GetMapping("/info")
-    public ResponseEntity<BaseResponse<LoginInfoResponse>> LoginInfo(HttpServletRequest request) {
-        return userService.LoginInfo(request);
+    public ResponseEntity<BaseResponse<LoginInfoResponse>> LoginInfo(HttpServletRequest request, HttpServletResponse responses) {
+        return userService.LoginInfo(request, responses);
     }
 
 
