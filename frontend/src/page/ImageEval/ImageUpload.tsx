@@ -137,7 +137,7 @@ function ImageUpload() {
           </>
         )}
       </div>
-      <Link to="/Image-eval">
+      <Link to="/image-result">
         <Button
           color={imageFile ? "green" : "gray"}
           width={32}
