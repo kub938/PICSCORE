@@ -2,6 +2,7 @@ package com.picscore.backend.photo.repository;
 
 import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.photo.model.response.GetPhotosResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -27,8 +28,11 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
     List<Photo> findPhotosByUserId(@Param("userId") Long userId, @Param("isPublic") Boolean isPublic);
 
     Photo findPhotoById(Long id);
-    @Query("SELECT p FROM Photo p  WHERE p.isPublic = true")
-    List<Photo> getAllWithoutPublic();
+
+    @Query(value = "SELECT p FROM Photo p WHERE p.isPublic = true",
+            countQuery = "SELECT COUNT(p) FROM Photo p WHERE p.isPublic = true")
+    Page<Photo> findAllWithPublic(Pageable pageable);
+
 
     @Modifying
     @Transactional
