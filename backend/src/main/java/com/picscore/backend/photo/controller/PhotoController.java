@@ -145,9 +145,11 @@ public class PhotoController {
      *
      * @return ResponseEntity<BaseResponse<Map<String, Object>>> 페이징된 사진 목록 응답
      */
-    @GetMapping("/photo")
-    public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos() {
-        return photoService.getPaginatedPhotos();
+    @GetMapping("/photos/{pageNum}")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos(
+            @PathVariable int pageNum
+    ) {
+        return photoService.getPaginatedPhotos(pageNum);
     }
 
 
