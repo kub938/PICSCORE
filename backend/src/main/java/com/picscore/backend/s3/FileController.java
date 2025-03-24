@@ -30,6 +30,12 @@ public class FileController {
     private final OAuthService oAuthService;
     private final UserRepository userRepository;
 
+    // 분석 요청
+    @PostMapping("/analysis")
+    public ResponseEntity<BaseResponse<Object>> analysisFile(@RequestBody UploadFileRequest payload) {
+        return s3Service.analysisFile(payload.getImageUrl());
+    }
+
     // 임시저장
     @PostMapping("/upload")
     public ResponseEntity<BaseResponse<UploadFileResponse>> uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
