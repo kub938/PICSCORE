@@ -19,20 +19,37 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 사진 관련 비즈니스 로직을 처리하는 서비스 클래스
+ */
 @Service
 @RequiredArgsConstructor
 public class PhotoService {
+
     private final PhotoRepository photoRepository;
     private final PhotoLikeRepository photoLikeRepository;
     private final PhotoHashtagRepository photoHashtagRepository;
 
-    // 주제로 검색
+
+    /**
+     * 주어진 키워드(해시태그)로 사진을 검색하는 메서드
+     *
+     * @param keyword 검색할 해시태그 키워드
+     * @return ResponseEntity<BaseResponse<List<GetPhotosResponse>>> 검색된 사진 목록
+     */
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> searchPhotosByHashtag(String keyword) {
         List<GetPhotosResponse> results = photoRepository.findPhotosByHashtagName(keyword);
         return ResponseEntity.ok(BaseResponse.success("사진 조회 성공", results));
     }
 
-    // 사진 삭제
+
+    /**
+     * 특정 사진을 삭제하는 메서드
+     *
+     * @param photoId 삭제할 사진의 ID
+     * @param userId 삭제 요청을 한 사용자의 ID
+     * @return ResponseEntity<BaseResponse<Void>> 삭제 결과
+     */
     @Transactional
     public ResponseEntity<BaseResponse<Void>> deletePhoto(Long photoId, Long userId) {
         // 사진 조회
@@ -57,7 +74,12 @@ public class PhotoService {
         return ResponseEntity.ok(BaseResponse.withMessage("사진 삭제 완료"));
     }
 
-    // 전체 사진 조회
+
+    /**
+     * 전체 사진을 페이징 처리하여 조회하는 메서드
+     *
+     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 페이징된 사진 목록
+     */
     public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos() {
         // 사진 목록 조회
         List<Photo> photos = photoRepository.getAllWithoutPublic();
@@ -95,7 +117,13 @@ public class PhotoService {
     }
 
 
-    // 내 사진 조회
+    /**
+     * 특정 사용자의 사진을 조회하는 메서드
+     *
+     * @param userId 조회할 사용자의 ID
+     * @param isPublic 공개/비공개 여부
+     * @return ResponseEntity<BaseResponse<List<GetPhotosResponse>>> 조회된 사진 목록
+     */
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(Long userId, Boolean isPublic) {
         List<Photo> photos = photoRepository.findPhotosByUserId(userId, isPublic);
         List<GetPhotosResponse> getPhotoResponses = photos.stream()
@@ -104,7 +132,18 @@ public class PhotoService {
         return ResponseEntity.ok(BaseResponse.success("사진 조회 성공", getPhotoResponses));
     }
 
-    // 사진 저장
+
+    /**
+     * 새로운 사진을 저장하는 메서드
+     *
+     * @param user 사진을 업로드한 사용자
+     * @param imageUrl 사진 URL
+     * @param score 사진 점수
+     * @param analysisChart 분석 차트
+     * @param analysisText 분석 텍스트
+     * @param isPublic 공개/비공개 여부
+     * @return ResponseEntity<BaseResponse<HttpStatus>> 저장 결과
+     */
     public ResponseEntity<BaseResponse<HttpStatus>> savePhoto(User user, String imageUrl, Float score, String analysisChart, String analysisText, Boolean isPublic) {
         Photo photo = new Photo();
         photo.setUser(user);
@@ -117,7 +156,13 @@ public class PhotoService {
         return ResponseEntity.ok(BaseResponse.success("사진 업로드 완료", HttpStatus.CREATED));
     }
 
-    // 사진 상세조회
+
+    /**
+     * 특정 사진의 상세 정보를 조회하는 메서드
+     *
+     * @param photoId 조회할 사진의 ID
+     * @return ResponseEntity<BaseResponse<GetPhotoDetailResponse>> 사진 상세 정보
+     */
     public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(Long photoId) {
         // Photo 정보 조회
         Photo photo = photoRepository.findById(photoId)
@@ -140,7 +185,14 @@ public class PhotoService {
         return ResponseEntity.ok(BaseResponse.success("사진 상세 조회 성공",response));
     }
 
-    // 공개-비공개 토글
+
+    /**
+     * 사진의 공개/비공개 상태를 토글하는 메서드
+     *
+     * @param photoId 상태를 변경할 사진의 ID
+     * @param userId 변경 요청을 한 사용자의 ID
+     * @return ResponseEntity<BaseResponse<Void>> 변경 결과
+     */
     public ResponseEntity<BaseResponse<Void>> togglePublic(Long photoId, Long userId) {
         // 사진 조회
         Photo photo = photoRepository.findPhotoById(photoId);
@@ -163,6 +215,12 @@ public class PhotoService {
 
     }
 
+
+    /**
+     * 좋아요 수 기준 상위 5개의 사진을 조회하는 메서드
+     *
+     * @return ResponseEntity<BaseResponse<List<GetPhotoTop5Response>>> 상위 5개 사진 목록
+     */
     public ResponseEntity<BaseResponse<List<GetPhotoTop5Response>>> getPhotoTop5() {
 
         PageRequest pageRequest = PageRequest.of(0, 5);

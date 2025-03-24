@@ -41,6 +41,7 @@ public class UserController {
     private final FollowService followService;
     private final OAuthService oAuthService;
 
+
     /**
      * 현재 로그인한 사용자의 정보를 반환합니다.
      * <p>
@@ -54,6 +55,7 @@ public class UserController {
     public ResponseEntity<BaseResponse<LoginInfoResponse>> LoginInfo(HttpServletRequest request) {
         return userService.LoginInfo(request);
     }
+
 
     /**
      * 사용자 로그아웃을 처리합니다.
@@ -72,6 +74,7 @@ public class UserController {
         BaseResponse<Void> baseResponse = BaseResponse.withMessage("로그아웃 완료");
         return ResponseEntity.ok(baseResponse);
     }
+
 
     /**
      * 현재 사용자의 팔로우 상태를 토글하는 엔드포인트
@@ -99,6 +102,7 @@ public class UserController {
         return ResponseEntity.ok(baseResponse);
     }
 
+
     /**
      * 현재 사용자의 팔로워 목록을 조회하는 엔드포인트
      *
@@ -113,6 +117,7 @@ public class UserController {
         // 팔로워 목록 조회 및 응답 반환
         return followService.getMyFollowers(userId);
     }
+
 
     /**
      * 현재 사용자의 팔로잉 목록을 조회하는 엔드포인트
@@ -129,94 +134,148 @@ public class UserController {
         return followService.getMyFollowings(userId);
     }
 
+
+    /**
+     * 특정 사용자의 팔로워 목록을 조회하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체 (현재 사용자 인증 정보 포함)
+     * @param userId 팔로워를 조회할 사용자의 ID
+     * @return ResponseEntity<BaseResponse<List<GetUserFollowersResponse>>> 팔로워 목록 응답
+     */
     @GetMapping("/follower/{userId}")
     public ResponseEntity<BaseResponse<List<GetUserFollowersResponse>>> getUserFollowers(
             HttpServletRequest request,
             @PathVariable Long userId) {
-
         Long myId = oAuthService.findIdByNickName(request);
-
         return followService.getUserFollowers(myId, userId);
     }
 
+
+    /**
+     * 특정 사용자의 팔로잉 목록을 조회하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체 (현재 사용자 인증 정보 포함)
+     * @param userId 팔로잉을 조회할 사용자의 ID
+     * @return ResponseEntity<BaseResponse<List<GetUserFollowingsResponse>>> 팔로잉 목록 응답
+     */
     @GetMapping("/following/{userId}")
     public ResponseEntity<BaseResponse<List<GetUserFollowingsResponse>>> getUserFollowings(
             HttpServletRequest request,
             @PathVariable Long userId
     ) {
-
         Long myId = oAuthService.findIdByNickName(request);
-
         return followService.getUserFollowings(myId, userId);
     }
 
+
+    /**
+     * 현재 사용자의 팔로워를 삭제하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체 (현재 사용자 인증 정보 포함)
+     * @param userId 삭제할 팔로워의 ID
+     * @return ResponseEntity<BaseResponse<Void>> 삭제 결과 응답
+     */
     @DeleteMapping("/follower/{userId}")
     public ResponseEntity<BaseResponse<Void>> deleteMyFollower(
             HttpServletRequest request,
             @PathVariable Long userId
     ) {
-
         Long myId = oAuthService.findIdByNickName(request);
-
         return followService.deleteMyFollower(myId, userId);
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<BaseResponse<List<SearchUsersResponse>>> searchUser(
-            @RequestBody SearchUsersRequest request
-    ) {
 
-        return userService.searchUser(request.getSearchText());
+    /**
+     * 사용자를 검색하는 엔드포인트
+     *
+     * @param searchText 검색어 텍스트
+     * @return ResponseEntity<BaseResponse<List<SearchUsersResponse>>> 검색 결과 응답
+     */
+    @GetMapping("/search/{searchText}")
+    public ResponseEntity<BaseResponse<List<SearchUsersResponse>>> searchUser(
+            @PathVariable String searchText
+    ) {
+        return userService.searchUser(searchText);
     }
 
+
+    /**
+     * 현재 사용자의 프로필 정보를 조회하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체 (현재 사용자 인증 정보 포함)
+     * @return ResponseEntity<BaseResponse<GetMyProfileResponse>> 현재 사용자 프로필 정보 응답
+     */
     @GetMapping("/profile/me")
     public ResponseEntity<BaseResponse<GetMyProfileResponse>> getMyProfile(
             HttpServletRequest request
     ) {
-
         Long userId = oAuthService.findIdByNickName(request);
-
         return userService.getMyProfile(userId);
     }
 
+
+    /**
+     * 특정 사용자의 프로필 정보를 조회하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체 (현재 사용자 인증 정보 포함)
+     * @param userId 프로필을 조회할 사용자의 ID
+     * @return ResponseEntity<BaseResponse<GetUserProfileResponse>> 사용자 프로필 정보 응답
+     */
     @GetMapping("/profile/{userId}")
     public ResponseEntity<BaseResponse<GetUserProfileResponse>> getUserProfile(
             HttpServletRequest request,
             @PathVariable Long userId
     ) {
-
         Long myId = oAuthService.findIdByNickName(request);
-
         return userService.getUserProfile(myId, userId);
     }
 
+
+    /**
+     * 현재 사용자의 프로필 정보를 수정하는 엔드포인트
+     *
+     * @param response HTTP 응답 객체
+     * @param request HTTP 요청 객체 (현재 사용자 인증 정보 포함)
+     * @param updateMyProfileRequest 수정할 프로필 정보
+     * @return ResponseEntity<BaseResponse<Void>> 수정 결과 응답
+     */
     @PatchMapping("/profile")
     public ResponseEntity<BaseResponse<Void>> updateMyProfile(
             HttpServletResponse response,
             HttpServletRequest request,
             @RequestBody UpdateMyProfileRequest updateMyProfileRequest
     ) {
-
         Long userId = oAuthService.findIdByNickName(request);
-
         return userService.updateMyProfile(userId, updateMyProfileRequest, response);
     }
 
+
+    /**
+     * 현재 사용자의 통계 정보를 조회하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체 (현재 사용자 인증 정보 포함)
+     * @return ResponseEntity<BaseResponse<GetMyStaticResponse>> 현재 사용자 통계 정보 응답
+     */
     @GetMapping("/static/me")
     public ResponseEntity<BaseResponse<GetMyStaticResponse>> getMyStatic(
             HttpServletRequest request
     ) {
-
         Long userId = oAuthService.findIdByNickName(request);
-
         return userService.getMyStatic(userId);
     }
 
+
+    /**
+     * 특정 사용자의 통계 정보를 조회하는 엔드포인트
+     *
+     * @param userId 통계를 조회할 사용자의 ID
+     * @return ResponseEntity<BaseResponse<GetUserStaticResponse>> 사용자 통계 정보 응답
+     */
     @GetMapping("/static/{userId}")
     public ResponseEntity<BaseResponse<GetUserStaticResponse>> getUserStatic(
             @PathVariable Long userId
     ) {
-
         return userService.getUserStatic(userId);
     }
+
 }
