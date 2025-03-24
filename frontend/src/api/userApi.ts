@@ -55,8 +55,6 @@ interface UpdateProfileRequest {
   message: string;
 }
 
-// Base response wrapper used by the API
-
 export const userApi = {
   // User profile endpoints
   getMyProfile: () => {
@@ -89,9 +87,7 @@ export const userApi = {
   },
 
   toggleFollow: (followingId: number) => {
-    return api.post<void>("/api/v1/user/following/me", {
-      followingId,
-    });
+    return api.post<void>("/api/v1/user/following/me", { followingId });
   },
 
   deleteFollower: (userId: number) => {
