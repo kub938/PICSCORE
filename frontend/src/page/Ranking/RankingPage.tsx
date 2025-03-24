@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Header from "./components/Header";
 import TrophyCard from "./components/TrophyCard";
 import RankingList from "./components/RankingList";
 import Pagination from "./components/Pagination";
-import { RankingUser, TimeFrame } from "../../types";
+import { TimeFrame, RankingUser } from "../../types";
+import { useRankingStore } from "../../store/rankingStore";
 
 // Import medal images
 import goldTrophy from "../../assets/gold.png";
@@ -12,21 +13,29 @@ import silverTrophy from "../../assets/silver.png";
 import bronzeTrophy from "../../assets/bronze.png";
 
 const RankingPage: React.FC = () => {
-  const [rankings, setRankings] = useState<RankingUser[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [timeFrame, setTimeFrame] = useState<TimeFrame>("today");
+  // Zustand store 사용
+  const rankingState = useRankingStore();
+  const {
+    rankings,
+    isLoading,
+    currentPage,
+    totalPages,
+    timeframe,
+    setRankings,
+    setLoading,
+    setPagination,
+    setTimeframe,
+  } = rankingState;
 
   useEffect(() => {
     fetchRankings();
-  }, [currentPage, timeFrame]);
+  }, [currentPage, timeframe]);
 
   const fetchRankings = async (): Promise<void> => {
     setLoading(true);
     try {
       // In a real implementation, this would be an API call
-      // const response = await axios.get(`api/v1/activity/time-attack?page=${currentPage}&timeframe=${timeFrame}`);
+      // const response = await axios.get(`api/v1/activity/time-attack?page=${currentPage}&timeframe=${timeframe}`);
       // setRankings(response.data.rankings);
       // setTotalPages(response.data.totalPages);
 
@@ -70,7 +79,7 @@ const RankingPage: React.FC = () => {
           },
         ];
         setRankings(mockRankings);
-        setTotalPages(5);
+        setPagination(currentPage, 5);
         setLoading(false);
       }, 800); // Simulate network delay
     } catch (error) {
@@ -81,26 +90,24 @@ const RankingPage: React.FC = () => {
 
   const handleNextPage = (): void => {
     if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
+      setPagination(currentPage + 1, totalPages);
     }
   };
 
   const handlePrevPage = (): void => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+      setPagination(currentPage - 1, totalPages);
     }
   };
 
   const handleTimeFrameChange = (frame: TimeFrame): void => {
-    setTimeFrame(frame);
-    setCurrentPage(1); // Reset to page 1 when changing time frame
+    setTimeframe(frame);
+    setPagination(1, totalPages); // Reset to page 1 when changing time frame
   };
 
   return (
-    <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-      <Header title="랭킹" />
-
-      {!loading && rankings.length >= 3 && (
+    <div className="flex flex-col max-w-md min-h-screen bg-gray-50">
+      {!isLoading && rankings.length >= 3 && (
         <div className="grid grid-cols-3 gap-2 p-4">
           <TrophyCard
             rank={2}
@@ -128,7 +135,7 @@ const RankingPage: React.FC = () => {
             <button
               onClick={() => handleTimeFrameChange("today")}
               className={`px-3 py-1 text-sm rounded-full ${
-                timeFrame === "today"
+                timeframe === "today"
                   ? "bg-green-500 text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
@@ -138,7 +145,7 @@ const RankingPage: React.FC = () => {
             <button
               onClick={() => handleTimeFrameChange("week")}
               className={`px-3 py-1 text-sm rounded-full ${
-                timeFrame === "week"
+                timeframe === "week"
                   ? "bg-green-500 text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
@@ -148,7 +155,7 @@ const RankingPage: React.FC = () => {
             <button
               onClick={() => handleTimeFrameChange("month")}
               className={`px-3 py-1 text-sm rounded-full ${
-                timeFrame === "month"
+                timeframe === "month"
                   ? "bg-green-500 text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
@@ -158,7 +165,7 @@ const RankingPage: React.FC = () => {
             <button
               onClick={() => handleTimeFrameChange("all")}
               className={`px-3 py-1 text-sm rounded-full ${
-                timeFrame === "all"
+                timeframe === "all"
                   ? "bg-green-500 text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
@@ -168,7 +175,7 @@ const RankingPage: React.FC = () => {
           </div>
         </div>
 
-        <RankingList rankings={rankings} loading={loading} />
+        <RankingList rankings={rankings} loading={isLoading} />
 
         <Pagination
           currentPage={currentPage}
