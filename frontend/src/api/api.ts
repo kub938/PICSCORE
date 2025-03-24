@@ -36,6 +36,7 @@ api.interceptors.response.use(
           break;
       }
     } else if (error.request) {
+      console.log(axios);
       console.error("네트워크 에러:", error.request);
     } else {
       console.error("클라이언트 에러", error.message);
