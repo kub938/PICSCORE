@@ -32,10 +32,10 @@ public class TimeAttackService {
     private final TimeAttackRepository timeAttackRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${VISION_API_URL}")  // 환경 변수에서 API URL 가져오기
+    @Value("${api.azure.end-point}")  // 환경 변수에서 API URL 가져오기
     private String visionApiUrl;
 
-    @Value("${VISION_API_KEY}")  // 환경 변수에서 API Key 가져오기
+    @Value("${api.azure.api-key}")  // 환경 변수에서 API Key 가져오기
     private String visionApiKey;
 
 
