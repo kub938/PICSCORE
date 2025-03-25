@@ -1,5 +1,3 @@
-// api/userApi.ts 파일 수정
-
 import { api } from "./api";
 
 // 공통 API 응답 타입 정의
