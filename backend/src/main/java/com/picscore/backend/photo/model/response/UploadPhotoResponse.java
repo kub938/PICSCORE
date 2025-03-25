@@ -1,11 +1,11 @@
-package com.picscore.backend.s3;
+package com.picscore.backend.photo.model.response;
 
-public class UploadFileResponse {
+public class UploadPhotoResponse {
 
     public String imageUrl;
     public String imageName; // JSON 형태로 저장된 데이터
 
-    public UploadFileResponse(String imageUrl, String imageName) {
+    public UploadPhotoResponse(String imageUrl, String imageName) {
 
         this.imageUrl = imageUrl;
         this.imageName = imageName;
