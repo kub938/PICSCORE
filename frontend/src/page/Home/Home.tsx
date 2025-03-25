@@ -1,28 +1,93 @@
 import { Link } from "react-router-dom";
-import BottomBar from "../../components/BottomBar/BottomBar";
-import NavBar from "../../components/NavBar/NavBar";
 import profileImage from "../../assets/profile.jpg";
 import contest from "../../assets/contest.png";
 import time from "../../assets/time.png";
 import board from "../../assets/board.png";
 import ranking from "../../assets/ranking.png";
 import { useAuthStore } from "../../store/authStore";
-import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import HomeNavBar from "../../components/NavBar/HomeNavBar";
+import axios from "axios";
+import { useLogout } from "../../hooks/useUser";
 
 function Home() {
+  /*
+  원래 로직
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const login = useAuthStore((state) => state.login);
+  const params = new URLSearchParams(window.location.search);
+  const loginSuccess = params.get("loginSuccess");
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const loginSuccess = params.get("loginSuccess");
-    if (loginSuccess) {
-      login();
-    }
+  const { isLoading, isError, data } = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const response = await api.get("/api/v1/user/info");
+      return response.data.data;
+    },
+    enabled: !!loginSuccess, // loginSuccess가 true일 때만 쿼리 실행
   });
+
+   useEffect(() => {
+    if (data) {
+      login(data);
+    }
+  }, [data]);
+  
+  if (isLoading) {
+    return <>로딩중..</>;
+  }
+  if (isError) {
+    return <>유저 정보 호출 에러</>;
+  }
+  */
+
+  /* 테스트 로직 */
+  const logout = useAuthStore((state) => state.logout);
+
+  const useUserData = () => {
+    const accessToken = useAuthStore((state) => state.accessToken);
+
+    return useQuery({
+      queryKey: ["userData"],
+      queryFn: async () => {
+        const response = await axios.get(
+          "https://j12b104.p.ssafy.io/api/v1/user/info",
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        return response.data;
+      },
+    });
+  };
+
+  const logoutMutation = useLogout();
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        logout();
+      },
+    });
+  };
+
+  const { isLoading, isError } = useUserData();
+  if (isLoading) {
+    return <>로딩중 입니다</>;
+  }
+  if (isError) {
+    return <>에러입니다</>;
+  }
+
   return (
     <>
       <div className="flex flex-col w-full items-center">
+        <HomeNavBar />
+        {/* 프로필 이미지 섹션 */}
+        <div onClick={handleLogout} className="border bg-black w-30 h-30">
+          로그아웃
+        </div>
         {/* 프로필 이미지 섹션 */}
         <div className="flex flex-col items-center mb-10 border-2 border-gray-300 rounded-3xl shadow-lg p-5 bg-white w-[90%]">
           <div className="flex flex-row items-center w-full px-15 gap-10">
