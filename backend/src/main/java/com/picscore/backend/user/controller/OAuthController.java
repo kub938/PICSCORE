@@ -30,7 +30,7 @@ public class OAuthController {
      */
     @GetMapping("/user")
     public void redirectToGoogleLogin(HttpServletResponse response) throws IOException {
-        response.sendRedirect("https://j12b104.p.ssafy.io/oauth2/authorization/google");
+        response.sendRedirect("/oauth2/authorization/google");
     }
 
 
