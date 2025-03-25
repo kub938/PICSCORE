@@ -82,7 +82,7 @@ public class UserService {
         // 'Bearer ' 접두사 제거하여 실제 토큰 추출
         String accessToken = authHeader.substring(7);
 
-        responses.addCookie(createCookie("access", accessToken));
+//        responses.addCookie(createCookie("access", accessToken));
         // 여기까지 개발 환경
 
 
