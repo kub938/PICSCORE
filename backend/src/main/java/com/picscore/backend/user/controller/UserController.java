@@ -67,7 +67,7 @@ public class UserController {
      * - 로그아웃 완료 메시지를 포함하는 응답 객체
      * @throws IOException 리다이렉트 중 발생할 수 있는 입출력 예외
      */
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public ResponseEntity<BaseResponse<Void>> redirectToGoogleLogout(HttpServletResponse response) throws IOException {
         response.sendRedirect("/logout");
         BaseResponse<Void> baseResponse = BaseResponse.withMessage("로그아웃 완료");
