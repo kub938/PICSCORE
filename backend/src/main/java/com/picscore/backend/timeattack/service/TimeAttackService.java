@@ -32,10 +32,11 @@ public class TimeAttackService {
     private final TimeAttackRepository timeAttackRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${api.azure.end-point}")  // 환경 변수에서 API URL 가져오기
+
+    @Value("${AZURE_ENDPOINT}")  // 환경 변수에서 API URL 가져오기
     private String visionApiUrl;
 
-    @Value("${api.azure.api-key}")  // 환경 변수에서 API Key 가져오기
+    @Value("${AZURE_COMPUTER_VISION_KEY}")  // 환경 변수에서 API Key 가져오기
     private String visionApiKey;
 
 
@@ -78,11 +79,11 @@ public class TimeAttackService {
     }
 
     public ResponseEntity<BaseResponse<List<AnalysisPhotoResponse>>> analysisPhoto(byte[] imageBlob) {
-        String url = "https://kimsunjin.cognitiveservices.azure.com/" + "vision/v3.2/analyze?visualFeatures=Tags";
+        String url = visionApiUrl + "vision/v3.2/analyze?visualFeatures=Tags";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.set("Ocp-Apim-Subscription-Key", "FzJP7P9AkOYKLLbb3PL1aVLX66PDEufr49SbMsxRmD7OZGB2wXJsJQQJ99BCACNns7RXJ3w3AAAFACOGILsq");
+        headers.set("Ocp-Apim-Subscription-Key", visionApiKey);
 
         HttpEntity<byte[]> requestEntity = new HttpEntity<>(imageBlob, headers);
 
