@@ -6,9 +6,7 @@ import {
   PhotoIcon,
   DocumentTextIcon,
 } from "@heroicons/react/24/outline";
-import { Clock, GitGraph } from "lucide-react";
 import Chart from "./components/Chart";
-import { useEffect } from "react";
 
 interface ImageEvalDetailProps {
   isModalOpen: boolean;
