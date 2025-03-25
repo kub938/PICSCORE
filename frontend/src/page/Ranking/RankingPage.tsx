@@ -136,7 +136,7 @@ const RankingPage: React.FC = () => {
               onClick={() => handleTimeFrameChange("today")}
               className={`px-3 py-1 text-sm rounded-full ${
                 timeframe === "today"
-                  ? "bg-green-500 text-white"
+                  ? "bg-pic-primary text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
             >
@@ -146,7 +146,7 @@ const RankingPage: React.FC = () => {
               onClick={() => handleTimeFrameChange("week")}
               className={`px-3 py-1 text-sm rounded-full ${
                 timeframe === "week"
-                  ? "bg-green-500 text-white"
+                  ? "bg-gpic-primary text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
             >
@@ -156,7 +156,7 @@ const RankingPage: React.FC = () => {
               onClick={() => handleTimeFrameChange("month")}
               className={`px-3 py-1 text-sm rounded-full ${
                 timeframe === "month"
-                  ? "bg-green-500 text-white"
+                  ? "bg-pic-primary text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
             >
@@ -166,7 +166,7 @@ const RankingPage: React.FC = () => {
               onClick={() => handleTimeFrameChange("all")}
               className={`px-3 py-1 text-sm rounded-full ${
                 timeframe === "all"
-                  ? "bg-green-500 text-white"
+                  ? "bg-pic-primary text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
             >
@@ -188,7 +188,7 @@ const RankingPage: React.FC = () => {
       <footer className="p-4 mt-auto">
         <Link
           to="/time-attack"
-          className="block bg-green-500 text-white py-3 rounded-lg text-center font-bold hover:bg-green-600 transition"
+          className="block bg-pic-primary text-white py-3 rounded-lg text-center font-bold hover:bg-green-600 transition"
         >
           타임어택 도전하기
         </Link>
