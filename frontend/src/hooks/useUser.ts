@@ -1,3 +1,6 @@
+import { api } from "../api/api";
+import { useAuthStore } from "../store/authStore";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userApi } from "../api/userApi";
 
@@ -160,17 +163,6 @@ export const useUserPhotos = (userId: number, isPublic: boolean) => {
 };
 
 // Auth hooks
-export const useLogout = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: userApi.logout,
-    onSuccess: () => {
-      // Clear all queries from cache on logout
-      queryClient.clear();
-    },
-  });
-};
 
 export const useDeleteAccount = () => {
   const queryClient = useQueryClient();
@@ -180,6 +172,21 @@ export const useDeleteAccount = () => {
     onSuccess: () => {
       // Clear all queries from cache on account deletion
       queryClient.clear();
+    },
+  });
+};
+
+export const useLogout = () => {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.post("api/v1/user/logout");
+      return response;
+    },
+    onSuccess: (data) => {
+      console.log("로그아웃 완료:", data);
+    },
+    onError: (error) => {
+      console.log("로그아웃 실패", error);
     },
   });
 };

@@ -26,6 +26,11 @@ const routeLayouts: { [key: string]: LayoutConfig } = {
     showBottomBar: true,
     content: "분석 결과",
   },
+  "/welcome": {
+    showNavBar: false,
+    showBottomBar: false,
+    content: "환영합니다",
+  },
 };
 
 function RouteListener() {
