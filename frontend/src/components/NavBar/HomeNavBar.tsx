@@ -3,8 +3,8 @@ import { Bell } from "lucide-react";
 
 const HomeNavBar = () => {
   return (
-    <nav className="w-full fixed top-0 bg-white shadow-sm py-3 px-6">
-      <div className="container mx-auto flex justify-center items-center relative">
+    <nav className="fixed max-w-md w-full top-0 bg-white shadow-sm py-3 px-6">
+      <div className="flex justify-center items-center ">
         {/* 로고 */}
         <Link to="/" className="text-3xl font-logo">
           <span className="text-pic-primary">PIC</span>
@@ -13,7 +13,7 @@ const HomeNavBar = () => {
 
         {/* 알림 벨 아이콘 */}
         <div className="absolute right-0 flex items-center">
-          <button className="p-2 rounded-full hover:bg-gray-100">
+          <button className="p-5 rounded-full hover:bg-gray-100">
             <Bell size={24} />
           </button>
         </div>

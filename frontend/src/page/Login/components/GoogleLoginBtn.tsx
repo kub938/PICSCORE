@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import googleLoginBtn from "../../../assets/Login/google-login-btn.svg";
-import { useAuthStore } from "../../../store/authStore";
 
 function GoogleLoginBtn() {
   const locateGoogleLogin = () => {
