@@ -1,4 +1,15 @@
+// api/userApi.ts 파일 수정
+
 import { api } from "./api";
+
+// 공통 API 응답 타입 정의
+interface BaseResponse<T> {
+  data: T;
+  message: string;
+  status: number;
+  statusText: string;
+  timeStamp: string;
+}
 
 // User profile data interfaces
 interface UserProfile {
@@ -58,75 +69,91 @@ interface UpdateProfileRequest {
 export const userApi = {
   // User profile endpoints
   getMyProfile: () => {
-    return api.get<UserProfile>("/api/v1/user/profile/me");
+    return api.get<BaseResponse<UserProfile>>("/api/v1/user/profile/me");
   },
 
   getUserProfile: (userId: number) => {
-    return api.get<UserProfileWithFollowing>(`/api/v1/user/profile/${userId}`);
+    return api.get<BaseResponse<UserProfileWithFollowing>>(
+      `/api/v1/user/profile/${userId}`
+    );
   },
 
   updateProfile: (data: UpdateProfileRequest) => {
-    return api.patch<void>("/api/v1/user/profile", data);
+    return api.patch<BaseResponse<void>>("/api/v1/user/profile", data);
   },
 
   // Follower/Following endpoints
   getMyFollowers: () => {
-    return api.get<FollowerResponse[]>("/api/v1/user/follower/me");
+    return api.get<BaseResponse<FollowerResponse[]>>(
+      "/api/v1/user/follower/me"
+    );
   },
 
   getMyFollowings: () => {
-    return api.get<FollowingResponse[]>("/api/v1/user/following/me");
+    return api.get<BaseResponse<FollowingResponse[]>>(
+      "/api/v1/user/following/me"
+    );
   },
 
   getUserFollowers: (userId: number) => {
-    return api.get<FollowerResponse[]>(`/api/v1/user/follower/${userId}`);
+    return api.get<BaseResponse<FollowerResponse[]>>(
+      `/api/v1/user/follower/${userId}`
+    );
   },
 
   getUserFollowings: (userId: number) => {
-    return api.get<FollowerResponse[]>(`/api/v1/user/following/${userId}`);
+    return api.get<BaseResponse<FollowerResponse[]>>(
+      `/api/v1/user/following/${userId}`
+    );
   },
 
   toggleFollow: (followingId: number) => {
-    return api.post<void>("/api/v1/user/following/me", { followingId });
+    return api.post<BaseResponse<void>>("/api/v1/user/following/me", {
+      followingId,
+    });
   },
 
   deleteFollower: (userId: number) => {
-    return api.delete<void>(`/api/v1/user/follower/${userId}`);
+    return api.delete<BaseResponse<void>>(`/api/v1/user/follower/${userId}`);
   },
 
   // Search functionality
   searchUser: (searchText: string) => {
-    return api.get<SearchUserResponse[]>(`/api/v1/user/search/${searchText}`);
+    return api.get<BaseResponse<SearchUserResponse[]>>(
+      `/api/v1/user/search/${searchText}`
+    );
   },
 
   // Statistics endpoints
   getMyStatistics: () => {
-    return api.get<UserStatistics>("/api/v1/user/static/me");
+    return api.get<BaseResponse<UserStatistics>>("/api/v1/user/static/me");
   },
 
   getUserStatistics: (userId: number) => {
-    return api.get<UserStatistics>(`/api/v1/user/static/${userId}`);
+    return api.get<BaseResponse<UserStatistics>>(
+      `/api/v1/user/static/${userId}`
+    );
   },
 
   // User photos endpoints
   getMyPhotos: (isPublic: boolean) => {
-    return api.get<any>("/api/v1/user/photo/me", {
+    return api.get<BaseResponse<any>>("/api/v1/user/photo/me", {
       params: { isPublic },
     });
   },
 
   getUserPhotos: (userId: number, isPublic: boolean) => {
-    return api.get<any>(`/api/v1/user/photo/${userId}`, {
+    return api.get<BaseResponse<any>>(`/api/v1/user/photo/${userId}`, {
       params: { isPublic },
     });
   },
 
   // User authentication endpoints
   logout: () => {
-    return api.get<void>("/api/v1/user/logout");
+    return api.get<BaseResponse<void>>("/api/v1/user/logout");
   },
 
   deleteAccount: () => {
-    return api.delete<void>("/api/v1/user");
+    return api.delete<BaseResponse<void>>("/api/v1/user");
   },
 };
