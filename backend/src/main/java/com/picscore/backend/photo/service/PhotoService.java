@@ -8,8 +8,10 @@ import com.picscore.backend.photo.model.response.GetPhotosResponse;
 import com.picscore.backend.photo.repository.PhotoHashtagRepository;
 import com.picscore.backend.photo.repository.PhotoLikeRepository;
 import com.picscore.backend.photo.repository.PhotoRepository;
+import com.picscore.backend.photo.model.response.UploadPhotoResponse;
 import com.picscore.backend.user.model.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -17,7 +19,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,7 +38,66 @@ public class PhotoService {
     private final PhotoRepository photoRepository;
     private final PhotoLikeRepository photoLikeRepository;
     private final PhotoHashtagRepository photoHashtagRepository;
+    private final S3Client s3Client;
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucketName;
 
+    /**
+     * 새로운 사진을 저장하는 메서드
+     *
+     * @param user 사진을 업로드한 사용자
+     * @param imageUrl 사진 URL
+     * @param score 사진 점수
+     * @param analysisChart 분석 차트
+     * @param analysisText 분석 텍스트
+     * @param isPublic 공개/비공개 여부
+     * @return ResponseEntity<BaseResponse<HttpStatus>> 저장 결과
+     */
+    public ResponseEntity<BaseResponse<HttpStatus>> savePhoto(User user, String imageUrl, String imageName, Float score,
+                                                              String analysisChart, String analysisText, Boolean isPublic, String photoType) {
+        String tempFolder = "temp/";
+        String permanentFolder = "permanent/";
+        // S3에서 임시 폴더에서 영구 폴더로 이미지 이동
+        CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
+                .sourceBucket(bucketName)    // 원본 버킷
+                .sourceKey(tempFolder+imageName)        // 원본 경로
+                .destinationBucket(bucketName) // 동일한 버킷 내 복사
+                .destinationKey(permanentFolder+imageName) // 새로운 경로
+                .build();
+        s3Client.copyObject(copyObjectRequest);
+        String permanImageUrl = getFileUrl(permanentFolder,imageName);
+        // mySQL에 저장
+        Photo photo = new Photo();
+        photo.setUser(user);
+        photo.setImageUrl(permanImageUrl);
+        photo.setScore(score);
+        photo.setAnalysisChart(analysisChart);
+        photo.setAnalysisText(analysisText);
+        photo.setIsPublic(isPublic);
+        photo.setPhotoType(photoType);
+        photoRepository.save(photo);
+        return ResponseEntity.ok(BaseResponse.success("사진 업로드 완료", HttpStatus.CREATED));
+    }
+
+    // 임시 파일 업로드
+    public ResponseEntity<BaseResponse<UploadPhotoResponse>> uploadFile(MultipartFile file) throws IOException {
+        String fileName = generateFileName(file);
+        String tempFolder = "temp/";
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(tempFolder+fileName)
+                .contentType(file.getContentType())
+                .build();
+        try {
+            s3Client.putObject(putObjectRequest,
+                    RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+            UploadPhotoResponse uploadPhotoResponse = new UploadPhotoResponse(getFileUrl(tempFolder,fileName), fileName);
+            return ResponseEntity.ok(BaseResponse.success("임시 파일 저장 완료", uploadPhotoResponse));
+        } catch (Exception e) {
+            System.out.printf("업로드 실패");
+            return ResponseEntity.internalServerError().body(BaseResponse.error("파일 업로드 실패: " + e.getMessage()));
+        }
+    }
 
     /**
      * 주어진 키워드(해시태그)로 사진을 검색하는 메서드
@@ -71,7 +137,10 @@ public class PhotoService {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(BaseResponse.error("사진 삭제 권한이 없습니다."));
         }
+        // mySQL에서 삭제
         photoRepository.delete(photo);
+        // S3에서 삭제
+        deleteFile(photo.getImageUrl());
 
         return ResponseEntity.ok(BaseResponse.withMessage("사진 삭제 완료"));
     }
@@ -119,30 +188,6 @@ public class PhotoService {
                 .map(photo -> new GetPhotosResponse(photo.getId(), photo.getImageUrl()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(BaseResponse.success("사진 조회 성공", getPhotoResponses));
-    }
-
-
-    /**
-     * 새로운 사진을 저장하는 메서드
-     *
-     * @param user 사진을 업로드한 사용자
-     * @param imageUrl 사진 URL
-     * @param score 사진 점수
-     * @param analysisChart 분석 차트
-     * @param analysisText 분석 텍스트
-     * @param isPublic 공개/비공개 여부
-     * @return ResponseEntity<BaseResponse<HttpStatus>> 저장 결과
-     */
-    public ResponseEntity<BaseResponse<HttpStatus>> savePhoto(User user, String imageUrl, Float score, String analysisChart, String analysisText, Boolean isPublic) {
-        Photo photo = new Photo();
-        photo.setUser(user);
-        photo.setImageUrl(imageUrl);
-        photo.setScore(score);
-        photo.setAnalysisChart(analysisChart);
-        photo.setAnalysisText(analysisText);
-        photo.setIsPublic(isPublic);
-        photoRepository.save(photo);
-        return ResponseEntity.ok(BaseResponse.success("사진 업로드 완료", HttpStatus.CREATED));
     }
 
 
@@ -231,6 +276,71 @@ public class PhotoService {
                         .collect(Collectors.toList());
 
         return ResponseEntity.ok(BaseResponse.success("Top5 사진 조회", responses));
+    }
+
+    /**
+     * S3관련 미완성 API
+     */
+    // 파일 다운로드 (바이트 배열로 반환)
+    public byte[] downloadFile(String fileName) {
+        String permanentFolder = "permanent/";
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(permanentFolder+fileName)
+                .build();
+
+        return s3Client.getObjectAsBytes(getObjectRequest).asByteArray();
+    }
+
+    // 파일 삭제
+    public void deleteFile(String imageUrl) {
+        String imageName = extractFileName(imageUrl);
+        String permanentFolder = "permanent/";
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(permanentFolder+imageName)
+                .build();
+
+        s3Client.deleteObject(deleteObjectRequest);
+    }
+
+    // 버킷 내 모든 파일 목록 조회
+    public List<String> listFiles() {
+        ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder()
+                .bucket(bucketName)
+                .build();
+
+        ListObjectsV2Response response = s3Client.listObjectsV2(listObjectsRequest);
+
+        return response.contents().stream()
+                .map(S3Object::key)
+                .collect(Collectors.toList());
+    }
+
+    // url에서 imageName 추출
+    public String extractFileName(String url) {
+        String prefix = "permanent/";
+        int index = url.indexOf(prefix);
+
+        if (index != -1) {
+            return url.substring(index + prefix.length());
+        }
+
+        return null; // temp/가 없는 경우
+    }
+
+    // 파일 URL 생성
+    private String getFileUrl(String folder, String fileName) {
+        return String.format("https://%s.s3.%s.amazonaws.com/%s%s",
+                bucketName,
+                s3Client.serviceClientConfiguration().region(),
+                folder,
+                fileName);
+    }
+
+    // 파일명 생성 (중복 방지를 위해 UUID 사용)
+    private String generateFileName(MultipartFile file) {
+        return UUID.randomUUID() + "-" + file.getOriginalFilename();
     }
 }
 
