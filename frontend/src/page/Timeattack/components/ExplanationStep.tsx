@@ -13,7 +13,7 @@ const ExplanationStep: React.FC<ExplanationStepProps> = ({ onStartGame }) => {
 
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4 border border-gray-200">
         <div className="flex items-center mb-4">
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-200 text-green-500 font-bold text-xl">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-pic-primary text-white font-bold text-xl">
             1
           </div>
           <div className="ml-4 flex-1">
@@ -23,7 +23,7 @@ const ExplanationStep: React.FC<ExplanationStepProps> = ({ onStartGame }) => {
         </div>
 
         <div className="flex items-center mb-4">
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-200 text-green-500 font-bold text-xl">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-pic-primary text-white font-bold text-xl">
             2
           </div>
           <div className="ml-4 flex-1">
@@ -35,7 +35,7 @@ const ExplanationStep: React.FC<ExplanationStepProps> = ({ onStartGame }) => {
         </div>
 
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-200 text-green-500 font-bold text-xl">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-pic-primary text-white font-bold text-xl">
             3
           </div>
           <div className="ml-4 flex-1">
@@ -46,18 +46,18 @@ const ExplanationStep: React.FC<ExplanationStepProps> = ({ onStartGame }) => {
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-4 mb-8 border border-gray-200">
-        <h3 className="text-green-500 font-bold mb-2">TIP!</h3>
+        <h3 className="text-pic-primary font-bold mb-2">TIP!</h3>
         <ul className="space-y-2">
           <li className="flex items-start">
-            <span className="text-green-500 mr-2">•</span>
+            <span className="text-pic-primary mr-2">•</span>
             <span>게임 시작 전 주변 환경을 미리 둘러보세요</span>
           </li>
           <li className="flex items-start">
-            <span className="text-green-500 mr-2">•</span>
+            <span className="text-pic-primary mr-2">•</span>
             <span>시간이 넉넉하지 않으니 빠르게 촬영하세요</span>
           </li>
           <li className="flex items-start">
-            <span className="text-green-500 mr-2">•</span>
+            <span className="text-pic-primary mr-2">•</span>
             <span>주제와 연관성이 높을수록 높은 점수를 받을 수 있어요</span>
           </li>
         </ul>
@@ -65,7 +65,7 @@ const ExplanationStep: React.FC<ExplanationStepProps> = ({ onStartGame }) => {
 
       <button
         onClick={onStartGame}
-        className="mt-auto bg-green-500 text-white py-4 rounded-lg text-xl font-bold hover:bg-green-600 transition shadow-sm"
+        className="mt-auto bg-pic-primary text-white py-4 rounded-lg text-xl font-bold hover:bg-green-600 transition shadow-sm"
       >
         게임 시작
       </button>

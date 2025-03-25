@@ -34,7 +34,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   const selectedBadge = getSelectedBadge();
 
   return (
-    <div className="bg-green-500 p-4 text-white">
+    <div className="bg-pic-primary p-4 text-white">
       <div className="flex items-center">
         <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mr-4">
           {profile.profileImage ? (
@@ -69,7 +69,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         {profile.isMyProfile && (
           <div className="relative">
             <div
-              className="bg-white text-green-500 rounded p-1 absolute top-0 right-0 cursor-pointer"
+              className="bg-white text-pic-primary rounded p-1 absolute top-0 right-0 cursor-pointer"
               onClick={handleBadgeClick}
             >
               {selectedBadge ? (
@@ -112,7 +112,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           onClick={onFollowClick}
           className={`mt-4 rounded-full px-4 py-1 text-sm font-medium ${
             profile.isFollowing
-              ? "bg-white text-green-500"
+              ? "bg-white text-pic-primary"
               : "border border-white text-white"
           }`}
         >
