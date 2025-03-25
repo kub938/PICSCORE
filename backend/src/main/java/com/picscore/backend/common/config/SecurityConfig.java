@@ -102,6 +102,7 @@ public class SecurityConfig {
         // URL 별 접근 권한 설정
         http
                 .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/oauth2/authorization/**").permitAll()
                         .requestMatchers("/", "/api/v1/user","/api/v1/user/photo/{userId}", "/api/v1/user/info").permitAll()
                         .anyRequest().authenticated());
 
