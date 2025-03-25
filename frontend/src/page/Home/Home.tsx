@@ -82,35 +82,42 @@ function Home() {
 
   return (
     <>
-      <div className="flex flex-col w-full items-center ">
+      <div className="flex flex-col w-full items-center">
         <HomeNavBar />
         {/* 프로필 이미지 섹션 */}
         <div onClick={handleLogout} className="border bg-black w-30 h-30">
           로그아웃
         </div>
-        <div className="flex flex-col items-center mb-10">
-          <div className="w-[150px] h-[150px] rounded-full overflow-hidden border-3 border-white mb-4">
-            <img
-              src={profileImage}
-              alt="프로필 이미지"
-              className="w-full h-full object-cover"
-            />
+        {/* 프로필 이미지 섹션 */}
+        <div className="flex flex-col items-center mb-10 border-2 border-gray-300 rounded-3xl shadow-lg p-5 bg-white w-[90%]">
+          <div className="flex flex-row items-center w-full px-15 gap-10">
+            {/* 프로필 이미지 */}
+            <div className="w-[100px] h-[100px] rounded-full overflow-hidden border-4 border-white">
+              <img
+                src={profileImage}
+                alt="프로필 이미지"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* 이름 */}
+            <h2 className="font-bold text-gray-800 text-2xl">태열</h2>
           </div>
-          <h2 className="font-bold text-ffffff text-2xl mb-2">태열</h2>
-          <div className="w-[200px] text-center mb-5 flex items-center justify-center">
-            <span className="font-bold text-ffffff mr-2">LV.30</span>
-            <div className="bg-white/30 h-2.5 rounded-full flex-1">
-              <div className="w-[30%] h-full bg-yellow-300 rounded-full"></div>
+
+          {/* 레벨과 레벨 바 */}
+          <div className="w-[200px] text-center flex items-center mt-4">
+            <span className="font-bold text-gray-800 mr-2">LV.30</span>
+            <div className="bg-gray-200 h-2.5 rounded-full flex-1">
+              <div className="w-[30%] h-full bg-pic-primary rounded-full"></div>
             </div>
           </div>
-          <Link to="/image-upload">
-            <div className="relative transition-all duration-300 hover:scale-105">
-              <div className="font-bold bg-white px-5 py-2.5 rounded-full text-pic-primary">
-                <button>사진 찍기</button>
-              </div>
-            </div>
-          </Link>
         </div>
+        <Link to="/image-upload">
+          <div className="relative transition-all duration-300 hover:scale-105">
+            <div className="font-bold bg-white px-5 py-2.5 rounded-full text-pic-primary">
+              <button>사진 분석</button>
+            </div>
+          </div>
+        </Link>
         {/* 메뉴 그리드 섹션 */}
         <div className="grid grid-cols-2 gap-5 w-full p-4 max-w-[400px]">
           {/* 타임어택 */}
