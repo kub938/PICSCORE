@@ -88,8 +88,8 @@ public class SecurityConfig {
         http
                 .addFilterAfter(new JWTFilter(jwtUtil, oAuthService), OAuth2LoginAuthenticationFilter.class);
 
-        http
-                .addFilterBefore(new CustomLogoutFilter(jwtUtil, redisUtil, userRepository), LogoutFilter.class);
+//        http
+//                .addFilterBefore(new CustomLogoutFilter(jwtUtil, redisUtil, userRepository), LogoutFilter.class);
 
         // OAuth2 로그인 설정
         http
