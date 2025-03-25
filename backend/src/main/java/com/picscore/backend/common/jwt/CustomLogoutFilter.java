@@ -36,13 +36,13 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
     private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
 
-//        // 1. 로그아웃 요청 경로 및 HTTP 메서드 확인
-//        String requestUri = request.getRequestURI();
-//        if (!requestUri.matches("^\\/logout$")) { // 경로가 "/logout"이 아닌 경우 다음 필터로 전달
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-//
+        // 1. 로그아웃 요청 경로 및 HTTP 메서드 확인
+        String requestUri = request.getRequestURI();
+        if (!requestUri.matches("^\\/logout$")) { // 경로가 "/logout"이 아닌 경우 다음 필터로 전달
+            filterChain.doFilter(request, response);
+            return;
+        }
+
 //        String requestMethod = request.getMethod();
 //        if (!requestMethod.equals("POST")) { // HTTP 메서드가 POST가 아닌 경우 다음 필터로 전달
 //            filterChain.doFilter(request, response);
