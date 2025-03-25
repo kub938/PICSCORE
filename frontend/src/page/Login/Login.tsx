@@ -8,13 +8,10 @@ function Login() {
   return (
     <div className="flex flex-col h-screen justify-center items-center gap-20">
       <div className="flex flex-col items-center">
-        <div className="font-logo text-5xl mb-15">
+        <div className="font-logo text-5xl my-5">
           <span className="text-pic-primary ">PIC</span>
           <span>SCORE</span>
         </div>
-
-        <div className="text-3xl font-bold mb-4">환영합니다!</div>
-        <div>직접 촬영한 작품을 평가받아 보세요!</div>
 
         <div
           onClick={() => navigate("/image-upload")}
