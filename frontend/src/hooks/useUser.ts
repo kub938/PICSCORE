@@ -1,8 +1,9 @@
-import { api } from "../api/api";
+import { api, testApi } from "../api/api";
 import { useAuthStore } from "../store/authStore";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userApi } from "../api/userApi";
+import axios from "axios";
 
 // Profile hooks
 export const useMyProfile = () => {
@@ -163,7 +164,6 @@ export const useUserPhotos = (userId: number, isPublic: boolean) => {
 };
 
 // Auth hooks
-
 export const useDeleteAccount = () => {
   const queryClient = useQueryClient();
 
@@ -177,9 +177,19 @@ export const useDeleteAccount = () => {
 };
 
 export const useLogout = () => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+
   return useMutation({
     mutationFn: async () => {
-      const response = await api.post("api/v1/user/logout");
+      const response = await testApi.post(
+        "https://j12b104.p.ssafy.io/api/v1/user/logout",
+        {}, // 빈 객체 또는 필요한 데이터
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return response;
     },
     onSuccess: (data) => {
@@ -190,3 +200,19 @@ export const useLogout = () => {
     },
   });
 };
+
+// 쿠키 사용한 로직
+// export const useLogout = () => {
+//   return useMutation({
+//     mutationFn: async () => {
+//       const response = await api.post("api/v1/user/logout");
+//       return response;
+//     },
+//     onSuccess: (data) => {
+//       console.log("로그아웃 완료:", data);
+//     },
+//     onError: (error) => {
+//       console.log("로그아웃 실패", error);
+//     },
+//   });
+// };
