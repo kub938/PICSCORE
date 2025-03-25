@@ -1,4 +1,4 @@
-package com.picscore.backend.user.config;
+package com.picscore.backend.common.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

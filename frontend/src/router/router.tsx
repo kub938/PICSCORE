@@ -22,6 +22,8 @@ import PrivateRouter from "./PrivateRouter";
 import Welcome from "../page/Welcome/Welcome";
 import { useAuthStore } from "../store/authStore";
 import { useEffect } from "react";
+import Following from "../page/UserPage/Following";
+import Follower from "../page/UserPage/Follower";
 
 const HomeRouter = () => {
   const [params] = useSearchParams();
@@ -124,6 +126,14 @@ const router = createBrowserRouter([
           {
             path: "/login",
             element: <Login />,
+          },
+          {
+            path: "/following",
+            element: <Following />,
+          },
+          {
+            path: "/follower",
+            element: <Follower />,
           },
         ],
       },

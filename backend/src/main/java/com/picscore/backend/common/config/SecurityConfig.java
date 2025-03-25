@@ -1,10 +1,10 @@
-package com.picscore.backend.user.config;
+package com.picscore.backend.common.config;
 
 import com.picscore.backend.common.utill.RedisUtil;
-import com.picscore.backend.user.handler.CustomSuccessHandler;
-import com.picscore.backend.user.jwt.CustomLogoutFilter;
-import com.picscore.backend.user.jwt.JWTFilter;
-import com.picscore.backend.user.jwt.JWTUtil;
+import com.picscore.backend.common.handler.CustomSuccessHandler;
+import com.picscore.backend.common.jwt.CustomLogoutFilter;
+import com.picscore.backend.common.jwt.JWTFilter;
+import com.picscore.backend.common.jwt.JWTUtil;
 import com.picscore.backend.user.repository.UserRepository;
 import com.picscore.backend.user.service.CustomOAuth2UserService;
 import com.picscore.backend.user.service.OAuthService;

@@ -98,9 +98,9 @@ public class PhotoController {
      */
     @GetMapping("/user/photo/me")
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>>
-    getMyPhotos(HttpServletRequest request, @RequestBody GetPhotosRequest body) {
+    getMyPhotos(HttpServletRequest request, @RequestParam(required = false) Boolean isPublic) {
         Long userId = oAuthService.findIdByNickName(request);
-        return photoService.getPhotosByUserId(userId, body.getIsPublic());
+        return photoService.getPhotosByUserId(userId, isPublic);
     }
 
 
@@ -145,9 +145,11 @@ public class PhotoController {
      *
      * @return ResponseEntity<BaseResponse<Map<String, Object>>> 페이징된 사진 목록 응답
      */
-    @GetMapping("/photo")
-    public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos() {
-        return photoService.getPaginatedPhotos();
+    @GetMapping("/photos/{pageNum}")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos(
+            @PathVariable int pageNum
+    ) {
+        return photoService.getPaginatedPhotos(pageNum);
     }
 
 
