@@ -4,7 +4,11 @@ import Header from "../UserPage/components/Header";
 import ProfileSection from "./components/ProfileSection";
 import SettingsSection from "./components/SettingsSection";
 import NotificationSettings from "./components/NotificationSettings";
-import { UserProfile, FormErrors } from "../../types";
+import {
+  UserProfile,
+  FormErrors,
+  NotificationSettings as NotificationSettingsType,
+} from "../../types/userTypes";
 
 const ChangeInfoPage: React.FC = () => {
   const navigate = useNavigate();
@@ -51,14 +55,14 @@ const ChangeInfoPage: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setProfile((prev) => ({
+    setProfile((prev: UserProfile) => ({
       ...prev,
       [name]: value,
     }));
 
     // 해당 필드의 오류 지우기
     if (errors[name as keyof FormErrors]) {
-      setErrors((prev) => ({
+      setErrors((prev: FormErrors) => ({
         ...prev,
         [name]: undefined,
       }));
@@ -66,16 +70,14 @@ const ChangeInfoPage: React.FC = () => {
   };
 
   const handleToggleChange = (name: string) => {
-    setProfile((prev) => ({
+    setProfile((prev: UserProfile) => ({
       ...prev,
       [name]: !prev[name as keyof UserProfile],
     }));
   };
 
-  const handleNotificationChange = (
-    name: keyof UserProfile["notificationSettings"]
-  ) => {
-    setProfile((prev) => ({
+  const handleNotificationChange = (name: keyof NotificationSettingsType) => {
+    setProfile((prev: UserProfile) => ({
       ...prev,
       notificationSettings: {
         ...prev.notificationSettings,

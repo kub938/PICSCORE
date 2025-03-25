@@ -112,7 +112,7 @@ function ImageUpload() {
       </div>
       <div className="text-center">
         <div className="text-3xl font-bold mb-1">사진을 올려주세요!</div>
-        <div className="mb-5">멋진 사진을 평가해 드립니다.</div>
+        <div className="mb-5">직접 사진을 찍고 점수 확인해 보세요!</div>
       </div>
       <div
         className="w-[85%] max-w-xs sm:max-w-sm md:max-w-md aspect-square rounded-md border border-black flex flex-col items-center justify-center gap-6 sm:gap-10 mb-8 sm:mb-12"

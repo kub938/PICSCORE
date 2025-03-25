@@ -89,27 +89,29 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
         console.log("photosResponse", photosResponse);
 
         // 프로필 정보 처리
+        const profileData = profileResponse.data.data;
         setProfile({
-          nickname: profileResponse.data.nickName,
-          statusMessage: profileResponse.data.message,
-          profileImage: profileResponse.data.profileImage,
-          followerCount: profileResponse.data.followerCnt,
-          followingCount: profileResponse.data.followingCnt,
+          nickname: profileData.nickName,
+          statusMessage: profileData.message,
+          profileImage: profileData.profileImage,
+          followerCount: profileData.followerCnt,
+          followingCount: profileData.followingCnt,
           isMyProfile: true,
           isFollowing: false,
           displayBadgeId: localStorage.getItem("selectedBadgeId") || undefined,
         });
 
         // 통계 정보 처리
+        const statsData = statsResponse.data.data;
         setUserStats({
-          averageScore: statsResponse.data.scoreAvg,
+          averageScore: statsData.scoreAvg,
           contestRank: "N/A",
-          timeAttackRank: statsResponse.data.timeAttackRank.toString(),
+          timeAttackRank: statsData.timeAttackRank.toString(),
           arenaRank: "N/A",
         });
 
         // 사진 정보 처리
-        const photoItems: PhotoItem[] = photosResponse.data.map(
+        const photoItems: PhotoItem[] = photosResponse.data.data.map(
           (photo: any) => ({
             id: photo.id.toString(),
             imageUrl: photo.imageUrl,
@@ -129,27 +131,29 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
         );
 
         // 프로필 정보 처리
+        const profileData = profileResponse.data.data;
         setProfile({
-          nickname: profileResponse.data.nickName,
-          statusMessage: profileResponse.data.message,
-          profileImage: profileResponse.data.profileImage,
-          followerCount: profileResponse.data.followerCnt,
-          followingCount: profileResponse.data.followingCnt,
+          nickname: profileData.nickName,
+          statusMessage: profileData.message,
+          profileImage: profileData.profileImage,
+          followerCount: profileData.followerCnt,
+          followingCount: profileData.followingCnt,
           isMyProfile: false,
-          isFollowing: profileResponse.data.isFollowing,
+          isFollowing: profileData.isFollowing,
           displayBadgeId: undefined,
         });
 
         // 통계 정보 처리
+        const statsData = statsResponse.data.data;
         setUserStats({
-          averageScore: statsResponse.data.scoreAvg,
+          averageScore: statsData.scoreAvg,
           contestRank: "N/A",
-          timeAttackRank: statsResponse.data.timeAttackRank.toString(),
+          timeAttackRank: statsData.timeAttackRank.toString(),
           arenaRank: "N/A",
         });
 
         // 사진 정보 처리
-        const photoItems: PhotoItem[] = photosResponse.data.map(
+        const photoItems: PhotoItem[] = photosResponse.data.data.map(
           (photo: any) => ({
             id: photo.id.toString(),
             imageUrl: photo.imageUrl,
