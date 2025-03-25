@@ -78,11 +78,11 @@ public class TimeAttackService {
     }
 
     public ResponseEntity<BaseResponse<List<AnalysisPhotoResponse>>> analysisPhoto(byte[] imageBlob) {
-        String url = "https://kimsunjin.cognitiveservices.azure.com/" + "vision/v3.2/analyze?visualFeatures=Tags";
+        String url = visionApiUrl;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.set("Ocp-Apim-Subscription-Key", "FzJP7P9AkOYKLLbb3PL1aVLX66PDEufr49SbMsxRmD7OZGB2wXJsJQQJ99BCACNns7RXJ3w3AAAFACOGILsq");
+        headers.set("Ocp-Apim-Subscription-Key", visionApiKey);
 
         HttpEntity<byte[]> requestEntity = new HttpEntity<>(imageBlob, headers);
 
