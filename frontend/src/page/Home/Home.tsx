@@ -84,12 +84,15 @@ function Home() {
     <>
       <div className="flex flex-col w-full items-center">
         <HomeNavBar />
-        {/* 프로필 이미지 섹션 */}
         <div onClick={handleLogout} className="border bg-black w-30 h-30">
           로그아웃
         </div>
         {/* 프로필 이미지 섹션 */}
-        <div className="flex flex-col items-center mb-10 border-2 border-gray-300 rounded-3xl shadow-lg p-5 bg-white w-[90%]">
+        <Link
+          to="/mypage"
+          className="flex flex-col items-center mb-10 border-2 border-gray-300 rounded-3xl shadow-lg p-5 bg-white w-[90%]"
+          cursor-pointer
+        >
           <div className="flex flex-row items-center w-full px-15 gap-10">
             {/* 프로필 이미지 */}
             <div className="w-[100px] h-[100px] rounded-full overflow-hidden border-4 border-white">
@@ -110,7 +113,7 @@ function Home() {
               <div className="w-[30%] h-full bg-pic-primary rounded-full"></div>
             </div>
           </div>
-        </div>
+        </Link>
         <Link to="/image-upload">
           <div className="relative transition-all duration-300 hover:scale-105">
             <div className="font-bold bg-white px-5 py-2.5 rounded-full text-pic-primary">
