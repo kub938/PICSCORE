@@ -8,7 +8,7 @@ function Welcome() {
 
   const messages = [
     "환영합니다!",
-    "당신의 사진을 평가해 드립니다",
+    "직접 찍으신 사진을 평가해 드려요!",
     "다른사람들과 경쟁하며 사진 실력을 키워보세요!",
   ];
 
@@ -24,7 +24,7 @@ function Welcome() {
         setActiveIndex((prevIndex) => prevIndex + 1);
         setVisible(true);
       }, 1000);
-    }, 4000);
+    }, 1500);
 
     return () => clearInterval(interval);
   }, [activeIndex, messages.length, navigate]);
@@ -38,13 +38,13 @@ function Welcome() {
       setTimeout(() => {
         setActiveIndex((prevIndex) => prevIndex + 1);
         setVisible(true);
-      }, 1000);
+      }, 500);
     }
   };
 
   return (
     <div
-      className="flex flex-col w-full items-center justify-center h-screen bg-white cursor-pointer"
+      className="p-10 flex flex-col w-full items-center justify-center h-screen bg-white cursor-pointer"
       onClick={handleClick}
     >
       {/* PIC (초록) SCORE (검정) 로고 */}
