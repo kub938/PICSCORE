@@ -1,13 +1,16 @@
 package com.picscore.backend.timeattack.controller;
 
 import com.picscore.backend.common.model.response.BaseResponse;
+import com.picscore.backend.timeattack.model.request.AnalysisPhotoRequest;
 import com.picscore.backend.timeattack.model.response.AnalysisPhotoResponse;
 import com.picscore.backend.timeattack.service.TimeAttackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -36,12 +39,15 @@ public class TimeAttackController {
         return timeAttackService.getRanking(pageNum);
     }
 
-    @PostMapping(value = "/analysis", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<BaseResponse<List<AnalysisPhotoResponse>>> analysisPhoto(
-            @RequestBody byte[] imageBlob
-    ) {
+    @PostMapping(value = "/analysis", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BaseResponse<AnalysisPhotoResponse>> analysisPhoto(
+            @RequestPart("imageBlob") MultipartFile imageFile,
+            @RequestPart("topic") String topic
+    ) throws IOException {
 
-        return timeAttackService.analysisPhoto(imageBlob);
+        byte[] imageBlob = imageFile.getBytes();
+        AnalysisPhotoRequest request = new AnalysisPhotoRequest(imageBlob, topic);
+        return timeAttackService.analysisPhoto(request);
     }
 }
 
