@@ -1,4 +1,8 @@
-import { createBrowserRouter } from "react-router-dom";
+import {
+  createBrowserRouter,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import App from "../App";
 import Home from "../page/Home/Home";
 import Test from "../page/Test";
@@ -15,6 +19,32 @@ import TimeAttackResult from "../page/Timeattack/TimeAttackResult";
 import ImageUpload from "../page/ImageEval/ImageUpload";
 import ImageEvalResult from "../page/ImageEval/ImageEvalResult";
 import PrivateRouter from "./PrivateRouter";
+import Welcome from "../page/Welcome/Welcome";
+import { useAuthStore } from "../store/authStore";
+import { useEffect } from "react";
+
+const HomeRouter = () => {
+  const [params] = useSearchParams();
+  const accessToken = params.get("access");
+  const loginSuccess = params.get("loginSuccess");
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const login = useAuthStore((state) => state.login);
+
+  // useEffect를 사용하여 렌더링 후에 상태 업데이트
+  useEffect(() => {
+    if (loginSuccess && accessToken) {
+      login(accessToken);
+      console.log(localStorage.getItem("auth")); // localStorage에서 확인 (accessToken이 아님)
+    }
+  }, [loginSuccess, accessToken, login]);
+
+  if (isLoggedIn || (loginSuccess && accessToken)) {
+    return <Home />;
+  }
+
+  // 그 외에는 Welcome으로
+  return <Welcome />;
+};
 
 const router = createBrowserRouter([
   {
@@ -23,14 +53,31 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
+        path: "/",
+        element: <HomeRouter />,
+      },
+      {
         path: "/login",
         element: <Login />,
       },
       {
+        path: "/welcome",
+        element: <Welcome />,
+      },
+      {
+        path: "/image-result",
+        element: <ImageEvalResult />,
+      },
+      {
+        path: "/image-upload",
+        element: <ImageUpload />,
+      },
+
+      {
         element: <PrivateRouter />,
         children: [
           {
-            index: true, // 부모 요소의 path와 일치하면 일로 보냄
+            path: "/", // 부모 요소의 path와 일치하면 일로 보냄
             element: <Home />,
           },
           {
@@ -61,10 +108,7 @@ const router = createBrowserRouter([
             path: "/archieve",
             element: <ArchievePage />,
           },
-          {
-            path: "/image-upload",
-            element: <ImageUpload />,
-          },
+
           {
             path: "/ranking",
             element: <RankingPage />,
@@ -80,10 +124,6 @@ const router = createBrowserRouter([
           {
             path: "/login",
             element: <Login />,
-          },
-          {
-            path: "/image-result",
-            element: <ImageEvalResult />,
           },
         ],
       },
