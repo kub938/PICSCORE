@@ -72,7 +72,7 @@ function Home() {
     });
   };
 
-  const { isLoading, isError } = useUserData();
+  const { isLoading, isError, data } = useUserData();
   if (isLoading) {
     return <>로딩중 입니다</>;
   }
