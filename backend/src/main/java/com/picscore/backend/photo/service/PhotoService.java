@@ -110,9 +110,10 @@ public class PhotoService {
             return originalFileName.substring(extensionIndex);
         }
         return "";
+    }
 
     public String uploadProfileFile(MultipartFile file) throws IOException {
-        String fileName = generateFileName(file);
+        String fileName = UUID.randomUUID() + "." + getFileExtension(file.getOriginalFilename());
         String tempFolder = "profile/";
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()

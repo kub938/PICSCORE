@@ -23,18 +23,30 @@ public class TimeAttack extends BaseEntity {
     @Column(name = "time_attack_id")
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "photo_id")
-    private Photo photo;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "photo_image")
+    private String photoImage;
+
     @Column(name = "activity_week")
     private int activityWeek;
-    @Column(name = "ranking")
+
+    @Column(name = "ranking", nullable = true)
     private int ranking;
+
     @Column(name = "score")
     private float score;
+
+    public TimeAttack(User user, String photoImage, int activityWeek, float score) {
+        this.user = user;
+        this.photoImage = photoImage;
+        this.activityWeek = activityWeek;
+        this.score = score;
+    }
+
+    public void updateRanking (int ranking) {
+        this.ranking = ranking;
+    }
 }
