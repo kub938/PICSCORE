@@ -181,11 +181,11 @@ public class PhotoController {
     public ResponseEntity<ByteArrayResource> downloadFile(@PathVariable String fileName) {
         byte[] data = photoService.downloadFile(fileName);
         ByteArrayResource resource = new ByteArrayResource(data);
-
+        String permanentFolder = "permanent/";
         return ResponseEntity
                 .ok()
                 .contentLength(data.length)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + permanentFolder + fileName + "\"")
                 .body(resource);
     }
 
