@@ -1,3 +1,4 @@
+// page/Timeattack/components/PhotoUploadStep.tsx
 import React from "react";
 
 interface PhotoUploadStepProps {
@@ -6,6 +7,7 @@ interface PhotoUploadStepProps {
   selectedImage: string | null;
   onImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onImageSubmit: () => void;
+  isLoading?: boolean;
 }
 
 const PhotoUploadStep: React.FC<PhotoUploadStepProps> = ({
@@ -14,6 +16,7 @@ const PhotoUploadStep: React.FC<PhotoUploadStepProps> = ({
   selectedImage,
   onImageUpload,
   onImageSubmit,
+  isLoading = false,
 }) => {
   return (
     <div className="flex flex-col flex-1 p-4">
@@ -87,9 +90,19 @@ const PhotoUploadStep: React.FC<PhotoUploadStepProps> = ({
       {selectedImage ? (
         <button
           onClick={onImageSubmit}
-          className="bg-green-500 text-white py-4 rounded-lg text-xl font-bold hover:bg-green-600 transition shadow-sm"
+          disabled={isLoading}
+          className={`${
+            isLoading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
+          } text-white py-4 rounded-lg text-xl font-bold transition shadow-sm flex justify-center items-center`}
         >
-          제출하기
+          {isLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+              분석 중...
+            </>
+          ) : (
+            "제출하기"
+          )}
         </button>
       ) : (
         <button

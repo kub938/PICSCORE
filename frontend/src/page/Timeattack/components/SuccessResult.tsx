@@ -1,3 +1,4 @@
+// page/Timeattack/components/SuccessResult.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -16,6 +17,7 @@ interface SuccessResultProps {
   image: string | null;
   topic: string;
   ranking: number;
+  onTryAgain?: () => void;
 }
 
 const SuccessResult: React.FC<SuccessResultProps> = ({
@@ -25,8 +27,51 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
   image,
   topic,
   ranking,
+  onTryAgain,
 }) => {
   const navigate = useNavigate();
+
+  const handleTryAgain = () => {
+    if (onTryAgain) {
+      onTryAgain();
+    } else {
+      navigate("/time-attack");
+    }
+  };
+
+  const handleViewRanking = () => {
+    navigate("/ranking");
+  };
+
+  // 분석 결과에서 피드백 생성
+  const generateFeedback = () => {
+    const feedbacks = [];
+
+    // 주제 관련 피드백
+    if (topicAccuracy >= 80) {
+      feedbacks.push(`• 주제 "${topic}"에 매우 적합한 사진입니다.`);
+    } else if (topicAccuracy >= 50) {
+      feedbacks.push(`• 주제 "${topic}"와 관련성이 있습니다.`);
+    } else {
+      feedbacks.push(`• 주제 "${topic}"와의 연관성이 낮습니다.`);
+    }
+
+    // 구도 피드백
+    if (analysisData.composition >= 80) {
+      feedbacks.push("• 구도가 잘 잡혀있어 시각적으로 매력적입니다.");
+    } else if (analysisData.composition >= 60) {
+      feedbacks.push("• 구도는 양호하지만 개선의 여지가 있습니다.");
+    }
+
+    // 조명 피드백
+    if (analysisData.lighting >= 80) {
+      feedbacks.push("• 조명이 적절하게 사용되었습니다.");
+    } else if (analysisData.lighting >= 60) {
+      feedbacks.push("• 조명이 조금 더 밝으면 좋을 것 같습니다.");
+    }
+
+    return feedbacks;
+  };
 
   return (
     <>
@@ -118,13 +163,13 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
 
         <div className="flex space-x-2">
           <button
-            onClick={() => navigate("/time-attack")}
+            onClick={handleTryAgain}
             className="flex-1 bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition"
           >
             다시 도전
           </button>
           <button
-            onClick={() => navigate("/ranking")}
+            onClick={handleViewRanking}
             className="flex-1 bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition"
           >
             랭킹 보기
@@ -135,9 +180,9 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
       <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
         <h2 className="text-xl font-bold mb-4">피드백</h2>
         <div className="space-y-2">
-          <p>• 주제에 맞는 사진을 잘 촬영했습니다.</p>
-          <p>• 조명이 조금 더 밝으면 좋을 것 같습니다.</p>
-          <p>• 구도가 잘 잡혀있어 시각적으로 매력적입니다.</p>
+          {generateFeedback().map((feedback, index) => (
+            <p key={index}>{feedback}</p>
+          ))}
         </div>
       </div>
     </>
