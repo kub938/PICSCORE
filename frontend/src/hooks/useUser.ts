@@ -17,6 +17,7 @@ export const useMyProfile = () => {
 };
 
 export const useUserProfile = (userId: number) => {
+  console.log("userId", userId);
   return useQuery({
     queryKey: ["userProfile", userId],
     queryFn: async () => {
@@ -152,11 +153,11 @@ export const useMyPhotos = (isPublic: boolean) => {
   });
 };
 
-export const useUserPhotos = (userId: number, isPublic: boolean) => {
+export const useUserPhotos = (userId: number) => {
   return useQuery({
-    queryKey: ["userPhotos", userId, isPublic],
+    queryKey: ["userPhotos", userId],
     queryFn: async () => {
-      const response = await userApi.getUserPhotos(userId, isPublic);
+      const response = await userApi.getUserPhotos(userId);
       return response.data;
     },
     enabled: !!userId,

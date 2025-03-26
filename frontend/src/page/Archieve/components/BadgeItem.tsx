@@ -35,15 +35,13 @@ const BadgeItem: React.FC<BadgeItemProps> = ({
       onClick={handleClick}
     >
       <div className="flex flex-col items-center">
-        <div
-          className={`relative w-16 h-16 mb-2 ${
-            !badge.achieved ? "opacity-40 grayscale" : ""
-          }`}
-        >
+        <div className="relative w-16 h-16 mb-2">
           <img
             src={badge.image}
             alt={badge.name}
-            className="w-full h-full object-contain"
+            className={`w-full h-full object-contain ${
+              !badge.achieved ? "opacity-40 grayscale" : ""
+            }`}
           />
           {badge.achieved && (
             <div className="absolute -top-1 -right-1 bg-green-500 text-white rounded-full p-1">

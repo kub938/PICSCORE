@@ -1,6 +1,6 @@
 import React from "react";
 import BadgeItem from "./BadgeItem";
-import { Badge } from "../../..//types";
+import { Badge } from "../../../types";
 
 interface BadgeGridProps {
   badges: Badge[];
@@ -15,25 +15,23 @@ const BadgeGrid: React.FC<BadgeGridProps> = ({
   selectedBadgeId,
   onSelectBadge,
 }) => {
-  if (badges.length === 0) {
-    return (
-      <div className="p-8 text-center text-gray-500">
-        이 카테고리에 업적이 없습니다.
-      </div>
-    );
-  }
-
   return (
     <div className="grid grid-cols-2 gap-4">
-      {badges.map((badge) => (
-        <BadgeItem
-          key={badge.id}
-          badge={badge}
-          isSelectable={isSelectable}
-          isSelected={badge.id === selectedBadgeId}
-          onSelect={onSelectBadge}
-        />
-      ))}
+      {badges.length > 0 ? (
+        badges.map((badge) => (
+          <BadgeItem
+            key={badge.id}
+            badge={badge}
+            isSelectable={isSelectable}
+            isSelected={badge.id === selectedBadgeId}
+            onSelect={onSelectBadge}
+          />
+        ))
+      ) : (
+        <div className="col-span-2 p-8 text-center text-gray-500">
+          표시할 업적이 없습니다.
+        </div>
+      )}
     </div>
   );
 };
