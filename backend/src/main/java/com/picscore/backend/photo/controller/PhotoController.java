@@ -113,13 +113,14 @@ public class PhotoController {
      * 특정 사용자의 사진 목록을 조회하는 엔드포인트
      *
      * @param userId 조회할 사용자 ID
-     * @param request 공개 여부를 포함한 조회 요청 객체
+     * @param isPublic 공개 여부를 포함한 조회 요청 객체
      * @return ResponseEntity<BaseResponse<List<GetPhotosResponse>>> 사용자의 사진 목록 응답
      */
     @GetMapping("/user/photo/{userId}")
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>>
-    getPhotosByUserId(@PathVariable Long userId, @RequestBody GetPhotosRequest request) {
-        return photoService.getPhotosByUserId(userId, request.getIsPublic());
+    getPhotosByUserId(
+            @PathVariable Long userId, @RequestParam(required = false) Boolean isPublic) {
+        return photoService.getPhotosByUserId(userId, isPublic);
     }
 
 
