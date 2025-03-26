@@ -12,11 +12,7 @@ function App() {
     <div className="box-content flex flex-col max-w-md mx-auto min-h-screen bg-gray-50 relative">
       {showNavBar && <ContentNavBar content={content} />}
       <RouteListener />
-      <main
-        className={`flex flex-1 justify-center items-center ${
-          showBottomBar ? "pb-16" : ""
-        }`}
-      >
+      <main className="flex flex-1 justify-center items-center">
         <Outlet />
       </main>
       {showBottomBar && <BottomBar />}
