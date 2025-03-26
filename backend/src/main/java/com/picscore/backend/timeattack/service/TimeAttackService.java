@@ -84,7 +84,7 @@ public class TimeAttackService {
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.set("Ocp-Apim-Subscription-Key", visionApiKey);
 
-        HttpEntity<byte[]> requestEntity = new HttpEntity<>(request.getImageBlob(), headers);
+        HttpEntity<byte[]> requestEntity = new HttpEntity<>(request.getImageFileBytes(), headers);
 
         try {
             ResponseEntity<AzureVisionResponse> response = restTemplate.exchange(

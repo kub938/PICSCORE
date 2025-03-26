@@ -7,6 +7,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class AnalysisPhotoRequest {
 
-    private byte[] imageBlob;
+    private byte[] imageFileBytes;
     private String topic;
 }
