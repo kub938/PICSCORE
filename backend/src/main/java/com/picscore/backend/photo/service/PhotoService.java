@@ -42,6 +42,7 @@ public class PhotoService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
+
     /**
      * 새로운 사진을 저장하는 메서드
      *
@@ -79,9 +80,16 @@ public class PhotoService {
         return ResponseEntity.ok(BaseResponse.success("사진 업로드 완료", HttpStatus.CREATED));
     }
 
-    // ✅ 임시 파일 업로드
+
+    /**
+     * 임시 파일을 S3에 업로드하는 메서드
+     *
+     * @param file 업로드할 MultipartFile 객체
+     * @return ResponseEntity<BaseResponse<UploadPhotoResponse>> 업로드 결과 응답
+     * @throws IOException 파일 처리 중 발생할 수 있는 입출력 예외
+     */
     public ResponseEntity<BaseResponse<UploadPhotoResponse>> uploadFile(MultipartFile file) throws IOException {
-        // ✅ 파일명 생성 (UUID 사용)
+        // UUID를 사용하여 고유한 파일명 생성
         String fileName = UUID.randomUUID() + "." + getFileExtension(file.getOriginalFilename());
 
         String tempFolder = "temp/";
@@ -92,18 +100,27 @@ public class PhotoService {
                 .build();
 
         try {
+            // S3에 파일 업로드
             s3Client.putObject(putObjectRequest,
                     RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
+            // 업로드 성공 시 응답 생성
             UploadPhotoResponse uploadPhotoResponse = new UploadPhotoResponse(getFileUrl(tempFolder, fileName), fileName);
             return ResponseEntity.ok(BaseResponse.success("임시 파일 저장 완료", uploadPhotoResponse));
         } catch (Exception e) {
+            // 업로드 실패 시 에러 로그 출력 및 에러 응답 반환
             System.out.printf("업로드 실패");
             return ResponseEntity.internalServerError().body(BaseResponse.error("파일 업로드 실패: " + e.getMessage()));
         }
     }
 
-    // ✅ 파일 확장자 추출
+
+    /**
+     * 파일명에서 확장자를 추출하는 메서드
+     *
+     * @param originalFileName 원본 파일명
+     * @return String 파일 확장자 (점 포함)
+     */
     private String getFileExtension(String originalFileName) {
         int extensionIndex = originalFileName.lastIndexOf(".");
         if (extensionIndex > 0) {
@@ -112,6 +129,14 @@ public class PhotoService {
         return "";
     }
 
+
+    /**
+     * 프로필 이미지 파일을 S3에 업로드하는 메서드
+     *
+     * @param file 업로드할 MultipartFile 객체
+     * @return String 업로드된 파일의 URL
+     * @throws IOException 파일 처리 중 발생할 수 있는 입출력 예외
+     */
     public String uploadProfileFile(MultipartFile file) throws IOException {
         String fileName = UUID.randomUUID() + "." + getFileExtension(file.getOriginalFilename());
         String tempFolder = "profile/";
@@ -123,13 +148,16 @@ public class PhotoService {
                 .build();
 
         try {
+            // S3에 파일 업로드
             s3Client.putObject(putObjectRequest,
                     RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
+            // 업로드된 파일의 URL 반환
             return getFileUrl(tempFolder, fileName);
         } catch (Exception e) {
+            // 업로드 실패 시 에러 로그 출력 및 예외 발생
             System.out.println("파일 업로드 실패: " + e.getMessage());
-            throw new RuntimeException("파일 업로드 실패", e); // 예외 발생
+            throw new RuntimeException("파일 업로드 실패", e);
         }
     }
 
@@ -313,33 +341,52 @@ public class PhotoService {
         return ResponseEntity.ok(BaseResponse.success("Top5 사진 조회", responses));
     }
 
+
     /**
-     * S3관련 미완성 API
+     * S3에서 파일을 다운로드하여 바이트 배열로 반환하는 메서드
+     *
+     * @param fileName 다운로드할 파일의 이름
+     * @return byte[] 파일의 바이트 배열
      */
-    // 파일 다운로드 (바이트 배열로 반환)
     public byte[] downloadFile(String fileName) {
         String permanentFolder = "permanent/";
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
-                .key(permanentFolder+fileName)
+                .key(permanentFolder + fileName)
                 .build();
 
+        // S3에서 파일을 바이트 배열로 가져오기
         return s3Client.getObjectAsBytes(getObjectRequest).asByteArray();
     }
 
-    // 파일 삭제
+
+    /**
+     * S3에서 파일을 삭제하는 메서드
+     *
+     * @param imageUrl 삭제할 파일의 URL
+     */
     public void deleteFile(String imageUrl) {
+        // URL에서 파일명을 추출
         String imageName = extractFileName(imageUrl);
         String permanentFolder = "permanent/";
+
+        // S3에 삭제 요청 생성 및 실행
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                 .bucket(bucketName)
-                .key(permanentFolder+imageName)
+                .key(permanentFolder + imageName)
                 .build();
 
         s3Client.deleteObject(deleteObjectRequest);
     }
 
+
+    /**
+     * S3에서 프로필 이미지를 삭제하는 메서드
+     *
+     * @param imageUrl 삭제할 프로필 이미지의 URL
+     */
     public void deleteProfileFile(String imageUrl) {
+        // URL에서 프로필 이미지 파일명을 추출
         String imageName = extractProfileFileName(imageUrl);
         if (imageName == null) {
             System.out.println("유효하지 않은 이미지 URL: " + imageUrl);
@@ -347,28 +394,43 @@ public class PhotoService {
         }
 
         String profileFolder = "profile/";
+
+        // S3에 삭제 요청 생성 및 실행
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                 .bucket(bucketName)
-                .key(profileFolder+imageName)
+                .key(profileFolder + imageName)
                 .build();
 
         s3Client.deleteObject(deleteObjectRequest);
     }
 
-    // 버킷 내 모든 파일 목록 조회
+
+    /**
+     * S3 버킷 내 모든 파일 목록을 조회하는 메서드
+     *
+     * @return List<String> 버킷 내 모든 파일 이름 목록
+     */
     public List<String> listFiles() {
         ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder()
                 .bucket(bucketName)
                 .build();
 
+        // S3에서 객체 목록 조회
         ListObjectsV2Response response = s3Client.listObjectsV2(listObjectsRequest);
 
+        // 객체 키(파일 이름) 목록 반환
         return response.contents().stream()
                 .map(S3Object::key)
                 .collect(Collectors.toList());
     }
 
-    // url에서 imageName 추출
+
+    /**
+     * URL에서 permanent 폴더의 파일명을 추출하는 메서드
+     *
+     * @param url 파일 URL
+     * @return String 추출된 파일명 (없으면 null 반환)
+     */
     public String extractFileName(String url) {
         String prefix = "permanent/";
         int index = url.indexOf(prefix);
@@ -377,9 +439,16 @@ public class PhotoService {
             return url.substring(index + prefix.length());
         }
 
-        return null; // temp/가 없는 경우
+        return null; // permanent/가 없는 경우 null 반환
     }
 
+
+    /**
+     * URL에서 profile 폴더의 파일명을 추출하는 메서드
+     *
+     * @param url 프로필 이미지 URL
+     * @return String 추출된 파일명 (없으면 null 반환)
+     */
     public String extractProfileFileName(String url) {
         String prefix = "profile/";
         int index = url.indexOf(prefix);
@@ -388,18 +457,24 @@ public class PhotoService {
             return url.substring(index + prefix.length());
         }
 
-        return null; // temp/가 없는 경우
+        return null; // profile/가 없는 경우 null 반환
     }
 
-    // 파일 URL 생성
-    private String getFileUrl(String folder, String fileName) {
+
+    /**
+     * S3 버킷 내 특정 폴더와 파일명을 기반으로 파일 URL을 생성하는 메서드
+     *
+     * @param folder 폴더 이름 (예: "profile/", "permanent/")
+     * @param fileName 파일 이름
+     * @return String 생성된 파일 URL
+     */
+    public String getFileUrl(String folder, String fileName) {
         return String.format("https://%s.s3.%s.amazonaws.com/%s%s",
                 bucketName,
                 s3Client.serviceClientConfiguration().region(),
                 folder,
                 fileName);
     }
-
 }
 
 

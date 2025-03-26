@@ -30,6 +30,9 @@ public class TimeAttack extends BaseEntity {
     @Column(name = "photo_image")
     private String photoImage;
 
+    @Column(name = "topic")
+    private String topic;
+
     @Column(name = "activity_week")
     private int activityWeek;
 
@@ -39,14 +42,15 @@ public class TimeAttack extends BaseEntity {
     @Column(name = "score")
     private float score;
 
-    public TimeAttack(User user, String photoImage, int activityWeek, float score) {
+    public TimeAttack(User user, String photoImage, String topic, int activityWeek, float score) {
         this.user = user;
         this.photoImage = photoImage;
+        this.topic = topic;
         this.activityWeek = activityWeek;
         this.score = score;
     }
 
-    public void updateRanking (int ranking) {
+    public void updateRanking(int ranking) {
         this.ranking = ranking;
     }
 }
