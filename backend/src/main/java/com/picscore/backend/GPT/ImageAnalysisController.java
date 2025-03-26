@@ -2,6 +2,8 @@ package com.picscore.backend.GPT;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/image")
 public class ImageAnalysisController {
@@ -13,7 +15,7 @@ public class ImageAnalysisController {
     }
 
     @GetMapping("/analyze")
-    public String analyze(@RequestParam String imageUrl) {
+    public String analyze(@RequestParam String imageUrl) throws IOException {
         return openAiImageService.analyzeImage(imageUrl);
     }
 }

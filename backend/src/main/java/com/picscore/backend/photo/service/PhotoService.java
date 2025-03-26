@@ -79,25 +79,39 @@ public class PhotoService {
         return ResponseEntity.ok(BaseResponse.success("사진 업로드 완료", HttpStatus.CREATED));
     }
 
-    // 임시 파일 업로드
+    // ✅ 임시 파일 업로드
     public ResponseEntity<BaseResponse<UploadPhotoResponse>> uploadFile(MultipartFile file) throws IOException {
-        String fileName = generateFileName(file);
+        // ✅ 파일명 생성 (UUID 사용)
+        String fileName = UUID.randomUUID() + "." + getFileExtension(file.getOriginalFilename());
+
         String tempFolder = "temp/";
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
-                .key(tempFolder+fileName)
+                .key(tempFolder + fileName)
                 .contentType(file.getContentType())
                 .build();
+
         try {
             s3Client.putObject(putObjectRequest,
                     RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-            UploadPhotoResponse uploadPhotoResponse = new UploadPhotoResponse(getFileUrl(tempFolder,fileName), fileName);
+
+            UploadPhotoResponse uploadPhotoResponse = new UploadPhotoResponse(getFileUrl(tempFolder, fileName), fileName);
             return ResponseEntity.ok(BaseResponse.success("임시 파일 저장 완료", uploadPhotoResponse));
         } catch (Exception e) {
             System.out.printf("업로드 실패");
             return ResponseEntity.internalServerError().body(BaseResponse.error("파일 업로드 실패: " + e.getMessage()));
         }
     }
+
+    // ✅ 파일 확장자 추출
+    private String getFileExtension(String originalFileName) {
+        int extensionIndex = originalFileName.lastIndexOf(".");
+        if (extensionIndex > 0) {
+            return originalFileName.substring(extensionIndex);
+        }
+        return "";
+    }
+
 
     /**
      * 주어진 키워드(해시태그)로 사진을 검색하는 메서드
@@ -338,10 +352,6 @@ public class PhotoService {
                 fileName);
     }
 
-    // 파일명 생성 (중복 방지를 위해 UUID 사용)
-    private String generateFileName(MultipartFile file) {
-        return UUID.randomUUID() + "-" + file.getOriginalFilename();
-    }
 }
 
 
