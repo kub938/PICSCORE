@@ -10,7 +10,7 @@ import Chart from "./components/Chart";
 
 interface ImageEvalDetailProps {
   isModalOpen: boolean;
-  closeModal: () => void;
+  closeDetail: () => void;
   score: number;
 }
 
@@ -24,7 +24,7 @@ interface ImageEvalData {
 
 function ImageEvalDetail({
   isModalOpen,
-  closeModal,
+  closeDetail,
   score,
 }: ImageEvalDetailProps) {
   const evalData: ImageEvalData = {
@@ -41,7 +41,7 @@ function ImageEvalDetail({
         <div
           className=" bottom-0 top-0 fixed  max-w-md w-full bg-black/40 z-50 flex flex-col justify-center"
           onClick={(e) => {
-            if (e.target === e.currentTarget) closeModal();
+            if (e.target === e.currentTarget) closeDetail();
           }}
         >
           <div className="bg-gray-100 mx-3 my-10 rounded flex flex-col max-h-[90vh]">
@@ -52,7 +52,7 @@ function ImageEvalDetail({
                 <span>SCORE</span>
               </div>
               <button
-                onClick={closeModal}
+                onClick={closeDetail}
                 className="hover:bg-gray-200 rounded-full p-1"
               >
                 <XMarkIcon className="text-gray-700" width={30} />
