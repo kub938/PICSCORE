@@ -168,22 +168,48 @@ const ChangeInfoPage: React.FC = () => {
     setIsSaving(true);
 
     try {
-      // API에 전송할 데이터 준비
-      const updateData = {
-        profileImage: profile.profileImage || "", // null일 경우 빈 문자열로 처리
-        nickName: profile.nickname, // API는 nickName 형식 사용
-        message: profile.bio, // API는 message 형식 사용
-      };
-      console.log(
-        "전송되는 데이터 구조:",
-        JSON.stringify({
-          profileImage: updateData.profileImage ? "BASE64_IMAGE_STRING" : "",
-          nickName: updateData.nickName,
-          message: updateData.message,
-        })
-      );
-      // API 호출
-      updateProfileMutation.mutate(updateData, {
+      // FormData 객체 생성
+      const formData = new FormData();
+
+      // 프로필 이미지가 base64 문자열인 경우 파일로 변환
+      if (profile.profileImage && profile.profileImage.startsWith("data:")) {
+        // Base64 문자열에서 실제 바이너리 데이터 추출
+        const byteString = atob(profile.profileImage.split(",")[1]);
+        const mimeString = profile.profileImage
+          .split(",")[0]
+          .split(":")[1]
+          .split(";")[0];
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+
+        // Blob 생성 후 File 객체로 변환
+        const blob = new Blob([ab], { type: mimeString });
+        const file = new File([blob], "profile-image.jpg", {
+          type: mimeString,
+        });
+
+        // FormData에 파일 추가
+        formData.append("profileImageFile", file);
+      } else if (previewImage) {
+        // 이미 File 객체가 있는 경우 (input type="file"에서 선택한 경우)
+        const fileInput = document.querySelector(
+          'input[type="file"]'
+        ) as HTMLInputElement;
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          formData.append("profileImageFile", fileInput.files[0]);
+        }
+      }
+
+      // 나머지 필드 추가
+      formData.append("nickName", profile.nickname);
+      formData.append("message", profile.bio);
+
+      // API 호출 - FormData 전송을 위해 content-type을 multipart/form-data로 설정
+      updateProfileMutation.mutate(formData, {
         onSuccess: () => {
           setIsSaving(false);
           navigate("/mypage");
