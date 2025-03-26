@@ -12,7 +12,7 @@ function ContentNavBar({ content }: ContentNavbarProps) {
     navigate(-1);
   };
   return (
-    <nav className="w-full bg-white shadow-2xs py-2 px-6">
+    <nav className="w-full max-w-md bg-white shadow-2xs py-2 px-6">
       <div className="flex justify-between items-center">
         <ArrowLeftIcon className="w-10" onClick={GoBack} />
         {/* 로고 */}
