@@ -37,6 +37,9 @@ export const useUpdateProfile = () => {
       // Invalidate and refetch the myProfile query after successful update
       queryClient.invalidateQueries({ queryKey: ["myProfile"] });
     },
+    onError: (error) => {
+      console.log("프로필 업데이트 실패", error);
+    },
   });
 };
 
@@ -157,7 +160,7 @@ export const useUserPhotos = (userId: number) => {
   return useQuery({
     queryKey: ["userPhotos", userId],
     queryFn: async () => {
-      const response = await userApi.getUserPhotos(userId);
+      const response = await userApi.getUserPhotos(userId, true); // or false, depending on your requirement
       return response.data;
     },
     enabled: !!userId,

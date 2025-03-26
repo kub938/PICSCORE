@@ -153,8 +153,14 @@ export const userApi = {
   },
 
   // User authentication endpoints
-  logout: () => {
-    return testApi.get<BaseResponse<void>>("/api/v1/user/logout");
+  logout: async () => {
+    try {
+      const response = await testApi.post("/api/v1/user/logout");
+      return response.data;
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
+      throw error;
+    }
   },
 
   deleteAccount: () => {
