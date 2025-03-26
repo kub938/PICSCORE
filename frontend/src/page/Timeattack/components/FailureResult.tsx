@@ -5,12 +5,14 @@ import { useNavigate } from "react-router-dom";
 interface FailureResultProps {
   message: string;
   topic?: string;
+  translatedTopic?: string;
   onTryAgain?: () => void;
 }
 
 const FailureResult: React.FC<FailureResultProps> = ({
   message,
   topic,
+  translatedTopic,
   onTryAgain,
 }) => {
   const navigate = useNavigate();
@@ -58,7 +60,7 @@ const FailureResult: React.FC<FailureResultProps> = ({
         {topic && (
           <div className="bg-gray-100 p-4 rounded-lg mb-6">
             <p className="text-gray-800">
-              오늘의 주제: <span className="font-bold">{topic}</span>
+              오늘의 주제: <span className="font-bold">{translatedTopic}</span>
             </p>
           </div>
         )}

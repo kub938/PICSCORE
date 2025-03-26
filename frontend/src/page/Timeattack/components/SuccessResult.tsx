@@ -16,6 +16,7 @@ interface SuccessResultProps {
   analysisData: AnalysisData;
   image: string | null;
   topic: string;
+  translatedTopic?: string; // 번역된 주제 추가 (선택적)
   ranking: number;
   onTryAgain?: () => void;
 }
@@ -26,6 +27,7 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
   analysisData,
   image,
   topic,
+  translatedTopic, // 번역된 주제 추가 (선택적)
   ranking,
   onTryAgain,
 }) => {
@@ -49,11 +51,11 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
 
     // 주제 관련 피드백
     if (topicAccuracy >= 80) {
-      feedbacks.push(`• 주제 "${topic}"에 매우 적합한 사진입니다.`);
+      feedbacks.push(`• 주제 "${translatedTopic}"에 매우 적합한 사진입니다.`);
     } else if (topicAccuracy >= 50) {
-      feedbacks.push(`• 주제 "${topic}"와 관련성이 있습니다.`);
+      feedbacks.push(`• 주제 "${translatedTopic}"와 관련성이 있습니다.`);
     } else {
-      feedbacks.push(`• 주제 "${topic}"와의 연관성이 낮습니다.`);
+      feedbacks.push(`• 주제 "${translatedTopic}"와의 연관성이 낮습니다.`);
     }
 
     // 구도 피드백

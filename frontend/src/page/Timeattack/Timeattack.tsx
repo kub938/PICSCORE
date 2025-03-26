@@ -8,10 +8,55 @@ import Container from "./components/Container";
 import ExplanationStep from "./components/ExplanationStep";
 import PreparationStep from "./components/PreparationStep";
 import PhotoUploadStep from "./components/PhotoUploadStep";
+import Modal from "../../components/Modal";
 import { timeAttackApi } from "../../api/timeAttackApi";
 
 // 타임어택 주제 목록 (실제 환경에서는 서버에서 가져올 수 있음)
-const TOPICS = ["dog", "cat"];
+const INDOOR_TOPICS = [
+  "book",
+  "cup",
+  "chair",
+  "clock",
+  "computer",
+  "food",
+  "plant",
+  "table",
+];
+
+const OUTDOOR_TOPICS = [
+  "dog",
+  "cat",
+  "flower",
+  "car",
+  "tree",
+  "mountain",
+  "sky",
+  "building",
+];
+
+// 주제 영어-한글 매핑
+const TOPIC_TRANSLATIONS: Record<string, string> = {
+  dog: "강아지",
+  cat: "고양이",
+  flower: "꽃",
+  car: "자동차",
+  tree: "나무",
+  food: "음식",
+  mountain: "산",
+  sky: "하늘",
+  book: "책",
+  cup: "컵",
+  chair: "의자",
+  clock: "시계",
+  computer: "컴퓨터",
+  plant: "식물",
+  table: "테이블",
+  building: "건물",
+};
+
+const translateTopic = (englishTopic: string): string => {
+  return TOPIC_TRANSLATIONS[englishTopic] || englishTopic; // 매핑이 없으면 원래 값 반환
+};
 
 const TimeAttack: React.FC = () => {
   // Zustand store 사용
@@ -28,6 +73,7 @@ const TimeAttack: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showLocationModal, setShowLocationModal] = useState<boolean>(false);
 
   // Handle timer countdown
   useEffect(() => {
@@ -58,10 +104,22 @@ const TimeAttack: React.FC = () => {
   }, [step, timeLeft, isTimerActive, challengeTopic, setGameState]);
 
   const handleStartGame = (): void => {
+    // 실내/실외 선택 모달 표시
+    setShowLocationModal(true);
+  };
+
+  const startGameWithLocation = (isIndoor: boolean): void => {
+    // 선택에 따라 주제 목록 선택
+    const topicList = isIndoor ? INDOOR_TOPICS : OUTDOOR_TOPICS;
+
     // 랜덤 주제 선택
-    const randomTopic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+    const randomTopic = topicList[Math.floor(Math.random() * topicList.length)];
     setChallengeTopic(randomTopic);
 
+    // 모달 닫기
+    setShowLocationModal(false);
+
+    // 게임 시작
     setStep(2);
     setCountdown(3);
 
@@ -151,7 +209,9 @@ const TimeAttack: React.FC = () => {
         topic: challengeTopic,
         ranking: 10, // 임시 값
         feedback: [
-          `주제 "${challengeTopic}"에 대한 연관성: ${topicAccuracy}%`,
+          `주제 "${translateTopic(
+            challengeTopic
+          )}"에 대한 연관성: ${topicAccuracy}%`,
           analysisData.name === "일치 항목 없음"
             ? "주제와 연관된 요소를 찾지 못했습니다."
             : `이미지에서 "${analysisData.name}" 항목이 식별되었습니다.`,
@@ -211,6 +271,7 @@ const TimeAttack: React.FC = () => {
           <PhotoUploadStep
             timeLeft={timeLeft}
             challengeTopic={challengeTopic}
+            translatedTopic={translateTopic(challengeTopic)}
             selectedImage={selectedImage}
             onImageUpload={handleImageUpload}
             onImageSubmit={handleImageSubmit}
@@ -226,6 +287,69 @@ const TimeAttack: React.FC = () => {
   return (
     <Container>
       <main className="flex-1 flex flex-col">{renderStep()}</main>
+
+      {/* 실내/실외 선택 모달 */}
+      <Modal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        title="위치 선택"
+        description={
+          <div className="text-gray-600">
+            <p className="mb-3">현재 촬영 가능한 환경을 선택해주세요.</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => startGameWithLocation(true)}
+                className="bg-white border border-pic-primary text-pic-primary hover:bg-pic-primary hover:text-white py-3 px-2 rounded-lg flex flex-col items-center transition-colors duration-300"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 mb-1"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span className="font-medium">실내</span>
+              </button>
+
+              <button
+                onClick={() => startGameWithLocation(false)}
+                className="bg-white border border-pic-primary text-pic-primary hover:bg-pic-primary hover:text-white py-3 px-2 rounded-lg flex flex-col items-center transition-colors duration-300"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 mb-1"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 22v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="10" r="5"></circle>
+                  <line x1="17" y1="8" x2="22" y2="8"></line>
+                  <line x1="17" y1="12" x2="22" y2="12"></line>
+                  <line x1="19" y1="5" x2="19" y2="15"></line>
+                </svg>
+                <span className="font-medium">실외</span>
+              </button>
+            </div>
+          </div>
+        }
+        buttons={[
+          {
+            label: "취소",
+            textColor: "gray",
+            onClick: () => setShowLocationModal(false),
+          },
+        ]}
+      />
     </Container>
   );
 };

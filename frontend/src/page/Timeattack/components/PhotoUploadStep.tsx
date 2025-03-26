@@ -4,19 +4,21 @@ import React from "react";
 interface PhotoUploadStepProps {
   timeLeft: number;
   challengeTopic: string;
+  translatedTopic: string; // 한글로 번역된 주제 추가
   selectedImage: string | null;
+  isLoading: boolean;
   onImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onImageSubmit: () => void;
-  isLoading?: boolean;
 }
 
 const PhotoUploadStep: React.FC<PhotoUploadStepProps> = ({
   timeLeft,
   challengeTopic,
+  translatedTopic, // 한글 주제 추가
   selectedImage,
+  isLoading,
   onImageUpload,
   onImageSubmit,
-  isLoading = false,
 }) => {
   return (
     <div className="flex flex-col flex-1 p-4">
@@ -37,14 +39,19 @@ const PhotoUploadStep: React.FC<PhotoUploadStepProps> = ({
             오늘의 주제
           </div>
           <div className="bg-gray-100 p-2 rounded-lg text-center text-xl font-bold flex items-center justify-center h-16">
-            {challengeTopic}
+            {translatedTopic} {/* 한글 주제 사용 */}
           </div>
         </div>
       </div>
 
       <div className="flex-1 bg-white rounded-lg shadow-sm p-4 mb-4 border border-gray-200">
         <div className="h-full border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center p-4">
-          {selectedImage ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pic-primary mb-3"></div>
+              <p className="text-gray-500">이미지 처리 중...</p>
+            </div>
+          ) : selectedImage ? (
             <img
               src={selectedImage}
               alt="촬영된 사진"
@@ -73,7 +80,10 @@ const PhotoUploadStep: React.FC<PhotoUploadStepProps> = ({
                   사진을 촬영하거나 업로드하세요
                 </p>
                 <p className="text-gray-400 text-sm text-center mt-1">
-                  주제 "{challengeTopic}"에 맞는 사진을 찾아보세요!
+                  주제 "{translatedTopic}"에 맞는 사진을 찾아보세요!
+                </p>
+                <p className="text-gray-400 text-xs text-center mt-1">
+                  (최대 5MB, 더 큰 이미지는 자동으로 압축됩니다)
                 </p>
                 <input
                   type="file"
@@ -91,18 +101,11 @@ const PhotoUploadStep: React.FC<PhotoUploadStepProps> = ({
         <button
           onClick={onImageSubmit}
           disabled={isLoading}
-          className={`${
-            isLoading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
-          } text-white py-4 rounded-lg text-xl font-bold transition shadow-sm flex justify-center items-center`}
+          className={`bg-green-500 text-white py-4 rounded-lg text-xl font-bold hover:bg-green-600 transition shadow-sm ${
+            isLoading ? "opacity-70 cursor-not-allowed" : ""
+          }`}
         >
-          {isLoading ? (
-            <>
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-              분석 중...
-            </>
-          ) : (
-            "제출하기"
-          )}
+          {isLoading ? "분석 중..." : "제출하기"}
         </button>
       ) : (
         <button
