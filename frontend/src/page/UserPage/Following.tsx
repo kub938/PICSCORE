@@ -1,76 +1,43 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMyFollowings } from "../../hooks/friend"; // 경로는 실제 위치에 맞게 조정하세요
+import { friendApi } from "../../api/friendApi"; // 경로는 실제 위치에 맞게 조정하세요
 
-// 팔로우 리스트에서 사용할 임시 사용자 타입
+// 백엔드 응답 타입에 맞게 인터페이스 수정
 interface FollowUser {
-  id: string;
-  username: string;
-  profileImageUrl: string | null;
-  isFollowing: boolean;
+  userId: number;
+  nickName: string;
+  profileImage: string;
+  isFollowing?: boolean; // 팔로잉 목록에는 이 필드가 없을 수 있음
 }
 
-const Following: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [dummyFollowings, setDummyFollowings] = useState<FollowUser[]>(
-    Array(7)
-      .fill(null)
-      .map((_, index) => ({
-        id: `user-${index + 1}`,
-        username: `팔로잉 사용자 ${index + 1}`,
-        profileImageUrl: "https://via.placeholder.com/150/92c952",
-        isFollowing: true,
-      }))
-  );
+interface FollowingProps {
+  followerCount?: number;
+  followingCount?: number;
+}
 
-  const [showModal, setShowModal] = useState(false); // 모달 상태
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null); // 선택된 사용자 ID
+const Following: React.FC<FollowingProps> = ({
+  followerCount,
+  followingCount,
+}) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   const navigate = useNavigate();
 
-  // 팔로잉 수 계산
-  const followingCount = dummyFollowings.filter(
-    (user) => user.isFollowing
-  ).length;
+  // useQuery 훅을 사용하여 팔로잉 데이터 가져오기
+  const {
+    data: followings = [],
+    isLoading: isFollowingsLoading,
+    isError,
+    refetch: refetchFollowings,
+  } = useMyFollowings();
 
   // 검색어로 필터링
-  const filteredData = dummyFollowings.filter((user) =>
-    user.username.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredData = followings.filter((user) =>
+    user.nickName.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  // 팔로우/언팔로우 토글
-  const handleToggleFollow = (userId: string) => {
-    setDummyFollowings((prev) =>
-      prev.map((user) =>
-        user.id === userId ? { ...user, isFollowing: !user.isFollowing } : user
-      )
-    );
-  };
-
-  // 버튼 클릭 시 동작
-  const handleButtonClick = (user: FollowUser) => {
-    if (user.isFollowing) {
-      // 팔로잉 상태일 때는 모달을 띄움
-      setSelectedUserId(user.id);
-      setShowModal(true);
-    } else {
-      // 팔로우 상태일 때는 바로 팔로잉으로 변경
-      handleToggleFollow(user.id);
-    }
-  };
-
-  // 모달 닫기
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedUserId(null);
-  };
-
-  // 모달에서 "팔로잉 취소" 버튼 클릭
-  const handleConfirmUnfollow = () => {
-    if (selectedUserId) {
-      handleToggleFollow(selectedUserId); // 팔로우 상태 변경
-    }
-    handleCloseModal(); // 모달 닫기
-  };
 
   // 뒤로 가기
   const handleGoBack = () => {
@@ -108,7 +75,7 @@ const Following: React.FC = () => {
           className="flex-1 py-3 text-center text-gray-500"
           onClick={goToFollower}
         >
-          7 팔로워
+          {followerCount} 팔로워
         </button>
         <button className="flex-1 py-3 text-center font-medium border-b-2 border-black">
           {followingCount} 팔로우
@@ -143,16 +110,23 @@ const Following: React.FC = () => {
 
       {/* 사용자 목록 */}
       <div className="flex-1 overflow-y-auto">
-        {filteredData.length > 0 ? (
+        {isFollowingsLoading ? (
+          // 로딩 중 표시
+          <div className="p-4 text-center text-gray-500">로딩 중...</div>
+        ) : isError ? (
+          <div className="p-4 text-center text-gray-500">
+            데이터를 불러오는 중 오류가 발생했습니다.
+          </div>
+        ) : filteredData.length > 0 ? (
           filteredData.map((user) => (
             <div
-              key={user.id}
+              key={user.userId}
               className="flex items-center p-4 border-b bg-white"
             >
               <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
                 <img
-                  src={user.profileImageUrl || "/default-profile.jpg"}
-                  alt={`${user.username}의 프로필`}
+                  src={user.profileImage || "/default-profile.jpg"}
+                  alt={`${user.nickName}의 프로필`}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -161,17 +135,13 @@ const Following: React.FC = () => {
                 />
               </div>
               <div className="flex-1">
-                <p className="font-medium">{user.username}</p>
+                <p className="font-medium">{user.nickName}</p>
               </div>
               <button
-                className={`px-4 py-1.5 rounded-md text-sm font-medium ${
-                  user.isFollowing
-                    ? "bg-pic-primary text-white shadow-2xl"
-                    : "bg-gray-200 text-gray-800 shadow-2xl "
-                }`}
-                onClick={() => handleButtonClick(user)} // 버튼 클릭 시 동작
+                className="px-4 py-1.5 rounded-md text-sm font-medium bg-pic-primary text-white shadow-2xl"
+                onClick={() => console.log(`팔로잉 취소: ${user.userId}`)} // 버튼 클릭 시 동작
               >
-                {user.isFollowing ? "팔로잉" : "팔로우"}
+                팔로잉
               </button>
             </div>
           ))
@@ -183,31 +153,6 @@ const Following: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* 모달 */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-80">
-            <p className="text-center font-bold text-lg mb-4">
-              팔로잉 취소하시겠습니까?
-            </p>
-            <div className="flex justify-around">
-              <button
-                className="px-4 py-2 bg-pic-primary text-white rounded-md"
-                onClick={handleConfirmUnfollow} // 팔로잉 취소
-              >
-                팔로잉 취소
-              </button>
-              <button
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md"
-                onClick={handleCloseModal} // 모달 닫기
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
