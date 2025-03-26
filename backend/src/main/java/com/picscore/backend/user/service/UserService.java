@@ -6,6 +6,8 @@ import com.picscore.backend.badge.model.entity.UserBadge;
 import com.picscore.backend.badge.repository.UserBadgeRepository;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
+import com.picscore.backend.photo.model.entity.Photo;
+import com.picscore.backend.photo.service.PhotoService;
 import com.picscore.backend.timeattack.model.response.GetMyStaticResponse;
 import com.picscore.backend.timeattack.model.response.GetUserStaticResponse;
 import com.picscore.backend.timeattack.repository.TimeAttackRepository;
@@ -27,10 +29,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -45,8 +46,11 @@ public class UserService {
     private final FollowRepository followRepository;
     private final UserBadgeRepository userBadgeRepository;
     private final TimeAttackRepository timeAttackRepository;
+
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
+
+    private final PhotoService photoService;
 
 
     /**
@@ -232,7 +236,7 @@ public class UserService {
     @Transactional
     public ResponseEntity<BaseResponse<Void>> updateMyProfile(
             Long userId, UpdateMyProfileRequest request, HttpServletResponse response
-    ) {
+    ) throws IOException {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
@@ -242,6 +246,11 @@ public class UserService {
         if (existingUser != null && !existingUser.getId().equals(userId)) {
             return ResponseEntity.ok(BaseResponse.error("닉네임 중복"));
         }
+
+        String existingProfileImageUrl = userRepository.findProfileImageByUserId(userId);
+        photoService.deleteProfileFile(existingProfileImageUrl);
+
+        String profileImageUrl = photoService.uploadProfileFile(request.getProfileImageFile());
 
         String userKey = "refresh:" + userId;
 
@@ -256,7 +265,7 @@ public class UserService {
         response.addCookie(createCookie("access", newAccess));
         response.addCookie(createCookie("refresh", newRefresh));
 
-        user.updateProfile(request.getNickName(), request.getProfileImage(), request.getMessage());
+        user.updateProfile(request.getNickName(), profileImageUrl, request.getMessage());
         userRepository.save(user);
         return ResponseEntity.ok(BaseResponse.error("프로필 수정 완료"));
     }

@@ -110,6 +110,26 @@ public class PhotoService {
             return originalFileName.substring(extensionIndex);
         }
         return "";
+
+    public String uploadProfileFile(MultipartFile file) throws IOException {
+        String fileName = generateFileName(file);
+        String tempFolder = "profile/";
+
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(tempFolder + fileName)
+                .contentType(file.getContentType())
+                .build();
+
+        try {
+            s3Client.putObject(putObjectRequest,
+                    RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+            return getFileUrl(tempFolder, fileName);
+        } catch (Exception e) {
+            System.out.println("파일 업로드 실패: " + e.getMessage());
+            throw new RuntimeException("파일 업로드 실패", e); // 예외 발생
+        }
     }
 
 
@@ -318,6 +338,22 @@ public class PhotoService {
         s3Client.deleteObject(deleteObjectRequest);
     }
 
+    public void deleteProfileFile(String imageUrl) {
+        String imageName = extractProfileFileName(imageUrl);
+        if (imageName == null) {
+            System.out.println("유효하지 않은 이미지 URL: " + imageUrl);
+            return;
+        }
+
+        String profileFolder = "profile/";
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(profileFolder+imageName)
+                .build();
+
+        s3Client.deleteObject(deleteObjectRequest);
+    }
+
     // 버킷 내 모든 파일 목록 조회
     public List<String> listFiles() {
         ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder()
@@ -334,6 +370,17 @@ public class PhotoService {
     // url에서 imageName 추출
     public String extractFileName(String url) {
         String prefix = "permanent/";
+        int index = url.indexOf(prefix);
+
+        if (index != -1) {
+            return url.substring(index + prefix.length());
+        }
+
+        return null; // temp/가 없는 경우
+    }
+
+    public String extractProfileFileName(String url) {
+        String prefix = "profile/";
         int index = url.indexOf(prefix);
 
         if (index != -1) {

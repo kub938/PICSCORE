@@ -2,6 +2,7 @@ package com.picscore.backend.timeattack.service;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.timeattack.model.entity.TimeAttack;
+import com.picscore.backend.timeattack.model.request.AnalysisPhotoRequest;
 import com.picscore.backend.timeattack.model.response.AnalysisPhotoResponse;
 import com.picscore.backend.timeattack.model.response.AzureVisionResponse;
 import com.picscore.backend.timeattack.model.response.GetRankingResponse;
@@ -16,10 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -77,14 +76,17 @@ public class TimeAttackService {
         return ResponseEntity.ok(BaseResponse.success("랭킹 전체 목록 조회 성공", responseData));
     }
 
-    public ResponseEntity<BaseResponse<List<AnalysisPhotoResponse>>> analysisPhoto(byte[] imageBlob) {
+    public ResponseEntity<BaseResponse<AnalysisPhotoResponse>> analysisPhoto(
+            AnalysisPhotoRequest request
+    ) throws IOException {
         String url = visionApiUrl + "vision/v3.2/analyze?visualFeatures=Tags";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.set("Ocp-Apim-Subscription-Key", visionApiKey);
 
-        HttpEntity<byte[]> requestEntity = new HttpEntity<>(imageBlob, headers);
+        byte[] imageFileBytes = request.getImageFile().getBytes();
+        HttpEntity<byte[]> requestEntity = new HttpEntity<>(imageFileBytes, headers);
 
         try {
             ResponseEntity<AzureVisionResponse> response = restTemplate.exchange(
@@ -98,7 +100,17 @@ public class TimeAttackService {
                     .map(tag -> new AnalysisPhotoResponse(tag.getName(), tag.getConfidence()))
                     .collect(Collectors.toList());
 
-            return ResponseEntity.ok(BaseResponse.success("이미지 분석 성공", analysisResults));
+            AnalysisPhotoResponse result = analysisResults.stream()
+                    .filter(tag -> tag.getName().toLowerCase().contains(request.getTopic().toLowerCase()))
+                    .max(Comparator.comparing(AnalysisPhotoResponse::getConfidence))
+                    .orElseGet(() -> {
+                        AnalysisPhotoResponse lowestConfidence = analysisResults.stream()
+                                .min(Comparator.comparing(AnalysisPhotoResponse::getConfidence))
+                                .orElse(new AnalysisPhotoResponse("일치 항목 없음", 0.0f));
+                        return new AnalysisPhotoResponse("일치 항목 없음", lowestConfidence.getConfidence());
+                    });
+
+            return ResponseEntity.ok(BaseResponse.success("이미지 분석 성공", result));
         } catch (RestClientException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(BaseResponse.error("이미지 분석 실패: " + e.getMessage()));
