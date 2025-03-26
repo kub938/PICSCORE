@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../UserPage/components/Header";
 import ProfileSection from "./components/ProfileSection";
 import SettingsSection from "./components/SettingsSection";
 import NotificationSettings from "./components/NotificationSettings";
@@ -175,7 +174,14 @@ const ChangeInfoPage: React.FC = () => {
         nickName: profile.nickname, // API는 nickName 형식 사용
         message: profile.bio, // API는 message 형식 사용
       };
-
+      console.log(
+        "전송되는 데이터 구조:",
+        JSON.stringify({
+          profileImage: updateData.profileImage ? "BASE64_IMAGE_STRING" : "",
+          nickName: updateData.nickName,
+          message: updateData.message,
+        })
+      );
       // API 호출
       updateProfileMutation.mutate(updateData, {
         onSuccess: () => {
@@ -202,7 +208,6 @@ const ChangeInfoPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-        <Header title="프로필 수정" />
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
         </div>
@@ -212,8 +217,6 @@ const ChangeInfoPage: React.FC = () => {
 
   return (
     <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-      <Header title="프로필 수정" />
-
       <div className="flex-1 p-4">
         <ProfileSection
           profile={profile}

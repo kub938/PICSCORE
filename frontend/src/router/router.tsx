@@ -99,7 +99,7 @@ const router = createBrowserRouter([
             element: <MyPage />,
           },
           {
-            path: "/user/:userId",
+            path: "/user/profile/:userId",
             element: <UserDetailPage />,
           },
           {

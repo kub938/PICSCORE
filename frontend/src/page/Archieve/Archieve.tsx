@@ -1,12 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
-import Header from "../UserPage/components/Header";
-import CategoryTabs from "./components/CategoryTabs";
 import BadgeGrid from "./components/BadgeGrid";
 import ProgressBar from "./components/ProgressBar";
 import { Badge, BadgeCategory } from "../../types";
-import { achievementData } from "./achievementData";
+import { useAllBadges, useSetDisplayBadge } from "../../hooks/useBadge";
+
+// API 응답 타입 정의
+interface BadgeResponseData {
+  badgeId: number;
+  name: string;
+  image: string;
+  obtainCondition: string;
+  isObtain: boolean;
+}
+
+interface ApiResponse {
+  data: {
+    data: BadgeResponseData[];
+    message: string;
+    timeStamp: string;
+  };
+}
 
 const ArchievePage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,9 +30,7 @@ const ArchievePage: React.FC = () => {
   const isSelectionMode = location.state?.selectionMode === true;
   const currentBadgeId = location.state?.currentBadgeId;
 
-  const [categories, setCategories] = useState<BadgeCategory[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string>("all");
-  const [loading, setLoading] = useState<boolean>(true);
+  const [allBadges, setAllBadges] = useState<Badge[]>([]);
   const [achievedCount, setAchievedCount] = useState<number>(0);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [selectedBadgeId, setSelectedBadgeId] = useState<string | undefined>(
@@ -26,89 +38,90 @@ const ArchievePage: React.FC = () => {
   );
   const [showSuccessMessage, setShowSuccessMessage] = useState<boolean>(false);
 
+  // API 호출을 통한 뱃지 데이터 가져오기
+  const { data, isLoading, error } = useAllBadges();
+  const setDisplayBadgeMutation = useSetDisplayBadge();
+
+  // 뱃지 데이터 변환
   useEffect(() => {
-    fetchBadges();
-  }, []);
+    if (data?.data?.data) {
+      const badgeData = data.data.data;
 
-  const fetchBadges = async () => {
-    setLoading(true);
-    try {
-      // 실제 구현에서는 API 호출을 사용할 것입니다.
-      // const response = await axios.get('api/v1/bedge');
-      // setCategories(response.data);
+      // API 응답을 Badge 타입으로 변환
+      const badges: Badge[] = badgeData.map((item: BadgeResponseData) => ({
+        id: item.badgeId.toString(),
+        name: item.name,
+        description: item.obtainCondition,
+        image: item.image,
+        achieved: item.isObtain,
+      }));
 
-      // 목업 데이터 사용
-      setTimeout(() => {
-        setCategories(achievementData);
+      setAllBadges(badges);
 
-        // 전체 뱃지 수와 달성한 뱃지 수 계산
-        const allBadges =
-          achievementData.find((cat) => cat.id === "all")?.badges || [];
-        const achieved = allBadges.filter((badge) => badge.achieved).length;
-        const total = allBadges.length;
+      // 달성 통계 업데이트
+      const achieved = badges.filter((badge) => badge.achieved).length;
+      const total = badges.length;
 
-        setAchievedCount(achieved);
-        setTotalCount(total);
-        setLoading(false);
-      }, 800);
-    } catch (error) {
-      console.error("Error fetching badges:", error);
-      setLoading(false);
+      setAchievedCount(achieved);
+      setTotalCount(total);
     }
-  };
-
-  const handleCategoryChange = (categoryId: string) => {
-    setActiveCategory(categoryId);
-  };
-
-  // 현재 선택된 카테고리의 뱃지 가져오기
-  const getActiveBadges = (): Badge[] => {
-    const category = categories.find((cat) => cat.id === activeCategory);
-    return category ? category.badges : [];
-  };
+  }, [data]);
 
   // 뱃지 선택 처리
   const handleSelectBadge = (badge: Badge) => {
+    if (!badge.achieved) return; // 달성하지 못한 뱃지는 선택할 수 없음
+
     setSelectedBadgeId(badge.id);
     setShowSuccessMessage(true);
 
-    // 실제 구현에서는 API를 통해 선택한 뱃지 저장
-    // axios.patch('api/v1/user/profile', { displayBadgeId: badge.id })
-    //   .then(() => {
-    //     setShowSuccessMessage(true);
-    //     setTimeout(() => setShowSuccessMessage(false), 3000);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error saving badge selection:", error);
-    //   });
-
-    // 3초 후 성공 메시지 숨기기
+    // 성공 메시지 표시 타이머
     setTimeout(() => setShowSuccessMessage(false), 3000);
   };
 
   // 완료 버튼 클릭 시 마이페이지로 돌아가기
   const handleComplete = () => {
-    // 실제 구현에서는 API를 통해 최종 저장 처리를 할 수 있음
-    // axios.patch('api/v1/user/profile', { displayBadgeId: selectedBadgeId })
-    //   .then(() => {
-    //     navigate("/mypage");
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error saving badge:", error);
-    //   });
-
-    // 목업 환경에서는 state를 통해 데이터 전달
-    navigate("/mypage", {
-      state: {
-        updatedProfile: { displayBadgeId: selectedBadgeId },
-      },
-    });
+    if (selectedBadgeId) {
+      // API를 통해 뱃지 설정
+      setDisplayBadgeMutation.mutate(parseInt(selectedBadgeId), {
+        onSuccess: () => {
+          // 마이페이지로 이동
+          navigate("/mypage", {
+            state: {
+              updatedProfile: { displayBadgeId: selectedBadgeId },
+            },
+          });
+        },
+        onError: (error) => {
+          console.error("뱃지 설정 오류:", error);
+        },
+      });
+    } else {
+      navigate("/mypage");
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
+        <div className="p-4 text-center text-red-500">
+          데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-      <Header title={isSelectionMode ? "프로필 뱃지 선택" : "업적"} />
-
       {/* 성공 메시지 */}
       {showSuccessMessage && (
         <div className="fixed top-16 left-0 right-0 mx-auto max-w-md bg-green-500 text-white py-2 px-4 text-center z-50 animate-fadeIn">
@@ -135,32 +148,25 @@ const ArchievePage: React.FC = () => {
           </div>
         )}
 
-        <CategoryTabs
-          categories={categories}
-          activeCategory={activeCategory}
-          onCategoryChange={handleCategoryChange}
+        <BadgeGrid
+          badges={allBadges}
+          isSelectable={isSelectionMode}
+          selectedBadgeId={selectedBadgeId}
+          onSelectBadge={handleSelectBadge}
         />
-
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
-          </div>
-        ) : (
-          <BadgeGrid
-            badges={getActiveBadges()}
-            isSelectable={isSelectionMode}
-            selectedBadgeId={selectedBadgeId}
-            onSelectBadge={handleSelectBadge}
-          />
-        )}
 
         {isSelectionMode && (
           <div className="mt-6">
             <button
               onClick={handleComplete}
-              className="w-full bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition"
+              className={`w-full py-3 rounded-lg font-bold ${
+                setDisplayBadgeMutation.isPending
+                  ? "bg-gray-400 text-white"
+                  : "bg-green-500 text-white hover:bg-green-600"
+              } transition`}
+              disabled={setDisplayBadgeMutation.isPending}
             >
-              완료
+              {setDisplayBadgeMutation.isPending ? "처리 중..." : "완료"}
             </button>
           </div>
         )}
