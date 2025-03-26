@@ -2,7 +2,6 @@ import { Share } from "lucide-react";
 import processResult from "../../assets/ImageEval/process-result.svg";
 import Button from "../../components/Button";
 import testImage from "../../assets/ImageEval/test-image.jpg";
-
 import {
   MagnifyingGlassIcon,
   ArrowUpTrayIcon,
@@ -10,24 +9,63 @@ import {
 } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import ImageEvalDetail from "./ImageEvalDetail";
+import { useAuthStore } from "../../store";
+import Modal from "../../components/Modal";
+import { useNavigate } from "react-router-dom";
 
 function ImageEvalResult() {
   const score = 84;
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   const openModal = () => {
-    setIsModalOpen(true);
+    if (isLoggedIn) {
+      setIsDetailOpen(true);
+    } else {
+      setIsModalOpen(true);
+    }
   };
 
+  const navigateLogin = () => {
+    navigate("/login");
+  };
   const closeModal = () => {
     setIsModalOpen(false);
   };
 
+  const closeDetail = () => {
+    setIsDetailOpen(false);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center ">
+      <Modal
+        description={
+          <>
+            더 자세한 정보는 로그인 후 <br></br> 확인하실 수 있습니다!
+          </>
+        }
+        title="알림"
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        buttons={[
+          {
+            label: "로그인 하기",
+            textColor: "green",
+            onClick: navigateLogin,
+          },
+          {
+            label: "취소",
+            textColor: "gray",
+            onClick: closeModal,
+          },
+        ]}
+      />
       <ImageEvalDetail
-        isModalOpen={isModalOpen}
-        closeModal={closeModal}
+        isModalOpen={isDetailOpen}
+        closeDetail={closeDetail}
         score={score}
       />
 
@@ -58,10 +96,10 @@ function ImageEvalResult() {
           <div className="ml-2">업로드</div>
         </Button>
       </div>
-      <button className="cursor-pointer flex justify-center items-center gap-1 w-30  border border-pic-primary rounded-2xl text-pic-primary mb-5">
+      {/* <button className="cursor-pointer flex justify-center items-center gap-1 w-30  border border-pic-primary rounded-2xl text-pic-primary mb-5">
         <ShareIcon width={15} />
         <div className="text-sm my-1">공유하기</div>
-      </button>
+      </button> */}
     </div>
   );
 }
