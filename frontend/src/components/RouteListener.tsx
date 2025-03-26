@@ -31,6 +31,11 @@ const routeLayouts: { [key: string]: LayoutConfig } = {
     showBottomBar: false,
     content: "환영합니다",
   },
+  "/board": {
+    showNavBar: false,
+    showBottomBar: true,
+    content: "게시글",
+  },
 };
 
 function RouteListener() {
