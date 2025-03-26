@@ -76,8 +76,12 @@ export const userApi = {
     );
   },
 
-  updateProfile: (data: UpdateProfileRequest) => {
-    return testApi.patch<BaseResponse<void>>("/api/v1/user/profile", data);
+  updateProfile: (formData: FormData) => {
+    return testApi.patch<BaseResponse<void>>("/api/v1/user/profile", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
   },
 
   // Follower/Following endpoints
