@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import profileImage from "../../assets/profile.jpg";
 import contest from "../../assets/contest.png";
 import time from "../../assets/time.png";
@@ -43,6 +43,7 @@ function Home() {
 
   /* 테스트 로직 */
   const logout = useAuthStore((state) => state.logout);
+  const navigate = useNavigate();
 
   const useUserData = () => {
     const accessToken = useAuthStore((state) => state.accessToken);
@@ -68,6 +69,7 @@ function Home() {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
         logout();
+        navigate("/login");
       },
     });
   };
