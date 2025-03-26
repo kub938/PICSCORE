@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -77,14 +78,15 @@ public class TimeAttackService {
 
     public ResponseEntity<BaseResponse<AnalysisPhotoResponse>> analysisPhoto(
             AnalysisPhotoRequest request
-    ) {
+    ) throws IOException {
         String url = visionApiUrl + "vision/v3.2/analyze?visualFeatures=Tags";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.set("Ocp-Apim-Subscription-Key", visionApiKey);
 
-        HttpEntity<byte[]> requestEntity = new HttpEntity<>(request.getImageFileBytes(), headers);
+        byte[] imageFileBytes = request.getImageFile().getBytes();
+        HttpEntity<byte[]> requestEntity = new HttpEntity<>(imageFileBytes, headers);
 
         try {
             ResponseEntity<AzureVisionResponse> response = restTemplate.exchange(
