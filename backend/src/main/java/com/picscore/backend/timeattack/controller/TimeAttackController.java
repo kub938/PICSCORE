@@ -41,12 +41,9 @@ public class TimeAttackController {
 
     @PostMapping(value = "/analysis", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponse<AnalysisPhotoResponse>> analysisPhoto(
-            @RequestPart("imageFile") MultipartFile imageFile,
-            @RequestPart("topic") String topic
+            @ModelAttribute AnalysisPhotoRequest request
     ) throws IOException {
 
-        byte[] imageFileBytes = imageFile.getBytes();
-        AnalysisPhotoRequest request = new AnalysisPhotoRequest(imageFileBytes, topic);
         return timeAttackService.analysisPhoto(request);
     }
 }
