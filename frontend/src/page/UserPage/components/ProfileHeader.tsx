@@ -1,7 +1,22 @@
+// page/UserPage/components/ProfileHeader.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ProfileHeaderProps } from "../types";
 import { achievementData } from "../../Archieve/achievementData";
+import { useAuthStore } from "../../../store/authStore";
+import { useLogout } from "../../../hooks/useUser";
+
+interface ProfileHeaderProps {
+  profile: {
+    nickname: string;
+    statusMessage: string;
+    profileImage: string | null;
+    isMyProfile: boolean;
+    isFollowing: boolean;
+    displayBadgeId?: string;
+  };
+  onFollowClick: () => void;
+  onEditClick: () => void;
+}
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   profile,
@@ -9,6 +24,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onEditClick,
 }) => {
   const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
 
   // 뱃지 아이콘 클릭 시 업적 페이지로 이동
   const handleBadgeClick = () => {
@@ -17,6 +33,16 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       state: {
         selectionMode: true,
         currentBadgeId: profile.displayBadgeId,
+      },
+    });
+  };
+
+  // 로그아웃 처리
+  const logoutMutation = useLogout();
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        logout();
       },
     });
   };
@@ -62,7 +88,18 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         </div>
 
         <div className="flex-1">
-          <h2 className="text-xl font-bold">{profile.nickname}</h2>
+          <div className="flex items-center">
+            <h2 className="text-xl font-bold">{profile.nickname}</h2>
+
+            {profile.isMyProfile && (
+              <button
+                onClick={handleLogout}
+                className="ml-2 px-2 py-1 bg-white/20 rounded-md text-xs text-white hover:bg-white/30 transition"
+              >
+                로그아웃
+              </button>
+            )}
+          </div>
           <p className="text-sm text-white/80">{profile.statusMessage}</p>
         </div>
 

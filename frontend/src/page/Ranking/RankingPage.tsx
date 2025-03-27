@@ -1,11 +1,12 @@
-import React, { useEffect } from "react";
+// page/Ranking/RankingPage.tsx
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Header from "./components/Header";
 import TrophyCard from "./components/TrophyCard";
 import RankingList from "./components/RankingList";
 import Pagination from "./components/Pagination";
-import { TimeFrame, RankingUser } from "../../types";
-import { useRankingStore } from "../../store/rankingStore";
+import { TimeFrame } from "../../types";
+import { rankingApi, RankingUser } from "../../api/rankingApi";
+import { timeAttackApi } from "../../api/timeAttackApi";
 
 // Import medal images
 import goldTrophy from "../../assets/gold.png";
@@ -13,116 +14,98 @@ import silverTrophy from "../../assets/silver.png";
 import bronzeTrophy from "../../assets/bronze.png";
 
 const RankingPage: React.FC = () => {
-  // Zustand store 사용
-  const rankingState = useRankingStore();
-  const {
-    rankings,
-    isLoading,
-    currentPage,
-    totalPages,
-    timeframe,
-    setRankings,
-    setLoading,
-    setPagination,
-    setTimeframe,
-  } = rankingState;
+  // 상태 관리
+  const [rankings, setRankings] = useState<RankingUser[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [timeframe, setTimeframe] = useState<TimeFrame>("all"); // 나중에 필터 기능 추가될 경우 사용
 
   useEffect(() => {
+    const fetchRankings = async () => {
+      setIsLoading(true);
+      try {
+        const response = await timeAttackApi.getRanking(currentPage + 1);
+        const data = response.data.data;
+
+        // 랭킹 데이터 설정
+        if (data && data.ranking) {
+          setRankings(data.ranking);
+          setTotalPages(data.totalPage || 1);
+        }
+      } catch (error) {
+        console.error("랭킹 데이터 가져오기 실패:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchRankings();
-  }, [currentPage, timeframe]);
-
-  const fetchRankings = async (): Promise<void> => {
-    setLoading(true);
-    try {
-      // In a real implementation, this would be an API call
-      // const response = await axios.get(`api/v1/activity/time-attack?page=${currentPage}&timeframe=${timeframe}`);
-      // setRankings(response.data.rankings);
-      // setTotalPages(response.data.totalPages);
-
-      // Mock data for demonstration
-      setTimeout(() => {
-        const mockRankings: RankingUser[] = [
-          {
-            rank: 1,
-            userId: "user123",
-            nickname: "선진",
-            profileImage: null,
-            score: 285,
-          },
-          {
-            rank: 2,
-            userId: "user456",
-            nickname: "전진",
-            profileImage: null,
-            score: 284,
-          },
-          {
-            rank: 3,
-            userId: "user789",
-            nickname: "선신",
-            profileImage: null,
-            score: 284,
-          },
-          {
-            rank: 4,
-            userId: "user101",
-            nickname: "신진",
-            profileImage: null,
-            score: 273,
-          },
-          {
-            rank: 5,
-            userId: "user202",
-            nickname: "신신",
-            profileImage: null,
-            score: 272,
-          },
-        ];
-        setRankings(mockRankings);
-        setPagination(currentPage, 5);
-        setLoading(false);
-      }, 800); // Simulate network delay
-    } catch (error) {
-      console.error("Error fetching rankings:", error);
-      setLoading(false);
-    }
-  };
+  }, [currentPage]); // 페이지 변경시에도 데이터 다시 로드
 
   const handleNextPage = (): void => {
     if (currentPage < totalPages) {
-      setPagination(currentPage + 1, totalPages);
+      setCurrentPage(currentPage + 1);
     }
   };
 
   const handlePrevPage = (): void => {
     if (currentPage > 1) {
-      setPagination(currentPage - 1, totalPages);
+      setCurrentPage(currentPage - 1);
     }
   };
 
+  // 현재는 TimeFrame을 사용하지 않지만, 미래에 필터 기능이 추가될 경우를 대비
   const handleTimeFrameChange = (frame: TimeFrame): void => {
     setTimeframe(frame);
-    setPagination(1, totalPages); // Reset to page 1 when changing time frame
+    setCurrentPage(1); // 필터가 변경되면 1페이지로 돌아감
+  };
+
+  // 상위 3명의 랭킹 사용자를 가져오기
+  const getTopUsers = () => {
+    const topUsers = [...rankings].filter((user) => user.rank <= 3);
+    // 랭킹 순서대로 정렬 (1등, 2등, 3등)
+    return topUsers.sort((a, b) => a.rank - b.rank);
   };
 
   return (
     <div className="flex flex-col max-w-md min-h-screen bg-gray-50">
       {!isLoading && rankings.length >= 3 && (
         <div className="grid grid-cols-3 gap-2 p-4">
+          {/* 2위 (왼쪽) */}
           <TrophyCard
             rank={2}
             trophyImage={silverTrophy}
-            nickname={rankings.find((user) => user.rank === 2)?.nickname || ""}
+            nickname={
+              getTopUsers().find((user) => user.rank === 2)?.nickName || ""
+            }
+            profileImage={
+              getTopUsers().find((user) => user.rank === 2)?.profileImage || ""
+            }
           />
+
+          {/* 1위 (중앙) */}
           <TrophyCard
             rank={1}
             trophyImage={goldTrophy}
-            nickname={rankings.find((user) => user.rank === 1)?.nickname || ""}
+            nickname={
+              getTopUsers().find((user) => user.rank === 1)?.nickName || ""
+            }
+            profileImage={
+              getTopUsers().find((user) => user.rank === 1)?.profileImage || ""
+            }
           />
+
+          {/* 3위 (오른쪽) */}
           <TrophyCard
             rank={3}
             trophyImage={bronzeTrophy}
-            nickname={rankings.find((user) => user.rank === 3)?.nickname || ""}
+            nickname={
+              getTopUsers().find((user) => user.rank === 3)?.nickName || ""
+            }
+            profileImage={
+              getTopUsers().find((user) => user.rank === 3)?.profileImage || ""
+            }
           />
         </div>
       )}
@@ -131,6 +114,7 @@ const RankingPage: React.FC = () => {
         <div className="mb-4">
           <h2 className="text-lg font-bold mb-2">전체 참가자 랭킹</h2>
 
+          {/* 필터 버튼들 - 아직 백엔드에서 지원하지 않지만, UI는 구현 */}
           <div className="flex space-x-2 mb-4">
             <button
               onClick={() => handleTimeFrameChange("today")}
@@ -146,7 +130,7 @@ const RankingPage: React.FC = () => {
               onClick={() => handleTimeFrameChange("week")}
               className={`px-3 py-1 text-sm rounded-full ${
                 timeframe === "week"
-                  ? "bg-gpic-primary text-white"
+                  ? "bg-pic-primary text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
             >

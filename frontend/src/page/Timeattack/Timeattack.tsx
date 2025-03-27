@@ -1,18 +1,65 @@
+// page/Timeattack/Timeattack.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUserStore } from "../../store/userStore";
 import { useTimeAttackStore } from "../../store/timeAttackStore";
 
 // 컴포넌트 임포트
 import Container from "./components/Container";
-import Header from "./components/Header";
 import ExplanationStep from "./components/ExplanationStep";
 import PreparationStep from "./components/PreparationStep";
 import PhotoUploadStep from "./components/PhotoUploadStep";
+import Modal from "../../components/Modal";
+import { timeAttackApi } from "../../api/timeAttackApi";
+
+// 타임어택 주제 목록 (실제 환경에서는 서버에서 가져올 수 있음)
+const INDOOR_TOPICS = [
+  "book",
+  "cup",
+  "chair",
+  "clock",
+  "computer",
+  "food",
+  "plant",
+  "table",
+];
+
+const OUTDOOR_TOPICS = [
+  "dog",
+  "cat",
+  "flower",
+  "car",
+  "tree",
+  "mountain",
+  "sky",
+  "building",
+];
+
+// 주제 영어-한글 매핑
+const TOPIC_TRANSLATIONS: Record<string, string> = {
+  dog: "강아지",
+  cat: "고양이",
+  flower: "꽃",
+  car: "자동차",
+  tree: "나무",
+  food: "음식",
+  mountain: "산",
+  sky: "하늘",
+  book: "책",
+  cup: "컵",
+  chair: "의자",
+  clock: "시계",
+  computer: "컴퓨터",
+  plant: "식물",
+  table: "테이블",
+  building: "건물",
+};
+
+const translateTopic = (englishTopic: string): string => {
+  return TOPIC_TRANSLATIONS[englishTopic] || englishTopic; // 매핑이 없으면 원래 값 반환
+};
 
 const TimeAttack: React.FC = () => {
   // Zustand store 사용
-  const user = useUserStore((state) => state.user);
   const setGameState = useTimeAttackStore((state) => state.setGameState);
   const setResult = useTimeAttackStore((state) => state.setResult);
 
@@ -22,8 +69,11 @@ const TimeAttack: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState<number>(15); // Countdown timer for photo capture
   const [countdown, setCountdown] = useState<number>(3); // Countdown for preparation
   const [isTimerActive, setIsTimerActive] = useState<boolean>(false);
-  const [challengeTopic, setChallengeTopic] = useState<string>("다람쥐"); // Example topic
+  const [challengeTopic, setChallengeTopic] = useState<string>(""); // 실제 주제
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showLocationModal, setShowLocationModal] = useState<boolean>(false);
 
   // Handle timer countdown
   useEffect(() => {
@@ -54,6 +104,22 @@ const TimeAttack: React.FC = () => {
   }, [step, timeLeft, isTimerActive, challengeTopic, setGameState]);
 
   const handleStartGame = (): void => {
+    // 실내/실외 선택 모달 표시
+    setShowLocationModal(true);
+  };
+
+  const startGameWithLocation = (isIndoor: boolean): void => {
+    // 선택에 따라 주제 목록 선택
+    const topicList = isIndoor ? INDOOR_TOPICS : OUTDOOR_TOPICS;
+
+    // 랜덤 주제 선택
+    const randomTopic = topicList[Math.floor(Math.random() * topicList.length)];
+    setChallengeTopic(randomTopic);
+
+    // 모달 닫기
+    setShowLocationModal(false);
+
+    // 게임 시작
     setStep(2);
     setCountdown(3);
 
@@ -70,6 +136,7 @@ const TimeAttack: React.FC = () => {
             setGameState({
               currentStep: 3,
               isTimerActive: true,
+              challengeTopic: randomTopic,
             });
           }, 1000);
           return 0;
@@ -102,67 +169,99 @@ const TimeAttack: React.FC = () => {
       const file = event.target.files[0];
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
+      setSelectedImageFile(file);
       // Zustand에 선택된 이미지 파일 저장
       setGameState({ selectedImageFile: file });
     }
   };
 
-  const handleImageSubmit = (): void => {
-    // Here you would implement the API call to upload and analyze the image
-    // For example:
-    // const formData = new FormData();
-    // formData.append('photo', selectedImageFile);
-    // axios.post('api/v1/photo/analysis', formData)
-    //   .then(response => {
-    //     // Handle the response, perhaps navigate to a results page
-    //     navigate('/time-attack/result', { state: { result: response.data } });
-    //   })
-    //   .catch(error => {
-    //     console.error('Error uploading photo:', error);
-    //   });
+  async function handleImageSubmit(): Promise<void> {
+    if (!selectedImageFile) return;
 
-    // 분석 결과 Zustand에 저장
-    setResult({
-      score: 85,
-      topicAccuracy: 92,
-      analysisData: {
-        composition: 88,
-        lighting: 82,
-        subject: 90,
-        color: 84,
-        creativity: 87,
-      },
-      image: selectedImage,
-      topic: challengeTopic,
-      ranking: 5,
-      feedback: [
-        "주제에 맞는 사진을 잘 촬영했습니다.",
-        "조명이 조금 더 밝으면 좋을 것 같습니다.",
-      ],
-    });
+    setIsLoading(true);
 
-    // For now, just simulate going to results
-    navigate("/time-attack/result", {
-      state: {
-        result: {
-          success: true,
-          score: 85,
-          topicAccuracy: 92,
-          analysisData: {
-            composition: 88,
-            lighting: 82,
-            subject: 90,
-            color: 84,
-            creativity: 87,
-          },
-          image: selectedImage,
-          topic: challengeTopic,
-          ranking: 5,
-          xpEarned: 97,
+    try {
+      // 1. 이미지 파일 업로드 (임시 저장)
+      const uploadResponse = await timeAttackApi.uploadPhoto(selectedImageFile);
+      const imageData = uploadResponse.data.data;
+      console.log("이미지 업로드 성공:", imageData);
+
+      // 2. 이미지 분석
+      const analysisResponse = await timeAttackApi.analyzePhoto(
+        selectedImageFile,
+        challengeTopic
+      );
+      const analysisData = analysisResponse.data.data;
+      console.log("분석 결과:", analysisData);
+
+      // 점수 계산 (예시: 신뢰도를 백분율로 변환)
+      const score = Math.round(analysisData.confidence * 100);
+      const topicAccuracy = Math.round(analysisData.confidence * 100);
+
+      // 분석 결과 Zustand에 저장
+      setResult({
+        score,
+        topicAccuracy,
+        analysisData: {
+          composition: 85,
+          lighting: 80,
+          subject: topicAccuracy,
+          color: 75,
+          creativity: 70,
         },
-      },
-    });
-  };
+        image: imageData.imageUrl,
+        topic: challengeTopic,
+        ranking: 10, // 임시 값
+        feedback: [
+          `주제 "${translateTopic(
+            challengeTopic
+          )}"에 대한 연관성: ${topicAccuracy}%`,
+          analysisData.name === "일치 항목 없음"
+            ? "주제와 연관된 요소를 찾지 못했습니다."
+            : `이미지에서 "${analysisData.name}" 항목이 식별되었습니다.`,
+        ],
+      });
+
+      // 결과 페이지로 이동
+      navigate("/time-attack/result", {
+        state: {
+          result: {
+            success: true,
+            score,
+            topicAccuracy,
+            analysisData: {
+              composition: 85,
+              lighting: 80,
+              subject: topicAccuracy,
+              color: 75,
+              creativity: 70,
+            },
+            image: imageData.imageUrl,
+            topic: challengeTopic,
+            translatedTopic: translateTopic(challengeTopic),
+            imageName: imageData.imageName, // 결과 페이지에서 저장 시 필요
+            ranking: 10,
+            xpEarned: Math.floor(score * 1.2), // XP 계산 예시
+          },
+        },
+      });
+    } catch (error) {
+      console.error("사진 처리 오류:", error);
+      // 오류 발생 시 실패 결과 페이지로 이동
+      navigate("/time-attack/result", {
+        state: {
+          result: {
+            success: false,
+            message: "사진 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
+            topic: challengeTopic,
+            translatedTopic: translateTopic(challengeTopic),
+          },
+        },
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   // Render different steps of the Time Attack feature
   const renderStep = (): React.ReactNode => {
@@ -178,9 +277,11 @@ const TimeAttack: React.FC = () => {
           <PhotoUploadStep
             timeLeft={timeLeft}
             challengeTopic={challengeTopic}
+            translatedTopic={translateTopic(challengeTopic)}
             selectedImage={selectedImage}
             onImageUpload={handleImageUpload}
             onImageSubmit={handleImageSubmit}
+            isLoading={isLoading}
           />
         );
 
@@ -191,8 +292,70 @@ const TimeAttack: React.FC = () => {
 
   return (
     <Container>
-      <Header title="타임어택" />
       <main className="flex-1 flex flex-col">{renderStep()}</main>
+
+      {/* 실내/실외 선택 모달 */}
+      <Modal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        title="위치 선택"
+        description={
+          <div className="text-gray-600">
+            <p className="mb-3">현재 촬영 가능한 환경을 선택해주세요.</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => startGameWithLocation(true)}
+                className="bg-white border border-pic-primary text-pic-primary hover:bg-pic-primary hover:text-white py-3 px-2 rounded-lg flex flex-col items-center transition-colors duration-300"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 mb-1"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span className="font-medium">실내</span>
+              </button>
+
+              <button
+                onClick={() => startGameWithLocation(false)}
+                className="bg-white border border-pic-primary text-pic-primary hover:bg-pic-primary hover:text-white py-3 px-2 rounded-lg flex flex-col items-center transition-colors duration-300"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 mb-1"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 22v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="10" r="5"></circle>
+                  <line x1="17" y1="8" x2="22" y2="8"></line>
+                  <line x1="17" y1="12" x2="22" y2="12"></line>
+                  <line x1="19" y1="5" x2="19" y2="15"></line>
+                </svg>
+                <span className="font-medium">실외</span>
+              </button>
+            </div>
+          </div>
+        }
+        buttons={[
+          {
+            label: "취소",
+            textColor: "gray",
+            onClick: () => setShowLocationModal(false),
+          },
+        ]}
+      />
     </Container>
   );
 };

@@ -1,5 +1,8 @@
-import React from "react";
+// page/Timeattack/components/SuccessResult.tsx
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { timeAttackApi } from "../../../api/timeAttackApi";
+import { useRankingStore } from "../../../store/rankingStore";
 
 interface AnalysisData {
   composition: number;
@@ -15,7 +18,10 @@ interface SuccessResultProps {
   analysisData: AnalysisData;
   image: string | null;
   topic: string;
+  translatedTopic?: string;
+  imageName: string;
   ranking: number;
+  onTryAgain?: () => void;
 }
 
 const SuccessResult: React.FC<SuccessResultProps> = ({
@@ -24,9 +30,99 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
   analysisData,
   image,
   topic,
+  translatedTopic,
+  imageName,
   ranking,
+  onTryAgain,
 }) => {
   const navigate = useNavigate();
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // 랭킹 스토어 액션 가져오기
+  const setRankings = useRankingStore((state) => state.setRankings);
+  const setTotalPages = useRankingStore((state) => state.setPagination);
+  const setTimeframe = useRankingStore((state) => state.setTimeframe);
+
+  const handleTryAgain = () => {
+    if (onTryAgain) {
+      onTryAgain();
+    } else {
+      navigate("/time-attack");
+    }
+  };
+
+  const handleViewRanking = async () => {
+    setIsSaving(true);
+    setErrorMessage(null);
+
+    try {
+      // 1. 타임어택 결과 저장 API 호출
+      const saveResponse = await timeAttackApi.saveTimeAttackResult({
+        imageName: imageName,
+        topic: topic,
+        score: score,
+      });
+
+      console.log("타임어택 결과 저장 성공:", saveResponse);
+
+      // 2. 응답 성공 후 랭킹 데이터 조회 API 호출 (1페이지)
+      const rankingResponse = await timeAttackApi.getRanking(1);
+      console.log("랭킹 데이터 조회 성공:", rankingResponse.data);
+
+      // 3. 가져온 랭킹 데이터를 스토어에 저장
+      const rankingData = rankingResponse.data.data;
+      if (rankingData && rankingData.ranking) {
+        setRankings(rankingData.ranking);
+        setTotalPages(1, rankingData.totalPage || 1);
+        setTimeframe("all"); // 기본 시간 프레임 설정
+      }
+
+      // 4. 랭킹 페이지로 이동
+      navigate("/ranking");
+    } catch (error) {
+      console.error("결과 저장 또는 랭킹 조회 실패:", error);
+      setErrorMessage("결과 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // 분석 결과에서 피드백 생성
+  const generateFeedback = () => {
+    const feedbacks = [];
+
+    // 주제 관련 피드백
+    if (topicAccuracy >= 80) {
+      feedbacks.push(
+        `• 주제 "${translatedTopic || topic}"에 매우 적합한 사진입니다.`
+      );
+    } else if (topicAccuracy >= 50) {
+      feedbacks.push(
+        `• 주제 "${translatedTopic || topic}"와 관련성이 있습니다.`
+      );
+    } else {
+      feedbacks.push(
+        `• 주제 "${translatedTopic || topic}"와의 연관성이 낮습니다.`
+      );
+    }
+
+    // 구도 피드백
+    if (analysisData.composition >= 80) {
+      feedbacks.push("• 구도가 잘 잡혀있어 시각적으로 매력적입니다.");
+    } else if (analysisData.composition >= 60) {
+      feedbacks.push("• 구도는 양호하지만 개선의 여지가 있습니다.");
+    }
+
+    // 조명 피드백
+    if (analysisData.lighting >= 80) {
+      feedbacks.push("• 조명이 적절하게 사용되었습니다.");
+    } else if (analysisData.lighting >= 60) {
+      feedbacks.push("• 조명이 조금 더 밝으면 좋을 것 같습니다.");
+    }
+
+    return feedbacks;
+  };
 
   return (
     <>
@@ -46,7 +142,7 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
         <div className="flex justify-between items-center mb-4">
           <div>
             <p className="text-gray-600">주제</p>
-            <p className="text-xl font-bold">{topic}</p>
+            <p className="text-xl font-bold">{translatedTopic || topic}</p>
           </div>
           <div className="text-right">
             <p className="text-gray-600">주제 정확도</p>
@@ -116,18 +212,52 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
           <p className="text-3xl font-bold text-yellow-800">{ranking}위</p>
         </div>
 
+        {errorMessage && (
+          <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4">
+            {errorMessage}
+          </div>
+        )}
+
         <div className="flex space-x-2">
           <button
-            onClick={() => navigate("/time-attack")}
+            onClick={handleTryAgain}
             className="flex-1 bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition"
+            disabled={isSaving}
           >
             다시 도전
           </button>
           <button
-            onClick={() => navigate("/ranking")}
+            onClick={handleViewRanking}
             className="flex-1 bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition"
+            disabled={isSaving}
           >
-            랭킹 보기
+            {isSaving ? (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-2"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                저장 중...
+              </div>
+            ) : (
+              "랭킹 보기"
+            )}
           </button>
         </div>
       </div>
@@ -135,9 +265,9 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
       <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
         <h2 className="text-xl font-bold mb-4">피드백</h2>
         <div className="space-y-2">
-          <p>• 주제에 맞는 사진을 잘 촬영했습니다.</p>
-          <p>• 조명이 조금 더 밝으면 좋을 것 같습니다.</p>
-          <p>• 구도가 잘 잡혀있어 시각적으로 매력적입니다.</p>
+          {generateFeedback().map((feedback, index) => (
+            <p key={index}>{feedback}</p>
+          ))}
         </div>
       </div>
     </>
