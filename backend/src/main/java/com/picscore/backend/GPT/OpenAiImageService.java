@@ -70,6 +70,7 @@ public class OpenAiImageService {
             );
 
             if (response.getStatusCode() == HttpStatus.OK) {
+                System.out.printf("###분석 내용="+response.getBody());
                 return parseGPTResponse(response.getBody());
             } else {
                 throw new RuntimeException("OpenAI API 요청 실패: HTTP " + response.getStatusCode());
@@ -161,36 +162,53 @@ public class OpenAiImageService {
             // 점수를 저장할 Map
             Map<String, Integer> scores = new HashMap<>();
             Map<String, Object> response = new HashMap<>();
-            Map<String, String> analysisText = new HashMap<>();
+            Map<String, Object> analysisText = new HashMap<>();
 
             // 1️⃣ 정규식을 사용해 점수 추출
             Pattern scorePattern = Pattern.compile("(구도|선명도|노이즈|색 조화|노출|미적 요소):\\s*(\\d+)");
             Matcher scoreMatcher = scorePattern.matcher(content);
+            int totalScore = 0;
+            int count = 0;
             while (scoreMatcher.find()) {
-                scores.put(scoreMatcher.group(1), Integer.parseInt(scoreMatcher.group(2)));
+                int score = Integer.parseInt(scoreMatcher.group(2));
+                scores.put(scoreMatcher.group(1), score);
+                totalScore += score;
+                count++;
             }
-
-            // 2️⃣ 정규식을 사용해 theme(주제) 추출
+            // 총합 점수 계산 후 추가 (반올림하여 정수로 저장)
+            if (count > 0) {
+                scores.put("총합", Math.round((float) totalScore / count));
+            }
+            // 2️⃣ 정규식을 사용해 theme(주제) 추출 -> 리스트로 변환
             Pattern themePattern = Pattern.compile("주제:\\s*(.+)");
             Matcher themeMatcher = themePattern.matcher(content);
             if (themeMatcher.find()) {
-                analysisText.put("theme", themeMatcher.group(1).trim());
+                analysisText.put("theme", splitToList(themeMatcher.group(1)));
             }
 
-            // 3️⃣ 정규식을 사용해 mood(분위기) 추출
+            // 3️⃣ 정규식을 사용해 mood(분위기) 추출 -> 리스트로 변환
             Pattern moodPattern = Pattern.compile("분위기:\\s*(.+)");
             Matcher moodMatcher = moodPattern.matcher(content);
             if (moodMatcher.find()) {
-                analysisText.put("mood", moodMatcher.group(1).trim());
+                analysisText.put("mood", splitToList(moodMatcher.group(1)));
             }
 
             // 최종 응답 데이터 구성
-            response.put("scores", scores);
+            response.put("analysisChart", scores);
             response.put("analysisText", analysisText);
 
             return ResponseEntity.ok(BaseResponse.success("분석 완료",response));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(BaseResponse.error(e.getMessage()));
         }
+    }
+
+    /**
+     * 쉼표(,) 또는 공백( )을 기준으로 문자열을 리스트로 변환하는 유틸 메서드
+     */
+    private List<String> splitToList(String text) {
+        return Arrays.stream(text.split("\\s*,\\s*|\\s+")) // 쉼표 또는 공백 기준 분리
+                .filter(word -> !word.isEmpty()) // 빈 문자열 제거
+                .toList(); // 리스트로 변환
     }
 }

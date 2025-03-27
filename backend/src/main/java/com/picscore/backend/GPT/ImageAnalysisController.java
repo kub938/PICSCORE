@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/image")
+@RequestMapping("/api/v1/image")
 public class ImageAnalysisController {
 
     private final OpenAiImageService openAiImageService;
