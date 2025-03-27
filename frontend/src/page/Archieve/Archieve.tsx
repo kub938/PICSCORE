@@ -1,12 +1,46 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useAuthStore } from "../../store/authStore";
+
+// 컴포넌트 임포트
 import BadgeGrid from "./components/BadgeGrid";
 import ProgressBar from "./components/ProgressBar";
-import { Badge, BadgeCategory } from "../../types";
-import { useAllBadges, useSetDisplayBadge } from "../../hooks/useBadge";
+import CategoryTabs from "./components/CategoryTabs";
 
-// API 응답 타입 정의
-interface BadgeResponseData {
+// 뱃지 이미지 가져오기
+import badge1 from "../../assets/badge1.png";
+import badge2 from "../../assets/badge2.png";
+import badge3 from "../../assets/badge3.png";
+import badge4 from "../../assets/badge4.png";
+import badge5 from "../../assets/badge5.png";
+import badge6 from "../../assets/badge6.png";
+import badge7 from "../../assets/badge7.png";
+import badge8 from "../../assets/badge8.png";
+import badge9 from "../../assets/badge9.png";
+import badge10 from "../../assets/badge10.png";
+import badge11 from "../../assets/badge11.png";
+import badge12 from "../../assets/badge12.png";
+
+// 배지 타입 정의
+interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  achieved: boolean;
+  achievedDate?: string;
+}
+
+// 카테고리 타입 정의
+interface BadgeCategory {
+  id: string;
+  name: string;
+  badges: Badge[];
+}
+
+// API 응답 인터페이스
+interface BadgeApiResponse {
   badgeId: number;
   name: string;
   image: string;
@@ -14,122 +48,219 @@ interface BadgeResponseData {
   isObtain: boolean;
 }
 
-interface ApiResponse {
-  data: {
-    data: BadgeResponseData[];
-    message: string;
-    timeStamp: string;
+// 하드코딩된 배지 데이터
+const staticBadges: Badge[] = [
+  {
+    id: "1",
+    name: "첫 팔로워",
+    description: "첫 번째 팔로워를 얻었습니다.",
+    image: badge1,
+    achieved: false,
+  },
+  {
+    id: "2",
+    name: "인기 크리에이터",
+    description: "30명 이상의 팔로워를 달성했습니다.",
+    image: badge2,
+    achieved: false,
+  },
+  {
+    id: "3",
+    name: "첫 사진 평가",
+    description: "첫 번째 사진 평가를 완료했습니다.",
+    image: badge3,
+    achieved: false,
+  },
+  {
+    id: "4",
+    name: "평가 마스터",
+    description: "30회 이상의 사진 평가를 완료했습니다.",
+    image: badge4,
+    achieved: false,
+  },
+  {
+    id: "5",
+    name: "첫 게시글",
+    description: "첫 번째 게시글을 작성했습니다.",
+    image: badge5,
+    achieved: false,
+  },
+  {
+    id: "6",
+    name: "콘텐츠 크리에이터",
+    description: "20개 이상의 게시글을 작성했습니다.",
+    image: badge6,
+    achieved: false,
+  },
+  {
+    id: "7",
+    name: "첫 타임어택",
+    description: "첫 번째 타임어택에 참여했습니다.",
+    image: badge7,
+    achieved: false,
+  },
+  {
+    id: "8",
+    name: "타임어택 중독자",
+    description: "20회 이상의 타임어택에 참여했습니다.",
+    image: badge8,
+    achieved: false,
+  },
+  {
+    id: "9",
+    name: "고품질 사진작가",
+    description: "사진 평가에서 77점 이상을 달성했습니다.",
+    image: badge9,
+    achieved: false,
+  },
+  {
+    id: "10",
+    name: "타임어택 챔피언",
+    description: "타임어택에서 1위를 달성했습니다.",
+    image: badge10,
+    achieved: false,
+  },
+  {
+    id: "11",
+    name: "인기 콘텐츠",
+    description: "게시글이 좋아요 10개를 달성했습니다.",
+    image: badge11,
+    achieved: false,
+  },
+  {
+    id: "12",
+    name: "업적 마스터",
+    description: "모든 업적을 달성했습니다.",
+    image: badge12,
+    achieved: false,
+  },
+];
+
+// 기본 카테고리 정의
+const defaultCategories = [
+  { id: "all", name: "전체" },
+  { id: "social", name: "소셜" },
+  { id: "evaluation", name: "평가" },
+  { id: "content", name: "게시글" },
+  { id: "timeattack", name: "타임어택" },
+  { id: "master", name: "마스터" },
+];
+
+// 카테고리별 배지 필터링 함수
+const filterBadgesByCategory = (
+  badges: Badge[],
+  categoryId: string
+): Badge[] => {
+  if (categoryId === "all") return badges;
+
+  // 카테고리별 키워드 정의
+  const categoryKeywords: Record<string, string[]> = {
+    social: ["팔로워", "크리에이터", "인기"],
+    evaluation: ["평가", "사진", "품질"],
+    content: ["게시글", "콘텐츠"],
+    timeattack: ["타임어택", "챔피언"],
+    master: ["마스터", "달성"],
   };
-}
 
-const ArchievePage: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  // 키워드 기반 필터링
+  return badges.filter((badge) => {
+    const keywords = categoryKeywords[categoryId] || [];
+    return keywords.some(
+      (keyword) =>
+        badge.name.includes(keyword) || badge.description.includes(keyword)
+    );
+  });
+};
 
-  // location.state를 통해 선택 모드인지 확인
-  const isSelectionMode = location.state?.selectionMode === true;
-  const currentBadgeId = location.state?.currentBadgeId;
-
-  const [allBadges, setAllBadges] = useState<Badge[]>([]);
+const AchievementPage: React.FC = () => {
+  const [badges, setBadges] = useState<Badge[]>(staticBadges);
+  const [filteredBadges, setFilteredBadges] = useState<Badge[]>(staticBadges);
   const [achievedCount, setAchievedCount] = useState<number>(0);
-  const [totalCount, setTotalCount] = useState<number>(0);
-  const [selectedBadgeId, setSelectedBadgeId] = useState<string | undefined>(
-    currentBadgeId
-  );
-  const [showSuccessMessage, setShowSuccessMessage] = useState<boolean>(false);
+  const [totalCount, setTotalCount] = useState<number>(staticBadges.length);
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // API 호출을 통한 뱃지 데이터 가져오기
-  const { data, isLoading, error } = useAllBadges();
-  const setDisplayBadgeMutation = useSetDisplayBadge();
+  const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
 
-  // 뱃지 데이터 변환
+  // API에서 달성 상태 가져오기
   useEffect(() => {
-    if (data?.data?.data) {
-      const badgeData = data.data.data;
+    const fetchAchievements = async () => {
+      setIsLoading(true);
 
-      // API 응답을 Badge 타입으로 변환
-      const badges: Badge[] = badgeData.map((item: BadgeResponseData) => ({
-        id: item.badgeId.toString(),
-        name: item.name,
-        description: item.obtainCondition,
-        image: item.image,
-        achieved: item.isObtain,
-      }));
+      // 기본적으로 모든 배지 표시 (미달성 상태로)
+      let updatedBadges = [...staticBadges];
 
-      setAllBadges(badges);
+      // API 호출 시도 (토큰이 있는 경우)
+      if (accessToken) {
+        try {
+          const response = await axios.get(
+            "https://j12b104.p.ssafy.io/api/v1/badge",
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }
+          );
 
-      // 달성 통계 업데이트
-      const achieved = badges.filter((badge) => badge.achieved).length;
-      const total = badges.length;
+          console.log("API 응답:", response.data);
 
+          // 응답에서 달성 정보 있으면 업데이트
+          if (response.data?.data && Array.isArray(response.data.data)) {
+            const achievements = response.data.data;
+
+            for (const achievement of achievements) {
+              const id = achievement.badgeId.toString();
+              const badgeIndex = updatedBadges.findIndex((b) => b.id === id);
+
+              if (badgeIndex !== -1 && achievement.isObtain) {
+                updatedBadges[badgeIndex].achieved = true;
+                updatedBadges[badgeIndex].achievedDate = new Date()
+                  .toISOString()
+                  .split("T")[0];
+              }
+            }
+          }
+        } catch (err) {
+          console.error("API 호출 오류:", err);
+          // API 호출 실패해도 기본 배지는 계속 표시
+        }
+      }
+
+      // 상태 업데이트
+      setBadges(updatedBadges);
+      setFilteredBadges(filterBadgesByCategory(updatedBadges, activeCategory));
+
+      // 달성 카운트 업데이트
+      const achieved = updatedBadges.filter((b) => b.achieved).length;
       setAchievedCount(achieved);
-      setTotalCount(total);
-    }
-  }, [data]);
 
-  // 뱃지 선택 처리
-  const handleSelectBadge = (badge: Badge) => {
-    if (!badge.achieved) return; // 달성하지 못한 뱃지는 선택할 수 없음
+      setIsLoading(false);
+    };
 
-    setSelectedBadgeId(badge.id);
-    setShowSuccessMessage(true);
+    fetchAchievements();
+  }, [accessToken]);
 
-    // 성공 메시지 표시 타이머
-    setTimeout(() => setShowSuccessMessage(false), 3000);
+  // 카테고리 변경 시 필터링
+  useEffect(() => {
+    setFilteredBadges(filterBadgesByCategory(badges, activeCategory));
+  }, [activeCategory, badges]);
+
+  // 카테고리 변경 핸들러
+  const handleCategoryChange = (categoryId: string) => {
+    setActiveCategory(categoryId);
   };
 
-  // 완료 버튼 클릭 시 마이페이지로 돌아가기
-  const handleComplete = () => {
-    if (selectedBadgeId) {
-      // API를 통해 뱃지 설정
-      setDisplayBadgeMutation.mutate(parseInt(selectedBadgeId), {
-        onSuccess: () => {
-          // 마이페이지로 이동
-          navigate("/mypage", {
-            state: {
-              updatedProfile: { displayBadgeId: selectedBadgeId },
-            },
-          });
-        },
-        onError: (error) => {
-          console.error("뱃지 설정 오류:", error);
-        },
-      });
-    } else {
-      navigate("/mypage");
-    }
+  // 뒤로가기 핸들러
+  const handleGoBack = () => {
+    navigate(-1);
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-        <div className="p-4 text-center text-red-500">
-          데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-      {/* 성공 메시지 */}
-      {showSuccessMessage && (
-        <div className="fixed top-16 left-0 right-0 mx-auto max-w-md bg-green-500 text-white py-2 px-4 text-center z-50 animate-fadeIn">
-          뱃지가 선택되었습니다!
-        </div>
-      )}
-
       <div className="p-4">
+        {/* 업적 달성도 */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
           <h2 className="font-bold mb-2">업적 달성도</h2>
           <div className="flex justify-between mb-1">
@@ -139,40 +270,28 @@ const ArchievePage: React.FC = () => {
           <ProgressBar progress={(achievedCount / totalCount) * 100} />
         </div>
 
-        {isSelectionMode && (
-          <div className="bg-yellow-100 p-4 rounded-lg mb-4">
-            <p className="text-yellow-800 text-sm">
-              프로필에 표시할 뱃지를 선택해주세요. 달성한 뱃지만 선택할 수
-              있습니다.
-            </p>
-          </div>
-        )}
-
-        <BadgeGrid
-          badges={allBadges}
-          isSelectable={isSelectionMode}
-          selectedBadgeId={selectedBadgeId}
-          onSelectBadge={handleSelectBadge}
+        {/* 카테고리 탭 */}
+        <CategoryTabs
+          categories={defaultCategories}
+          activeCategory={activeCategory}
+          onCategoryChange={handleCategoryChange}
         />
 
-        {isSelectionMode && (
-          <div className="mt-6">
-            <button
-              onClick={handleComplete}
-              className={`w-full py-3 rounded-lg font-bold ${
-                setDisplayBadgeMutation.isPending
-                  ? "bg-gray-400 text-white"
-                  : "bg-green-500 text-white hover:bg-green-600"
-              } transition`}
-              disabled={setDisplayBadgeMutation.isPending}
-            >
-              {setDisplayBadgeMutation.isPending ? "처리 중..." : "완료"}
-            </button>
+        {/* 로딩 상태 */}
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pic-primary"></div>
           </div>
+        ) : error ? (
+          <div className="p-4 bg-red-50 text-red-600 rounded-lg text-center">
+            {error}
+          </div>
+        ) : (
+          <BadgeGrid badges={filteredBadges} />
         )}
       </div>
     </div>
   );
 };
 
-export default ArchievePage;
+export default AchievementPage;

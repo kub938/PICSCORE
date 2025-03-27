@@ -194,18 +194,6 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
           </button>
         </div>
       </div>
-
-      {/* 분석 피드백 카드 */}
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-        <h3 className="font-bold text-lg mb-4">분석 결과</h3>
-        <div className="space-y-2">
-          {generateFeedback().map((feedback, index) => (
-            <p key={index} className="text-gray-700">
-              {feedback}
-            </p>
-          ))}
-        </div>
-      </div>
     </div>
   );
 };

@@ -46,7 +46,7 @@ export const compressImageFile = async (
         ctx?.drawImage(img, 0, 0, width, height);
 
         // 압축률 조정 (0.7은 70% 품질을 의미)
-        const quality = 0.7;
+        const quality = 0.1;
         canvas.toBlob(
           (blob) => {
             if (!blob) {

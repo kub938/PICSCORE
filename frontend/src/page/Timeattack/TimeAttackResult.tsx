@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTimeAttackStore } from "../../store/timeAttackStore";
+import { useAchievementCheck } from "../../hooks/useAchievement";
 
 // 컴포넌트 임포트
 import Container from "./components/Container";
