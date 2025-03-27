@@ -83,30 +83,17 @@ export const friendApi = {
   },
 
   // 팔로우/언팔로우 토글
-  toggleFollow: async (followingId: number) => {
-    try {
-      const accessToken = useAuthStore.getState().accessToken;
-      const data: ToggleFollowRequest = { followingId };
-
-      // API 서버 기본 URL
-      const baseURL = "https://j12b104.p.ssafy.io";
-
-      // axios를 직접 사용하여 요청
-      const response = await axios({
-        method: "post",
-        url: `${baseURL}/api/v1/user/following/me`,
-        data: data,
+  toggleFollow: (followingId: number) => {
+    const accessToken = useAuthStore.getState().accessToken;
+    return testApi.post<BaseResponse<void>>(
+      "/api/v1/user/following/me",
+      { followingId },
+      {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
         },
-      });
-
-      return response;
-    } catch (error) {
-      console.error("팔로잉 토글 에러:", error);
-      throw error;
-    }
+      }
+    );
   },
 
   // 팔로워 삭제 (차단)
