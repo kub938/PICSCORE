@@ -218,7 +218,7 @@ public class PhotoService {
     public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos(int pageNum) {
 
         // PageRequest 객체 생성 (0부터 시작하는 페이지 번호 사용)
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 24, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         // 레포지토리에서 페이징된 데이터 조회
         Page<Photo> photoPage = photoRepository.findAllWithPublic(pageRequest);
