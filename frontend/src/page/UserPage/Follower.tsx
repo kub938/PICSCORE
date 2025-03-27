@@ -1,7 +1,7 @@
-// page/UserPage/Follower.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { followApi, FollowerUser } from "../../api/followApi";
+import { friendApi, FollowerUser } from "../../api/friendApi";
+import { useMyFollowers } from "../../hooks/friend";
 
 const Follower: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,13 +16,19 @@ const Follower: React.FC = () => {
   const navigate = useNavigate();
 
   // 팔로워 목록 불러오기
+  const { data, refetch, isFetching } = useMyFollowers();
+
   useEffect(() => {
     const fetchFollowers = async () => {
       try {
         setIsLoading(true);
-        const response = await followApi.getMyFollowers();
-        setFollowers(response.data.data);
-        setFilteredFollowers(response.data.data);
+        if (data?.data) {
+          setFollowers(data.data);
+          setFilteredFollowers(data.data);
+        } else {
+          setFollowers([]);
+          setFilteredFollowers([]);
+        }
       } catch (error) {
         console.error("팔로워 목록 가져오기 실패:", error);
       } finally {
@@ -31,7 +37,12 @@ const Follower: React.FC = () => {
     };
 
     fetchFollowers();
-  }, []);
+  }, [data]);
+
+  // 최신 데이터 가져오기
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   // 검색어 변경 시 필터링
   useEffect(() => {
@@ -48,9 +59,12 @@ const Follower: React.FC = () => {
   // 팔로워 삭제 처리
   const handleDeleteUser = async (userId: number) => {
     try {
-      await followApi.deleteFollower(userId);
+      await friendApi.deleteFollower(userId);
       // 삭제 성공 후 팔로워 목록에서 제거
       setFollowers((prev) => prev.filter((user) => user.userId !== userId));
+      setFilteredFollowers((prev) =>
+        prev.filter((user) => user.userId !== userId)
+      );
     } catch (error) {
       console.error("팔로워 삭제 실패:", error);
     }
@@ -115,7 +129,6 @@ const Follower: React.FC = () => {
           className="flex-1 py-3 text-center text-gray-500"
           onClick={goToFollowings}
         >
-          {/* 여기에 팔로잉 수를 표시할 수도 있음 */}
           팔로우
         </button>
       </div>
@@ -147,7 +160,7 @@ const Follower: React.FC = () => {
       </div>
 
       {/* 로딩 상태 */}
-      {isLoading ? (
+      {isLoading || isFetching ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pic-primary"></div>
         </div>

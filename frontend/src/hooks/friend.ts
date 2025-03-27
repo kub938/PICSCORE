@@ -21,3 +21,25 @@ export const useMyFollowings = () => {
     },
   });
 };
+
+export const useUserFollowers = (userId: number) => {
+  return useQuery({
+    queryKey: ["userFollowers", userId],
+    queryFn: async () => {
+      const response = await friendApi.getUserFollowers(userId);
+      return response.data;
+    },
+    enabled: !!userId,
+  });
+};
+
+export const useUserFollowings = (userId: number) => {
+  return useQuery({
+    queryKey: ["userFollowings", userId],
+    queryFn: async () => {
+      const response = await friendApi.getUserFollowings(userId);
+      return response.data;
+    },
+    enabled: !!userId,
+  });
+};
