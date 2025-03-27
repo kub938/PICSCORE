@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTimeAttackStore } from "../../store/timeAttackStore";
+import imageCompression from "browser-image-compression";
 
 // 컴포넌트 임포트
 import Container from "./components/Container";
@@ -25,37 +26,77 @@ const INDOOR_TOPICS = [
 
 const OUTDOOR_TOPICS = [
   "dog",
-  // "cat",
-  // "flower",
-  // "car",
-  // "tree",
-  // "mountain",
-  // "sky",
-  // "building",
+  "cat",
+  "flower",
+  "car",
+  "tree",
+  "mountain",
+  "sky",
+  "building",
 ];
 
 // 주제 영어-한글 매핑
 const TOPIC_TRANSLATIONS: Record<string, string> = {
   dog: "강아지",
-  // cat: "고양이",
-  // flower: "꽃",
-  // car: "자동차",
-  // tree: "나무",
-  // food: "음식",
-  // mountain: "산",
-  // sky: "하늘",
-  // book: "책",
-  // cup: "컵",
-  // chair: "의자",
-  // clock: "시계",
-  // computer: "컴퓨터",
-  // plant: "식물",
-  // table: "테이블",
-  // building: "건물",
+  cat: "고양이",
+  flower: "꽃",
+  car: "자동차",
+  tree: "나무",
+  food: "음식",
+  mountain: "산",
+  sky: "하늘",
+  book: "책",
+  cup: "컵",
+  chair: "의자",
+  clock: "시계",
+  computer: "컴퓨터",
+  plant: "식물",
+  table: "테이블",
+  building: "건물",
 };
 
 const translateTopic = (englishTopic: string): string => {
   return TOPIC_TRANSLATIONS[englishTopic] || englishTopic; // 매핑이 없으면 원래 값 반환
+};
+
+/**
+ * browser-image-compression 라이브러리를 사용하여 이미지 압축
+ * @param file 압축할 이미지 파일
+ * @param maxSizeMB 최대 파일 크기 (MB)
+ * @returns 압축된 파일
+ */
+const compressImage = async (
+  file: File,
+  maxSizeMB: number = 0.8
+): Promise<File> => {
+  try {
+    // 압축 옵션 설정
+    const options = {
+      maxSizeMB: maxSizeMB, // 최대 파일 크기 (MB)
+      maxWidthOrHeight: 1200, // 최대 너비/높이 (픽셀)
+      useWebWorker: true, // WebWorker 사용 (성능 향상)
+      initialQuality: 0.7, // 초기 품질
+      alwaysKeepResolution: false, // 해상도 유지 여부
+    };
+
+    console.log(
+      `압축 시작: 원본 크기 ${(file.size / 1024 / 1024).toFixed(2)}MB`
+    );
+
+    // 이미지 압축 실행
+    const compressedFile = await imageCompression(file, options);
+
+    console.log(
+      `압축 완료: ${(compressedFile.size / 1024 / 1024).toFixed(
+        2
+      )}MB (${Math.round((compressedFile.size / file.size) * 100)}% 크기)`
+    );
+
+    return compressedFile;
+  } catch (error) {
+    console.error("이미지 압축 실패:", error);
+    throw new Error("이미지 압축에 실패했습니다.");
+  }
 };
 
 const TimeAttack: React.FC = () => {
@@ -184,14 +225,17 @@ const TimeAttack: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // 1. 이미지 파일 업로드 (임시 저장)
-      const uploadResponse = await timeAttackApi.uploadPhoto(selectedImageFile);
+      // 1. 이미지 파일 압축
+      const compressedFile = await compressImage(selectedImageFile, 0.5); // 500KB로 압축
+
+      // 2. 압축된 이미지 파일 업로드 (임시 저장)
+      const uploadResponse = await timeAttackApi.uploadPhoto(compressedFile);
       const imageData = uploadResponse.data.data;
       console.log("이미지 업로드 성공:", imageData);
 
-      // 2. 이미지 분석 - timeLeft 값을 함께 전달
+      // 3. 이미지 분석 - timeLeft 값을 함께 전달
       const analysisResponse = await timeAttackApi.analyzePhoto(
-        selectedImageFile,
+        compressedFile,
         challengeTopic,
         timeLeft
       );
