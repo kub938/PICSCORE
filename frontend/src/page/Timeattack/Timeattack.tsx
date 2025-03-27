@@ -25,33 +25,33 @@ const INDOOR_TOPICS = [
 
 const OUTDOOR_TOPICS = [
   "dog",
-  "cat",
-  "flower",
-  "car",
-  "tree",
-  "mountain",
-  "sky",
-  "building",
+  // "cat",
+  // "flower",
+  // "car",
+  // "tree",
+  // "mountain",
+  // "sky",
+  // "building",
 ];
 
 // 주제 영어-한글 매핑
 const TOPIC_TRANSLATIONS: Record<string, string> = {
   dog: "강아지",
-  cat: "고양이",
-  flower: "꽃",
-  car: "자동차",
-  tree: "나무",
-  food: "음식",
-  mountain: "산",
-  sky: "하늘",
-  book: "책",
-  cup: "컵",
-  chair: "의자",
-  clock: "시계",
-  computer: "컴퓨터",
-  plant: "식물",
-  table: "테이블",
-  building: "건물",
+  // cat: "고양이",
+  // flower: "꽃",
+  // car: "자동차",
+  // tree: "나무",
+  // food: "음식",
+  // mountain: "산",
+  // sky: "하늘",
+  // book: "책",
+  // cup: "컵",
+  // chair: "의자",
+  // clock: "시계",
+  // computer: "컴퓨터",
+  // plant: "식물",
+  // table: "테이블",
+  // building: "건물",
 };
 
 const translateTopic = (englishTopic: string): string => {
@@ -67,6 +67,7 @@ const TimeAttack: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<number>(1); // 1: Explanation, 2: Preparation, 3: Photo Upload
   const [timeLeft, setTimeLeft] = useState<number>(15); // Countdown timer for photo capture
+  const [captureTimeLeft, setCaptureTimeLeft] = useState<number | null>(null);
   const [countdown, setCountdown] = useState<number>(3); // Countdown for preparation
   const [isTimerActive, setIsTimerActive] = useState<boolean>(false);
   const [challengeTopic, setChallengeTopic] = useState<string>(""); // 실제 주제
@@ -170,6 +171,8 @@ const TimeAttack: React.FC = () => {
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
       setSelectedImageFile(file);
+      // 사진 선택 시점의 남은 시간 기록
+      setCaptureTimeLeft(timeLeft);
       // Zustand에 선택된 이미지 파일 저장
       setGameState({ selectedImageFile: file });
     }
@@ -186,17 +189,18 @@ const TimeAttack: React.FC = () => {
       const imageData = uploadResponse.data.data;
       console.log("이미지 업로드 성공:", imageData);
 
-      // 2. 이미지 분석
+      // 2. 이미지 분석 - timeLeft 값을 함께 전달
       const analysisResponse = await timeAttackApi.analyzePhoto(
         selectedImageFile,
-        challengeTopic
+        challengeTopic,
+        timeLeft
       );
       const analysisData = analysisResponse.data.data;
       console.log("분석 결과:", analysisData);
 
-      // 점수 계산 (예시: 신뢰도를 백분율로 변환)
-      const score = Math.round(analysisData.confidence * 100);
+      // 연관도 및 점수 설정 (API 응답에서 받아옴)
       const topicAccuracy = Math.round(analysisData.confidence * 100);
+      const score = Math.round(analysisData.score * 100); // API에서 반환된 점수를 직접 사용
 
       // 분석 결과 Zustand에 저장
       setResult({

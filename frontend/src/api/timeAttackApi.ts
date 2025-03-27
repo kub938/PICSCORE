@@ -12,6 +12,7 @@ interface BaseResponse<T> {
 interface AnalysisResponse {
   name: string;
   confidence: number;
+  score: number; // 추가된 점수 필드
 }
 
 // 랭킹 데이터 인터페이스
@@ -80,10 +81,11 @@ export const timeAttackApi = {
   },
 
   // 사진 연관도 분석
-  analyzePhoto: (imageFile: File, topic: string) => {
+  analyzePhoto: (imageFile: File, topic: string, timeleft: number) => {
     const formData = new FormData();
     formData.append("imageFile", imageFile);
     formData.append("topic", topic);
+    formData.append("time", timeleft.toString()); // 남은 시간 추가
 
     return testApi.post<BaseResponse<AnalysisResponse>>(
       "/api/v1/activity/analysis",

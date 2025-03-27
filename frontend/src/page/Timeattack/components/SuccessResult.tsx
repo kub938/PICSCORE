@@ -1,8 +1,6 @@
 // page/Timeattack/components/SuccessResult.tsx
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { timeAttackApi } from "../../../api/timeAttackApi";
-import { useRankingStore } from "../../../store/rankingStore";
 
 interface AnalysisData {
   composition: number;
@@ -22,6 +20,8 @@ interface SuccessResultProps {
   imageName: string;
   ranking: number;
   onTryAgain?: () => void;
+  onViewRanking?: () => void;
+  isSaving?: boolean;
 }
 
 const SuccessResult: React.FC<SuccessResultProps> = ({
@@ -34,15 +34,10 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
   imageName,
   ranking,
   onTryAgain,
+  onViewRanking,
+  isSaving = false,
 }) => {
   const navigate = useNavigate();
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // 랭킹 스토어 액션 가져오기
-  const setRankings = useRankingStore((state) => state.setRankings);
-  const setTotalPages = useRankingStore((state) => state.setPagination);
-  const setTimeframe = useRankingStore((state) => state.setTimeframe);
 
   const handleTryAgain = () => {
     if (onTryAgain) {
@@ -52,39 +47,11 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
     }
   };
 
-  const handleViewRanking = async () => {
-    setIsSaving(true);
-    setErrorMessage(null);
-
-    try {
-      // 1. 타임어택 결과 저장 API 호출
-      const saveResponse = await timeAttackApi.saveTimeAttackResult({
-        imageName: imageName,
-        topic: topic,
-        score: score,
-      });
-
-      console.log("타임어택 결과 저장 성공:", saveResponse);
-
-      // 2. 응답 성공 후 랭킹 데이터 조회 API 호출 (1페이지)
-      const rankingResponse = await timeAttackApi.getRanking(1);
-      console.log("랭킹 데이터 조회 성공:", rankingResponse.data);
-
-      // 3. 가져온 랭킹 데이터를 스토어에 저장
-      const rankingData = rankingResponse.data.data;
-      if (rankingData && rankingData.ranking) {
-        setRankings(rankingData.ranking);
-        setTotalPages(1, rankingData.totalPage || 1);
-        setTimeframe("all"); // 기본 시간 프레임 설정
-      }
-
-      // 4. 랭킹 페이지로 이동
+  const handleViewRanking = () => {
+    if (onViewRanking) {
+      onViewRanking();
+    } else {
       navigate("/ranking");
-    } catch (error) {
-      console.error("결과 저장 또는 랭킹 조회 실패:", error);
-      setErrorMessage("결과 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -125,110 +92,68 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
   };
 
   return (
-    <>
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-4 border border-gray-200">
-        <h2 className="text-xl font-bold text-center mb-2">분석 결과</h2>
+    <div className="flex flex-col gap-4">
+      {/* 메인 결과 카드 */}
+      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <div className="flex items-center justify-center mb-3">
+          <div className="bg-pic-primary/10 rounded-full p-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-8 w-8 text-pic-primary"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+        </div>
 
-        <div className="aspect-w-4 aspect-h-3 bg-gray-200 rounded-lg mb-4 overflow-hidden">
-          {image && (
+        <h2 className="text-xl font-bold text-center mb-5">타임어택 성공!</h2>
+
+        {/* 이미지 컨테이너 */}
+        <div className="relative overflow-hidden rounded-lg mb-6 shadow-md">
+          {image ? (
             <img
               src={image}
-              alt="Uploaded"
-              className="object-cover w-full h-full"
+              alt="촬영된 사진"
+              className="w-full aspect-[4/3] object-cover"
             />
+          ) : (
+            <div className="w-full aspect-[4/3] bg-gray-200 flex items-center justify-center">
+              <span className="text-gray-400">이미지 없음</span>
+            </div>
           )}
         </div>
 
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <p className="text-gray-600">주제</p>
-            <p className="text-xl font-bold">{translatedTopic || topic}</p>
+        {/* 정확도와 점수 - 3열 그리드로 변경 */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <p className="text-gray-500 text-sm mb-1">주제</p>
+            <p className="text-lg font-bold text-pic-primary">
+              {translatedTopic || topic}
+            </p>
           </div>
-          <div className="text-right">
-            <p className="text-gray-600">주제 정확도</p>
-            <p className="text-xl font-bold text-green-500">{topicAccuracy}%</p>
+          <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <p className="text-gray-500 text-sm mb-1">연관도</p>
+            <p className="text-lg font-bold text-pic-primary">
+              {topicAccuracy}%
+            </p>
           </div>
-        </div>
-
-        <div className="bg-gray-100 p-4 rounded-lg mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <p className="font-bold">총점</p>
-            <p className="text-2xl font-bold text-green-500">{score}</p>
-          </div>
-
-          <div className="h-2 bg-gray-300 rounded-full mb-4">
-            <div
-              className="h-2 bg-green-500 rounded-full"
-              style={{ width: `${score}%` }}
-            ></div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-gray-600 text-sm">구도</p>
-              <div className="flex items-center">
-                <div
-                  className="h-1 bg-green-500 rounded-full"
-                  style={{ width: `${analysisData.composition}%` }}
-                ></div>
-                <p className="ml-2">{analysisData.composition}</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-gray-600 text-sm">조명</p>
-              <div className="flex items-center">
-                <div
-                  className="h-1 bg-green-500 rounded-full"
-                  style={{ width: `${analysisData.lighting}%` }}
-                ></div>
-                <p className="ml-2">{analysisData.lighting}</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-gray-600 text-sm">주제</p>
-              <div className="flex items-center">
-                <div
-                  className="h-1 bg-green-500 rounded-full"
-                  style={{ width: `${analysisData.subject}%` }}
-                ></div>
-                <p className="ml-2">{analysisData.subject}</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-gray-600 text-sm">색상</p>
-              <div className="flex items-center">
-                <div
-                  className="h-1 bg-green-500 rounded-full"
-                  style={{ width: `${analysisData.color}%` }}
-                ></div>
-                <p className="ml-2">{analysisData.color}</p>
-              </div>
-            </div>
+          <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <p className="text-gray-500 text-sm mb-1">점수</p>
+            <p className="text-lg font-bold text-pic-primary">{score}</p>
           </div>
         </div>
 
-        <div className="bg-yellow-100 p-4 rounded-lg mb-4">
-          <p className="font-bold text-yellow-800 mb-1">현재 랭킹</p>
-          <p className="text-3xl font-bold text-yellow-800">{ranking}위</p>
-        </div>
-
-        {errorMessage && (
-          <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4">
-            {errorMessage}
-          </div>
-        )}
-
-        <div className="flex space-x-2">
-          <button
-            onClick={handleTryAgain}
-            className="flex-1 bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition"
-            disabled={isSaving}
-          >
-            다시 도전
-          </button>
+        {/* 버튼 영역 */}
+        <div className="space-y-3">
           <button
             onClick={handleViewRanking}
-            className="flex-1 bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition"
+            className="w-full bg-pic-primary text-white py-3.5 rounded-lg font-bold hover:bg-pic-primary/90 transition-colors duration-200 shadow-sm flex items-center justify-center"
             disabled={isSaving}
           >
             {isSaving ? (
@@ -256,21 +181,32 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
                 저장 중...
               </div>
             ) : (
-              "랭킹 보기"
+              <span>저장 후 랭킹보기</span>
             )}
+          </button>
+
+          <button
+            onClick={handleTryAgain}
+            className="w-full border border-pic-primary text-pic-primary bg-white py-3.5 rounded-lg font-bold hover:bg-gray-50 transition-colors duration-200"
+            disabled={isSaving}
+          >
+            다시 도전하기
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-        <h2 className="text-xl font-bold mb-4">피드백</h2>
+      {/* 분석 피드백 카드 */}
+      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <h3 className="font-bold text-lg mb-4">분석 결과</h3>
         <div className="space-y-2">
           {generateFeedback().map((feedback, index) => (
-            <p key={index}>{feedback}</p>
+            <p key={index} className="text-gray-700">
+              {feedback}
+            </p>
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

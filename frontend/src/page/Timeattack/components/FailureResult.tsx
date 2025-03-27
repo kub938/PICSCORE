@@ -6,6 +6,7 @@ interface FailureResultProps {
   message: string;
   topic?: string;
   translatedTopic?: string;
+  image?: string | null; // Added image prop
   onTryAgain?: () => void;
 }
 
@@ -13,6 +14,7 @@ const FailureResult: React.FC<FailureResultProps> = ({
   message,
   topic,
   translatedTopic,
+  image,
   onTryAgain,
 }) => {
   const navigate = useNavigate();
@@ -52,10 +54,21 @@ const FailureResult: React.FC<FailureResultProps> = ({
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-red-500 mb-2">시간 초과!</h2>
+        <h2 className="text-2xl font-bold text-red-500 mb-2">실패!</h2>
         <p className="text-gray-600 mb-6">
           {message || "제한 시간 내에 사진을 제출하지 못했습니다."}
         </p>
+
+        {/* Show uploaded image if available */}
+        {image && (
+          <div className="mb-4">
+            <img
+              src={image}
+              alt="업로드된 사진"
+              className="w-full h-auto rounded-lg object-contain max-h-48 mx-auto"
+            />
+          </div>
+        )}
 
         {topic && (
           <div className="bg-gray-100 p-4 rounded-lg mb-6">
