@@ -166,6 +166,7 @@ public class TimeAttackService {
      * @param request SaveTimeAttackRequest 객체 (저장할 타임어택 정보)
      * @return ResponseEntity<BaseResponse<HttpStatus>> 저장 결과 응답
      */
+    @Transactional
     public ResponseEntity<BaseResponse<HttpStatus>> saveTimeAttack(
             Long userId, SaveTimeAttackRequest request
     ) {
@@ -193,6 +194,10 @@ public class TimeAttackService {
                 user, activityImageUrl, request.getTopic(), 1, request.getScore()
         );
         timeAttackRepository.save(timeAttack);
+
+        int plusExperience = (int) (request.getScore() * 10);
+        user.updateExperience(plusExperience);
+        userRepository.save(user);
 
         return ResponseEntity.ok(BaseResponse.success("타임어택 저장 완료", HttpStatus.CREATED));
     }
