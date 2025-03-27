@@ -1,11 +1,14 @@
 package com.picscore.backend.GPT;
 
+import com.picscore.backend.common.model.response.BaseResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/image")
+@RequestMapping("/api/v1/image")
 public class ImageAnalysisController {
 
     private final OpenAiImageService openAiImageService;
@@ -15,7 +18,8 @@ public class ImageAnalysisController {
     }
 
     @GetMapping("/analyze")
-    public String analyze(@RequestParam String imageUrl) throws IOException {
+    public ResponseEntity<BaseResponse<Map<String, Object>>> analyze(@RequestParam String imageUrl)
+            throws IOException {
         return openAiImageService.analyzeImage(imageUrl);
     }
 }
