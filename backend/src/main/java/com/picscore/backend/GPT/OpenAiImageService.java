@@ -42,7 +42,7 @@ public class OpenAiImageService {
                         Map.of("role", "system", "content", "당신은 30년 경력의 사진작가이며 NIMA(Neural Image Assessment)모델을 학습하여 이미지를 분석하고 수치화 할 수 있습니다."),
                         Map.of("role", "user", "content", List.of(
                                 Map.of("type", "image_url", "image_url", Map.of("url", resizedImageUrl)), // ✅ 리사이징된 이미지 URL 사용
-                                Map.of("type", "text", "text", "Please rate this image on 6 criteria (composition, Sharpness, noise, Color Harmony, exposure, and Aesthetic Quality) out of 100.")
+                                Map.of("type", "text", "text", "Print in Korean.First, score this image individually and in total out of 100 based on six criteria: composition, Sharpness, noise, color harmony, exposure, and aesthetic quality. Express the score in the form of \"criteria: score\". Second, output the topic related to the recognized image in word form. Third, output the mood of the image in adjective form.")
                         ))
                 ),
                 "max_tokens", 500   // 500 >> 250
