@@ -168,6 +168,7 @@ public class OpenAiImageService {
             Pattern scorePattern = Pattern.compile("(구도|선명도|노이즈|색 조화|노출|미적 요소):\\s*(\\d+)");
             Matcher scoreMatcher = scorePattern.matcher(content);
             int totalScore = 0;
+            int avgScore = 0;
             int count = 0;
             while (scoreMatcher.find()) {
                 int score = Integer.parseInt(scoreMatcher.group(2));
@@ -177,7 +178,7 @@ public class OpenAiImageService {
             }
             // 총합 점수 계산 후 추가 (반올림하여 정수로 저장)
             if (count > 0) {
-                scores.put("총합", Math.round((float) totalScore / count));
+                avgScore =Math.round((float) totalScore / count);
             }
             // 2️⃣ 정규식을 사용해 theme(주제) 추출 -> 리스트로 변환
             Pattern themePattern = Pattern.compile("주제:\\s*(.+)");
@@ -196,6 +197,7 @@ public class OpenAiImageService {
             // 최종 응답 데이터 구성
             response.put("analysisChart", scores);
             response.put("analysisText", analysisText);
+            response.put("score", avgScore);
 
             return ResponseEntity.ok(BaseResponse.success("분석 완료",response));
         } catch (Exception e) {
