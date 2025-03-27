@@ -1,6 +1,7 @@
 // page/Timeattack/components/SuccessResult.tsx
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { timeAttackApi } from "../../../api/timeAttackApi";
 
 interface AnalysisData {
   composition: number;
@@ -16,7 +17,8 @@ interface SuccessResultProps {
   analysisData: AnalysisData;
   image: string | null;
   topic: string;
-  translatedTopic?: string; // 번역된 주제 추가 (선택적)
+  translatedTopic?: string;
+  imageName: string;
   ranking: number;
   onTryAgain?: () => void;
 }
@@ -27,11 +29,14 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
   analysisData,
   image,
   topic,
-  translatedTopic, // 번역된 주제 추가 (선택적)
+  translatedTopic,
+  imageName,
   ranking,
   onTryAgain,
 }) => {
   const navigate = useNavigate();
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleTryAgain = () => {
     if (onTryAgain) {
@@ -41,8 +46,48 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
     }
   };
 
-  const handleViewRanking = () => {
-    navigate("/ranking");
+  const handleViewRanking = async () => {
+    setIsSaving(true);
+    setErrorMessage(null);
+
+    try {
+      // 1. 분석 차트와 텍스트를 JSON 문자열로 변환
+      const analysisChart = JSON.stringify(analysisData);
+      const analysisText = JSON.stringify([
+        `주제 "${translatedTopic || topic}"에 대한 연관성: ${topicAccuracy}%`,
+        `이미지 점수: ${score}점`,
+      ]);
+
+      // 2. 이미지 영구 저장 API 호출
+      const saveResponse = await timeAttackApi.savePhoto({
+        imageUrl: image || "",
+        imageName: imageName,
+        score: score,
+        analysisChart: analysisChart,
+        analysisText: analysisText,
+        isPublic: true, // 타임어택 결과는 기본적으로 공개
+        photoType: "timeattack", // 타임어택용 사진 타입
+      });
+
+      console.log("사진 저장 성공:", saveResponse);
+
+      // 3. 타임어택 결과 저장 API 호출
+      const saveTimeAttackResponse = await timeAttackApi.saveTimeAttackResult({
+        imageName: imageName,
+        topic: topic,
+        score: score,
+      });
+
+      console.log("타임어택 결과 저장 성공:", saveTimeAttackResponse);
+
+      // 4. 랭킹 페이지로 이동
+      navigate("/ranking");
+    } catch (error) {
+      console.error("결과 저장 실패:", error);
+      setErrorMessage("결과 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // 분석 결과에서 피드백 생성
@@ -51,11 +96,17 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
 
     // 주제 관련 피드백
     if (topicAccuracy >= 80) {
-      feedbacks.push(`• 주제 "${translatedTopic}"에 매우 적합한 사진입니다.`);
+      feedbacks.push(
+        `• 주제 "${translatedTopic || topic}"에 매우 적합한 사진입니다.`
+      );
     } else if (topicAccuracy >= 50) {
-      feedbacks.push(`• 주제 "${translatedTopic}"와 관련성이 있습니다.`);
+      feedbacks.push(
+        `• 주제 "${translatedTopic || topic}"와 관련성이 있습니다.`
+      );
     } else {
-      feedbacks.push(`• 주제 "${translatedTopic}"와의 연관성이 낮습니다.`);
+      feedbacks.push(
+        `• 주제 "${translatedTopic || topic}"와의 연관성이 낮습니다.`
+      );
     }
 
     // 구도 피드백
@@ -93,7 +144,7 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
         <div className="flex justify-between items-center mb-4">
           <div>
             <p className="text-gray-600">주제</p>
-            <p className="text-xl font-bold">{topic}</p>
+            <p className="text-xl font-bold">{translatedTopic || topic}</p>
           </div>
           <div className="text-right">
             <p className="text-gray-600">주제 정확도</p>
@@ -163,18 +214,52 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
           <p className="text-3xl font-bold text-yellow-800">{ranking}위</p>
         </div>
 
+        {errorMessage && (
+          <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4">
+            {errorMessage}
+          </div>
+        )}
+
         <div className="flex space-x-2">
           <button
             onClick={handleTryAgain}
             className="flex-1 bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition"
+            disabled={isSaving}
           >
             다시 도전
           </button>
           <button
             onClick={handleViewRanking}
             className="flex-1 bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition"
+            disabled={isSaving}
           >
-            랭킹 보기
+            {isSaving ? (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-2"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                저장 중...
+              </div>
+            ) : (
+              "랭킹 보기"
+            )}
           </button>
         </div>
       </div>

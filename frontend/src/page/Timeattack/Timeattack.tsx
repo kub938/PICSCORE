@@ -181,35 +181,22 @@ const TimeAttack: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // API 호출하여 사진 분석
-      const response = await timeAttackApi.analyzePhoto(
+      // 1. 이미지 파일 업로드 (임시 저장)
+      const uploadResponse = await timeAttackApi.uploadPhoto(selectedImageFile);
+      const imageData = uploadResponse.data.data;
+      console.log("이미지 업로드 성공:", imageData);
+
+      // 2. 이미지 분석
+      const analysisResponse = await timeAttackApi.analyzePhoto(
         selectedImageFile,
         challengeTopic
       );
-      const analysisData = response.data.data;
-
+      const analysisData = analysisResponse.data.data;
       console.log("분석 결과:", analysisData);
 
       // 점수 계산 (예시: 신뢰도를 백분율로 변환)
       const score = Math.round(analysisData.confidence * 100);
       const topicAccuracy = Math.round(analysisData.confidence * 100);
-
-      // 이미지 이름 추출 (파일 이름 또는 UUID 생성)
-      const imageName =
-        selectedImageFile.name || `timeattack_${Date.now()}.jpg`;
-
-      // 타임어택 결과 저장 API 호출
-      try {
-        const saveResponse = await timeAttackApi.saveTimeAttackResult({
-          imageName: imageName,
-          topic: challengeTopic,
-          score: score,
-        });
-        console.log("저장 성공:", saveResponse);
-      } catch (saveError) {
-        console.error("저장 실패:", saveError);
-        // 저장 실패해도 UI 흐름은 계속
-      }
 
       // 분석 결과 Zustand에 저장
       setResult({
@@ -222,9 +209,9 @@ const TimeAttack: React.FC = () => {
           color: 75,
           creativity: 70,
         },
-        image: selectedImage,
+        image: imageData.imageUrl,
         topic: challengeTopic,
-        ranking: 10,
+        ranking: 10, // 임시 값
         feedback: [
           `주제 "${translateTopic(
             challengeTopic
@@ -249,22 +236,25 @@ const TimeAttack: React.FC = () => {
               color: 75,
               creativity: 70,
             },
-            image: selectedImage,
+            image: imageData.imageUrl,
             topic: challengeTopic,
+            translatedTopic: translateTopic(challengeTopic),
+            imageName: imageData.imageName, // 결과 페이지에서 저장 시 필요
             ranking: 10,
-            xpEarned: Math.floor(score * 1.2),
+            xpEarned: Math.floor(score * 1.2), // XP 계산 예시
           },
         },
       });
     } catch (error) {
-      console.error("사진 분석 오류:", error);
+      console.error("사진 처리 오류:", error);
       // 오류 발생 시 실패 결과 페이지로 이동
       navigate("/time-attack/result", {
         state: {
           result: {
             success: false,
-            message: "사진 분석 중 오류가 발생했습니다. 다시 시도해주세요.",
+            message: "사진 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
             topic: challengeTopic,
+            translatedTopic: translateTopic(challengeTopic),
           },
         },
       });
