@@ -1,11 +1,17 @@
 import { create } from "zustand";
-import { TimeAttackState, TimeAttackResult } from "../types/timeAttackTypes";
+import {
+  TimeAttackState,
+  TimeAttackResult,
+  ImageMetadata,
+} from "../types/timeAttackTypes";
 
 interface TimeAttackStore {
   gameState: TimeAttackState;
   result: TimeAttackResult;
+  imageMetadata: ImageMetadata | null;
   setGameState: (state: Partial<TimeAttackState>) => void;
   setResult: (result: TimeAttackResult) => void;
+  setImageMetadata: (metadata: ImageMetadata) => void;
   resetGameState: () => void;
 }
 
@@ -36,14 +42,17 @@ const initialResult: TimeAttackResult = {
 export const useTimeAttackStore = create<TimeAttackStore>((set) => ({
   gameState: initialGameState,
   result: initialResult,
+  imageMetadata: null,
   setGameState: (state) =>
     set((prev) => ({
       gameState: { ...prev.gameState, ...state },
     })),
   setResult: (result) => set({ result }),
+  setImageMetadata: (metadata) => set({ imageMetadata: metadata }),
   resetGameState: () =>
     set({
       gameState: initialGameState,
       result: initialResult,
+      imageMetadata: null,
     }),
 }));
