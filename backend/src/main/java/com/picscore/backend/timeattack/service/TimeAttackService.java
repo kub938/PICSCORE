@@ -131,9 +131,14 @@ public class TimeAttackService {
                     AzureVisionResponse.class
             );
 
+            float time = 15f;
+            time = Float.parseFloat(request.getTime());
+            final float adjustedTime = time / 15f;
+
             // API 응답에서 태그 정보 추출 및 변환
             List<AnalysisPhotoResponse> analysisResults = response.getBody().getTags().stream()
-                    .map(tag -> new AnalysisPhotoResponse(tag.getName(), tag.getConfidence()))
+                    .map(tag -> new AnalysisPhotoResponse(
+                            tag.getName(), tag.getConfidence(), tag.getConfidence() * 0.7f + adjustedTime * 0.3f))
                     .collect(Collectors.toList());
 
             // 요청된 주제와 일치하는 태그 중 가장 높은 신뢰도를 가진 태그 선택
@@ -141,11 +146,9 @@ public class TimeAttackService {
                     .filter(tag -> tag.getName().toLowerCase().contains(request.getTopic().toLowerCase()))
                     .max(Comparator.comparing(AnalysisPhotoResponse::getConfidence))
                     .orElseGet(() -> {
-                        // 일치하는 태그가 없는 경우 가장 낮은 신뢰도의 태그 선택
-                        AnalysisPhotoResponse lowestConfidence = analysisResults.stream()
-                                .min(Comparator.comparing(AnalysisPhotoResponse::getConfidence))
-                                .orElse(new AnalysisPhotoResponse("일치 항목 없음", 0.0f));
-                        return new AnalysisPhotoResponse("일치 항목 없음", lowestConfidence.getConfidence());
+                        // 랜덤한 값(0.00 ~ 0.20) 생성
+                        float randomConfidence = new Random().nextFloat() * 0.20f;
+                        return new AnalysisPhotoResponse("일치 항목 없음", randomConfidence, randomConfidence * 0.7f + adjustedTime * 0.3f);
                     });
 
             return ResponseEntity.ok(BaseResponse.success("이미지 분석 성공", result));
@@ -164,6 +167,7 @@ public class TimeAttackService {
      * @param request SaveTimeAttackRequest 객체 (저장할 타임어택 정보)
      * @return ResponseEntity<BaseResponse<HttpStatus>> 저장 결과 응답
      */
+    @Transactional
     public ResponseEntity<BaseResponse<HttpStatus>> saveTimeAttack(
             Long userId, SaveTimeAttackRequest request
     ) {
@@ -191,6 +195,10 @@ public class TimeAttackService {
                 user, activityImageUrl, request.getTopic(), 1, request.getScore()
         );
         timeAttackRepository.save(timeAttack);
+
+        int plusExperience = (int) (request.getScore() * 10);
+        user.updateExperience(plusExperience);
+        userRepository.save(user);
 
         return ResponseEntity.ok(BaseResponse.success("타임어택 저장 완료", HttpStatus.CREATED));
     }

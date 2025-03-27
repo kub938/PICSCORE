@@ -1,5 +1,8 @@
 package com.picscore.backend.GPT;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.picscore.backend.common.model.response.BaseResponse;
 import lombok.RequiredArgsConstructor;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +19,8 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +33,7 @@ public class OpenAiImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
-    public String analyzeImage(String originalImageUrl) throws IOException {
+    public ResponseEntity<BaseResponse<Map<String,Object>>> analyzeImage(String originalImageUrl) throws IOException {
         // ✅ 1. 원본 이미지 다운로드 후 리사이징
         byte[] resizedImage = resizeImage(originalImageUrl, 500, 500); // 500X500 >> 250X250 >> 200X200
 
@@ -42,7 +47,7 @@ public class OpenAiImageService {
                         Map.of("role", "system", "content", "당신은 30년 경력의 사진작가이며 NIMA(Neural Image Assessment)모델을 학습하여 이미지를 분석하고 수치화 할 수 있습니다."),
                         Map.of("role", "user", "content", List.of(
                                 Map.of("type", "image_url", "image_url", Map.of("url", resizedImageUrl)), // ✅ 리사이징된 이미지 URL 사용
-                                Map.of("type", "text", "text", "Please rate this image on 6 criteria (composition, Sharpness, noise, Color Harmony, exposure, and Aesthetic Quality) out of 100.")
+                                Map.of("type", "text", "text", "출력을 반드시 한국어로 하세요. 1. 다음 여섯 가지 기준에 따라 이미지를 각각 100점 만점으로 평가하세요: 구도, 선명도, 노이즈, 색 조화, 노출, 미적 요소. 각 기준의 점수를 '기준: 점수' 형식으로 표현하세요. 2. 이미지와 관련된 주제를 단어로 출력하세요. 3. 이미지 분위기를 형용사 형태로 출력하세요.")
                         ))
                 ),
                 "max_tokens", 500   // 500 >> 250
@@ -65,13 +70,14 @@ public class OpenAiImageService {
             );
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                return response.getBody();
+                System.out.printf("###분석 내용="+response.getBody());
+                return parseGPTResponse(response.getBody());
             } else {
                 throw new RuntimeException("OpenAI API 요청 실패: HTTP " + response.getStatusCode());
             }
         } catch (Exception e) {
             System.err.println("❌ OpenAI API 요청 중 오류 발생: " + e.getMessage());
-            return "Error occurred: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(BaseResponse.error(e.getMessage()));
         }
     }
 
@@ -142,5 +148,69 @@ public class OpenAiImageService {
                 bucketName,
                 s3Client.serviceClientConfiguration().region(),
                 fileName);
+    }
+
+    public ResponseEntity<BaseResponse<Map<String, Object>>> parseGPTResponse(String gptApiResponse) {
+        try {
+            // JSON 파싱
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode root = objectMapper.readTree(gptApiResponse);
+
+            // GPT 응답에서 "choices.message.content" 부분 추출
+            String content = root.path("choices").get(0).path("message").path("content").asText();
+
+            // 점수를 저장할 Map
+            Map<String, Integer> scores = new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
+            Map<String, Object> analysisText = new HashMap<>();
+
+            // 1️⃣ 정규식을 사용해 점수 추출
+            Pattern scorePattern = Pattern.compile("(구도|선명도|노이즈|색 조화|노출|미적 요소):\\s*(\\d+)");
+            Matcher scoreMatcher = scorePattern.matcher(content);
+            int totalScore = 0;
+            int avgScore = 0;
+            int count = 0;
+            while (scoreMatcher.find()) {
+                int score = Integer.parseInt(scoreMatcher.group(2));
+                scores.put(scoreMatcher.group(1), score);
+                totalScore += score;
+                count++;
+            }
+            // 총합 점수 계산 후 추가 (반올림하여 정수로 저장)
+            if (count > 0) {
+                avgScore =Math.round((float) totalScore / count);
+            }
+            // 2️⃣ 정규식을 사용해 theme(주제) 추출 -> 리스트로 변환
+            Pattern themePattern = Pattern.compile("주제:\\s*(.+)");
+            Matcher themeMatcher = themePattern.matcher(content);
+            if (themeMatcher.find()) {
+                analysisText.put("theme", splitToList(themeMatcher.group(1)));
+            }
+
+            // 3️⃣ 정규식을 사용해 mood(분위기) 추출 -> 리스트로 변환
+            Pattern moodPattern = Pattern.compile("분위기:\\s*(.+)");
+            Matcher moodMatcher = moodPattern.matcher(content);
+            if (moodMatcher.find()) {
+                analysisText.put("mood", splitToList(moodMatcher.group(1)));
+            }
+
+            // 최종 응답 데이터 구성
+            response.put("analysisChart", scores);
+            response.put("analysisText", analysisText);
+            response.put("score", avgScore);
+
+            return ResponseEntity.ok(BaseResponse.success("분석 완료",response));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(BaseResponse.error(e.getMessage()));
+        }
+    }
+
+    /**
+     * 쉼표(,) 또는 공백( )을 기준으로 문자열을 리스트로 변환하는 유틸 메서드
+     */
+    private List<String> splitToList(String text) {
+        return Arrays.stream(text.split("\\s*,\\s*|\\s+")) // 쉼표 또는 공백 기준 분리
+                .filter(word -> !word.isEmpty()) // 빈 문자열 제거
+                .toList(); // 리스트로 변환
     }
 }

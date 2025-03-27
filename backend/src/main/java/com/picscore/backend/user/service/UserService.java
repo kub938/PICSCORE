@@ -8,6 +8,7 @@ import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.photo.service.PhotoService;
+import com.picscore.backend.timeattack.model.entity.TimeAttack;
 import com.picscore.backend.timeattack.model.response.GetMyStaticResponse;
 import com.picscore.backend.timeattack.model.response.GetUserStaticResponse;
 import com.picscore.backend.timeattack.repository.TimeAttackRepository;
@@ -24,6 +25,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -279,12 +281,19 @@ public class UserService {
      */
     public ResponseEntity<BaseResponse<GetMyStaticResponse>> getMyStatic(Long userId) {
         Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
-
         float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
-        int minRank = stats.get("minRank") != null ? ((Number) stats.get("minRank")).intValue() : 0;
+
+        List<TimeAttack> timeAttackList = timeAttackRepository.findHighestScoresAllUser();
+        int rank = 0;
+        for (int i = 0; i < timeAttackList.size(); i++) {
+            if (timeAttackList.get(i).getUser().getId().equals(userId)) {
+                rank = i + 1; // 등수는 1부터 시작
+                break;
+            }
+        }
 
         GetMyStaticResponse response = new GetMyStaticResponse(
-                avgScore, minRank
+                avgScore, rank
         );
 
         return ResponseEntity.ok(BaseResponse.success("나의 통계 조회 성공", response));
@@ -299,12 +308,19 @@ public class UserService {
      */
     public ResponseEntity<BaseResponse<GetUserStaticResponse>> getUserStatic(Long userId) {
         Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
-
         float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
-        int minRank = stats.get("minRank") != null ? ((Number) stats.get("minRank")).intValue() : 0;
+
+        List<TimeAttack> timeAttackList = timeAttackRepository.findHighestScoresAllUser();
+        int rank = 0;
+        for (int i = 0; i < timeAttackList.size(); i++) {
+            if (timeAttackList.get(i).getUser().getId().equals(userId)) {
+                rank = i + 1; // 등수는 1부터 시작
+                break;
+            }
+        }
 
         GetUserStaticResponse response = new GetUserStaticResponse(
-                avgScore, minRank
+                avgScore, rank
         );
 
         return ResponseEntity.ok(BaseResponse.success("유저의 통계 조회 성공", response));

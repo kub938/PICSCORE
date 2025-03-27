@@ -10,4 +10,5 @@ public class AnalysisPhotoRequest {
 
     private MultipartFile imageFile;
     private String topic;
+    private String time;
 }
