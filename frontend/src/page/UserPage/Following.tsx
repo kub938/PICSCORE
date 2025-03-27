@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMyFollowings } from "../../hooks/friend"; // 경로는 실제 위치에 맞게 조정하세요
-import { friendApi } from "../../api/friendApi"; // 경로는 실제 위치에 맞게 조정하세요
 
 // 백엔드 응답 타입에 맞게 인터페이스 수정
-interface FollowUser {
+interface FollowingUser {
   userId: number;
   nickName: string;
   profileImage: string;
@@ -21,18 +20,41 @@ const Following: React.FC<FollowingProps> = ({
   followingCount,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [followings, setFollowings] = useState<FollowingUser[]>([]); // 팔로잉 리스트 상태
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태
+  const [isError, setIsError] = useState(false); // 에러 상태
 
   const navigate = useNavigate();
 
-  // useQuery 훅을 사용하여 팔로잉 데이터 가져오기
-  const {
-    data: followings = [],
-    isLoading: isFollowingsLoading,
-    isError,
-    refetch: refetchFollowings,
-  } = useMyFollowings();
+  // useMyFollowings 훅을 사용하여 팔로잉 데이터 가져오기
+  const { data, refetch, isFetching } = useMyFollowings();
+
+  useEffect(() => {
+    const fetchFollowings = async () => {
+      try {
+        setIsLoading(true);
+        setIsError(false);
+        if (Array.isArray(data)) {
+          setFollowings(data); // 팔로잉 데이터를 상태에 저장
+        } else {
+          console.error("API 응답 데이터가 배열이 아닙니다:", data);
+          setFollowings([]); // 데이터가 배열이 아니면 빈 배열로 설정
+        }
+      } catch (error) {
+        console.error("팔로잉 데이터를 가져오는 중 오류 발생:", error);
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFollowings();
+  }, [data]);
+
+  // 최신 데이터를 가져오기 위해 refetch 호출
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   // 검색어로 필터링
   const filteredData = followings.filter((user) =>
@@ -47,6 +69,11 @@ const Following: React.FC<FollowingProps> = ({
   // 팔로워 페이지로 이동
   const goToFollower = () => {
     navigate("/follower");
+  };
+
+  // 사용자 클릭 시 해당 사용자의 페이지로 이동
+  const handleUserClick = (userId: number) => {
+    navigate(`/user/${userId}`); // `/user/:userId` 경로로 이동
   };
 
   return (
@@ -110,7 +137,8 @@ const Following: React.FC<FollowingProps> = ({
 
       {/* 사용자 목록 */}
       <div className="flex-1 overflow-y-auto">
-        {isFollowingsLoading ? (
+        ㅉ
+        {isLoading || isFetching ? (
           // 로딩 중 표시
           <div className="p-4 text-center text-gray-500">로딩 중...</div>
         ) : isError ? (
@@ -121,7 +149,8 @@ const Following: React.FC<FollowingProps> = ({
           filteredData.map((user) => (
             <div
               key={user.userId}
-              className="flex items-center p-4 border-b bg-white"
+              className="flex items-center p-4 border-b bg-white cursor-pointer"
+              onClick={() => handleUserClick(user.userId)} // 사용자 클릭 이벤트 추가
             >
               <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
                 <img
@@ -139,7 +168,10 @@ const Following: React.FC<FollowingProps> = ({
               </div>
               <button
                 className="px-4 py-1.5 rounded-md text-sm font-medium bg-pic-primary text-white shadow-2xl"
-                onClick={() => console.log(`팔로잉 취소: ${user.userId}`)} // 버튼 클릭 시 동작
+                onClick={(e) => {
+                  e.stopPropagation(); // 부모 클릭 이벤트 방지
+                  console.log(`팔로잉 취소: ${user.userId}`);
+                }} // 버튼 클릭 시 동작
               >
                 팔로잉
               </button>
