@@ -1,4 +1,8 @@
-import { createBrowserRouter } from "react-router-dom";
+import {
+  createBrowserRouter,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import App from "../App";
 import Home from "../page/Home/Home";
 import Test from "../page/Test";
@@ -14,8 +18,35 @@ import TimeAttack from "../page/Timeattack/Timeattack";
 import TimeAttackResult from "../page/Timeattack/TimeAttackResult";
 import ImageUpload from "../page/ImageEval/ImageUpload";
 import ImageEvalResult from "../page/ImageEval/ImageEvalResult";
+import PrivateRouter from "./PrivateRouter";
+import Welcome from "../page/Welcome/Welcome";
+import { useAuthStore } from "../store/authStore";
+import { useEffect } from "react";
 import Following from "../page/UserPage/Following";
 import Follower from "../page/UserPage/Follower";
+
+const HomeRouter = () => {
+  const [params] = useSearchParams();
+  const accessToken = params.get("access");
+  const loginSuccess = params.get("loginSuccess");
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const login = useAuthStore((state) => state.login);
+
+  // useEffect를 사용하여 렌더링 후에 상태 업데이트
+  useEffect(() => {
+    if (loginSuccess && accessToken) {
+      login(accessToken);
+      console.log(localStorage.getItem("auth")); // localStorage에서 확인 (accessToken이 아님)
+    }
+  }, [loginSuccess, accessToken, login]);
+
+  if (isLoggedIn || (loginSuccess && accessToken)) {
+    return <Home />;
+  }
+
+  // 그 외에는 Welcome으로
+  return <Welcome />;
+};
 
 const router = createBrowserRouter([
   {
@@ -24,72 +55,87 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
-        index: true, // 부모 요소의 path와 일치하면 일로 보냄
-        element: <Home />,
-      },
-      {
-        path: "/test",
-        element: <Test />,
-      },
-      {
-        path: "/time-attack",
-        element: <TimeAttack />,
-      },
-      {
-        path: "/time-attack/result",
-        element: <TimeAttackResult />,
-      },
-      {
-        path: "/ranking",
-        element: <RankingPage />,
-      },
-      {
-        path: "/mypage",
-        element: <MyPage />,
-      },
-      {
-        path: "/user/:userId",
-        element: <UserDetailPage />,
-      },
-      {
-        path: "/change-info",
-        element: <ChangeInfoPage />,
-      },
-      {
-        path: "/archieve",
-        element: <ArchievePage />,
-      },
-      {
-        path: "/image-upload",
-        element: <ImageUpload />,
-      },
-      {
-        path: "/ranking",
-        element: <RankingPage />,
-      },
-      {
-        path: "/board",
-        element: <Board />,
-      },
-      {
-        path: "/contest",
-        element: <Contest />,
+        path: "/",
+        element: <HomeRouter />,
       },
       {
         path: "/login",
         element: <Login />,
       },
       {
+        path: "/welcome",
+        element: <Welcome />,
+      },
+      {
         path: "/image-result",
         element: <ImageEvalResult />,
       },
       {
-        path: "/following",
-        element: <Following />,
+        path: "/image-upload",
+        element: <ImageUpload />,
       },
+
       {
-        path: "/follower",
-        element: <Follower />,
+        element: <PrivateRouter />,
+        children: [
+          {
+            path: "/", // 부모 요소의 path와 일치하면 일로 보냄
+            element: <Home />,
+          },
+          {
+            path: "/time-attack",
+            element: <TimeAttack />,
+          },
+          {
+            path: "/time-attack/result",
+            element: <TimeAttackResult />,
+          },
+          {
+            path: "/ranking",
+            element: <RankingPage />,
+          },
+          {
+            path: "/mypage",
+            element: <MyPage />,
+          },
+          {
+            path: "/user/:userId",
+            element: <UserDetailPage />,
+          },
+          {
+            path: "/change-info",
+            element: <ChangeInfoPage />,
+          },
+          {
+            path: "/archieve",
+            element: <ArchievePage />,
+          },
+
+          {
+            path: "/ranking",
+            element: <RankingPage />,
+          },
+          {
+            path: "/board",
+            element: <Board />,
+          },
+          {
+            path: "/contest",
+            element: <Contest />,
+          },
+          {
+            path: "/login",
+            element: <Login />,
+          },
+          {
+            path: "/following",
+            element: <Following />,
+          },
+          {
+            path: "/follower",
+            element: <Follower />,
+          },
+        ],
       },
     ],
   },

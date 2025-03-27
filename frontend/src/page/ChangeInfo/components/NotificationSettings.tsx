@@ -1,6 +1,6 @@
 import React from "react";
 import ToggleSwitch from "./ToggleSwitch";
-import { NotificationSettings as NotificationSettingsType } from "../../..//types";
+import { NotificationSettings as NotificationSettingsType } from "../../../types/userTypes";
 
 interface NotificationSettingsProps {
   settings: NotificationSettingsType;

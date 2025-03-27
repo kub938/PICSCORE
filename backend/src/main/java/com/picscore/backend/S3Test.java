@@ -1,4 +1,4 @@
-package com.picscore.backend.s3;
+package com.picscore.backend;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;

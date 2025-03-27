@@ -1,15 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import profileImage from "../../assets/profile.jpg";
 import contest from "../../assets/contest.png";
 import time from "../../assets/time.png";
 import board from "../../assets/board.png";
 import ranking from "../../assets/ranking.png";
-import { useAuthStore, UserInfoState } from "../../store/authStore";
-import { api } from "../../api/api";
+import { useAuthStore } from "../../store/authStore";
 import { useQuery } from "@tanstack/react-query";
 import HomeNavBar from "../../components/NavBar/HomeNavBar";
+import axios from "axios";
+import { useLogout } from "../../hooks/useUser";
 
 function Home() {
+  /*
+  원래 로직
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const login = useAuthStore((state) => state.login);
   const params = new URLSearchParams(window.location.search);
@@ -18,48 +21,108 @@ function Home() {
   const { isLoading, isError, data } = useQuery({
     queryKey: ["user"],
     queryFn: async () => {
-      const response = await api.get<UserInfoState>("/api/v1/user/info");
-      return response;
+      const response = await api.get("/api/v1/user/info");
+      return response.data.data;
     },
     enabled: !!loginSuccess, // loginSuccess가 true일 때만 쿼리 실행
   });
 
+   useEffect(() => {
+    if (data) {
+      login(data);
+    }
+  }, [data]);
+  
   if (isLoading) {
     return <>로딩중..</>;
   }
   if (isError) {
     return <>유저 정보 호출 에러</>;
   }
+  */
 
-  console.log(data);
+  /* 테스트 로직 */
+  const logout = useAuthStore((state) => state.logout);
+  const navigate = useNavigate();
+
+  const useUserData = () => {
+    const accessToken = useAuthStore((state) => state.accessToken);
+
+    return useQuery({
+      queryKey: ["userData"],
+      queryFn: async () => {
+        const response = await axios.get(
+          "https://j12b104.p.ssafy.io/api/v1/user/info",
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        return response.data;
+      },
+    });
+  };
+
+  const logoutMutation = useLogout();
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        logout();
+        navigate("/login");
+      },
+    });
+  };
+
+  const { isLoading, isError } = useUserData();
+  if (isLoading) {
+    return <>로딩중 입니다</>;
+  }
+  if (isError) {
+    return <>에러입니다</>;
+  }
+
   return (
     <>
-      <div className="flex flex-col w-full items-center ">
+      <div className="flex flex-col w-full items-center">
         <HomeNavBar />
-        {/* 프로필 이미지 섹션 */}
-        <div className="flex flex-col items-center mb-10">
-          <div className="w-[150px] h-[150px] rounded-full overflow-hidden border-3 border-white mb-4">
-            <img
-              src={profileImage}
-              alt="프로필 이미지"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <h2 className="font-bold text-ffffff text-2xl mb-2">태열</h2>
-          <div className="w-[200px] text-center mb-5 flex items-center justify-center">
-            <span className="font-bold text-ffffff mr-2">LV.30</span>
-            <div className="bg-white/30 h-2.5 rounded-full flex-1">
-              <div className="w-[30%] h-full bg-yellow-300 rounded-full"></div>
-            </div>
-          </div>
-          <Link to="/image-upload">
-            <div className="relative transition-all duration-300 hover:scale-105">
-              <div className="font-bold bg-white px-5 py-2.5 rounded-full text-pic-primary">
-                <button>사진 찍기</button>
-              </div>
-            </div>
-          </Link>
+        <div onClick={handleLogout} className="border bg-black w-30 h-30">
+          로그아웃
         </div>
+        {/* 프로필 이미지 섹션 */}
+        <Link
+          to="/mypage"
+          className="flex flex-col items-center mb-10 border-2 border-gray-300 rounded-3xl shadow-lg p-5 bg-white w-[90%]"
+          cursor-pointer
+        >
+          <div className="flex flex-row items-center w-full px-15 gap-10">
+            {/* 프로필 이미지 */}
+            <div className="w-[100px] h-[100px] rounded-full overflow-hidden border-4 border-white">
+              <img
+                src={profileImage}
+                alt="프로필 이미지"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* 이름 */}
+            <h2 className="font-bold text-gray-800 text-2xl">태열</h2>
+          </div>
+
+          {/* 레벨과 레벨 바 */}
+          <div className="w-[200px] text-center flex items-center mt-4">
+            <span className="font-bold text-gray-800 mr-2">LV.30</span>
+            <div className="bg-gray-200 h-2.5 rounded-full flex-1">
+              <div className="w-[30%] h-full bg-pic-primary rounded-full"></div>
+            </div>
+          </div>
+        </Link>
+        <Link to="/image-upload">
+          <div className="relative transition-all duration-300 hover:scale-105">
+            <div className="font-bold bg-white px-5 py-2.5 rounded-full text-pic-primary">
+              <button>사진 분석</button>
+            </div>
+          </div>
+        </Link>
         {/* 메뉴 그리드 섹션 */}
         <div className="grid grid-cols-2 gap-5 w-full p-4 max-w-[400px]">
           {/* 타임어택 */}

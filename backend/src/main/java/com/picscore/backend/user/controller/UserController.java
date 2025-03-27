@@ -1,6 +1,7 @@
 package com.picscore.backend.user.controller;
 
 import com.picscore.backend.common.model.response.BaseResponse;
+import com.picscore.backend.photo.service.PhotoService;
 import com.picscore.backend.timeattack.model.response.GetMyStaticResponse;
 import com.picscore.backend.timeattack.model.response.GetUserStaticResponse;
 import com.picscore.backend.common.jwt.JWTUtil;
@@ -39,6 +40,7 @@ public class UserController {
     private final UserService userService;
     private final FollowService followService;
     private final OAuthService oAuthService;
+    private final PhotoService photoService;
 
 
     /**
@@ -67,9 +69,9 @@ public class UserController {
      * - 로그아웃 완료 메시지를 포함하는 응답 객체
      * @throws IOException 리다이렉트 중 발생할 수 있는 입출력 예외
      */
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public ResponseEntity<BaseResponse<Void>> redirectToGoogleLogout(HttpServletResponse response) throws IOException {
-        response.sendRedirect("/logout");
+//        response.sendRedirect("/logout");
         BaseResponse<Void> baseResponse = BaseResponse.withMessage("로그아웃 완료");
         return ResponseEntity.ok(baseResponse);
     }
@@ -242,9 +244,11 @@ public class UserController {
     public ResponseEntity<BaseResponse<Void>> updateMyProfile(
             HttpServletResponse response,
             HttpServletRequest request,
-            @RequestBody UpdateMyProfileRequest updateMyProfileRequest
-    ) {
+            @ModelAttribute UpdateMyProfileRequest updateMyProfileRequest
+    ) throws IOException {
+
         Long userId = oAuthService.findIdByNickName(request);
+
         return userService.updateMyProfile(userId, updateMyProfileRequest, response);
     }
 

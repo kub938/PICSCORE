@@ -38,6 +38,9 @@ public class Photo extends BaseEntity {
     @Column(name = "is_public", nullable = false)
     private Boolean isPublic;
 
+    @Column(name = "photo_type", nullable = false)
+    private String photoType;
+
 
 //    관계된 컬렉션 없이 한번 해보자
 //    @OneToMany(mappedBy = "photo")
