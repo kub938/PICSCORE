@@ -51,7 +51,8 @@ public class PhotoController {
      * @return ResponseEntity<BaseResponse<HttpStatus>> 업로드 결과 응답
      */
     @PostMapping("/photo/save")
-    public ResponseEntity<BaseResponse<HttpStatus>> uploadFile(HttpServletRequest request, @RequestBody UploadPhotoRequest payload) {
+    public ResponseEntity<BaseResponse<HttpStatus>> uploadFile(HttpServletRequest request,
+                                                               @RequestBody UploadPhotoRequest payload) {
         // 토큰에서 사용자 정보 추출
         Long userId = oAuthService.findIdByNickName(request);
         User user = userRepository.findById(userId)

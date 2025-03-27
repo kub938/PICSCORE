@@ -55,7 +55,7 @@ public class PhotoService {
      * @return ResponseEntity<BaseResponse<HttpStatus>> 저장 결과
      */
     public ResponseEntity<BaseResponse<HttpStatus>> savePhoto(User user, String imageUrl, String imageName, Float score,
-                                                              String analysisChart, String analysisText, Boolean isPublic, String photoType) {
+                                                              Map<String, Integer> analysisChart, Map<String, List<String>> analysisText, Boolean isPublic, String photoType) {
         String tempFolder = "temp/";
         String permanentFolder = "permanent/";
         // S3에서 임시 폴더에서 영구 폴더로 이미지 이동
