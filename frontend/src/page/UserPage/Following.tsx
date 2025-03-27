@@ -150,7 +150,7 @@ const Following: React.FC<FollowingProps> = ({
             <div
               key={user.userId}
               className="flex items-center p-4 border-b bg-white cursor-pointer"
-              onClick={() => handleUserClick(user.userId)} // 클릭 이벤트 추가
+              onClick={() => handleUserClick(user.userId)} // 이벤트 클릭 이벤트 추가
             >
               <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
                 <img
