@@ -51,8 +51,8 @@ public class User extends BaseEntity {
         this.experience = experience;
     }
 
-    public void updateNickName(String nickName) {
-        this.nickName = nickName;
+    public void updateExperience(int experience) {
+        this.experience += experience;
     }
 
     public void updateProfile(String nickName, String profileImage, String message) {
