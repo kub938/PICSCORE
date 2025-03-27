@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api, testApi } from "./api";
 
 // Follower/Following interfaces
 interface FollowerResponse {
@@ -17,11 +17,11 @@ interface FollowingResponse {
 export const friendApi = {
   // Follower/Following endpoints
   getMyFollowers: () => {
-    return api.get<FollowerResponse[]>("/api/v1/user/follower/me");
+    return testApi.get<FollowerResponse[]>("/api/v1/user/follower/me");
   },
 
   getMyFollowings: () => {
-    return api.get<FollowingResponse[]>("/api/v1/user/following/me");
+    return testApi.get<FollowingResponse[]>("/api/v1/user/following/me");
   },
 
   //   getUserFollowers: (userId: number) => {
