@@ -24,6 +24,7 @@ import { useAuthStore } from "../store/authStore";
 import { useEffect } from "react";
 import Following from "../page/UserPage/Following";
 import Follower from "../page/UserPage/Follower";
+import PhotoPost from "../page/Board/PhotoPost";
 
 const HomeRouter = () => {
   const [params] = useSearchParams();
@@ -119,6 +120,11 @@ const router = createBrowserRouter([
             path: "/board",
             element: <Board />,
           },
+          {
+            path: "/photo/:number",
+            element: <PhotoPost />,
+          },
+
           {
             path: "/contest",
             element: <Contest />,
