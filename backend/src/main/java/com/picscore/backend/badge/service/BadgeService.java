@@ -1,10 +1,14 @@
 package com.picscore.backend.badge.service;
 
 import com.picscore.backend.badge.model.entity.Badge;
+import com.picscore.backend.badge.model.entity.UserBadge;
+import com.picscore.backend.badge.model.request.TimeAttackScoreRequest;
 import com.picscore.backend.badge.model.response.GetBadgeResponse;
 import com.picscore.backend.badge.repository.BadgeRepository;
 import com.picscore.backend.badge.repository.UserBadgeRepository;
 import com.picscore.backend.common.model.response.BaseResponse;
+import com.picscore.backend.user.model.entity.User;
+import com.picscore.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -21,6 +25,7 @@ public class BadgeService {
 
     private final BadgeRepository badgeRepository;
     private final UserBadgeRepository userBadgeRepository;
+    private final UserRepository userRepository;
 
 
     /**
@@ -54,6 +59,26 @@ public class BadgeService {
 
         // 성공 응답 반환
         return ResponseEntity.ok(BaseResponse.success("전체 뱃지 목록 조회", response));
+    }
+
+    public ResponseEntity<BaseResponse<Void>> getTimeAttackScore(
+            Long userId, TimeAttackScoreRequest request
+    ) {
+
+        if (request.getScore() >= 90) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+            Badge badge = badgeRepository.findById(1L)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found with ID: 1"));
+
+            UserBadge userBadge = new UserBadge(user, badge);
+            userBadgeRepository.save(userBadge);
+
+            return ResponseEntity.ok(BaseResponse.withMessage("타임 어택 점수 뱃지 달성"));
+        }
+
+        return ResponseEntity.ok(BaseResponse.withMessage("타임 어택 점수 뱃지 미달성"));
     }
 }
 
