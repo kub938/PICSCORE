@@ -9,4 +9,5 @@ public class AnalysisPhotoResponse {
 
     private String name;
     private float confidence;
+    private float score;
 }
