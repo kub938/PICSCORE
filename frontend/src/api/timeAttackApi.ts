@@ -1,23 +1,23 @@
 // api/timeAttackApi.ts
 import { api, testApi } from "./api";
-
-// 타임어택 API 인터페이스
+import {
+  TimeAttackApiResponse,
+  AnalysisResponse,
+  RankingData,
+  SaveTimeAttackRequest,
+} from "../types/timeAttackTypes";
 interface BaseResponse<T> {
-  timeStamp: string;
-  message: string;
   data: T;
-}
-
-// 사진 분석 응답 인터페이스
-interface AnalysisResponse {
-  name: string;
-  confidence: number;
+  message: string;
+  status: number;
+  statusText: string;
+  timeStamp: string;
 }
 
 export const timeAttackApi = {
   // 타임어택 랭킹 조회
   getRanking: (pageNum: number) => {
-    return testApi.get<BaseResponse<any>>(
+    return testApi.get<TimeAttackApiResponse<RankingData>>(
       `/api/v1/activity/time-attack/${pageNum}`
     );
   },
@@ -28,7 +28,7 @@ export const timeAttackApi = {
     formData.append("imageFile", imageFile);
     formData.append("topic", topic);
 
-    return testApi.post<BaseResponse<AnalysisResponse>>(
+    return testApi.post<TimeAttackApiResponse<AnalysisResponse>>(
       "/api/v1/activity/analysis",
       formData,
       {
@@ -36,6 +36,33 @@ export const timeAttackApi = {
           "Content-Type": "multipart/form-data",
         },
       }
+    );
+  },
+
+  // 타임어택 결과 저장
+  // api/timeAttackApi.ts - 타임어택 결과 저장 API 수정
+  saveTimeAttackResult: (data: SaveTimeAttackRequest) => {
+    return testApi.post<BaseResponse<void>>("/api/v1/activity/save", data, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      validateStatus: function (status) {
+        return status >= 200 && status < 400; // 302 포함 성공으로 처리
+      },
+    });
+  },
+
+  // 내 타임어택 기록 조회
+  getMyTimeAttackHistory: () => {
+    return testApi.get<TimeAttackApiResponse<any>>(
+      "/api/v1/activity/my-history"
+    );
+  },
+
+  // 특정 사용자의 타임어택 기록 조회
+  getUserTimeAttackHistory: (userId: number) => {
+    return testApi.get<TimeAttackApiResponse<any>>(
+      `/api/v1/activity/user-history/${userId}`
     );
   },
 };

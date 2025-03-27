@@ -194,12 +194,29 @@ const TimeAttack: React.FC = () => {
       const score = Math.round(analysisData.confidence * 100);
       const topicAccuracy = Math.round(analysisData.confidence * 100);
 
+      // 이미지 이름 추출 (파일 이름 또는 UUID 생성)
+      const imageName =
+        selectedImageFile.name || `timeattack_${Date.now()}.jpg`;
+
+      // 타임어택 결과 저장 API 호출
+      try {
+        const saveResponse = await timeAttackApi.saveTimeAttackResult({
+          imageName: imageName,
+          topic: challengeTopic,
+          score: score,
+        });
+        console.log("저장 성공:", saveResponse);
+      } catch (saveError) {
+        console.error("저장 실패:", saveError);
+        // 저장 실패해도 UI 흐름은 계속
+      }
+
       // 분석 결과 Zustand에 저장
       setResult({
         score,
         topicAccuracy,
         analysisData: {
-          composition: 85, // 예시 값 (실제 API에서 제공되지 않는 경우)
+          composition: 85,
           lighting: 80,
           subject: topicAccuracy,
           color: 75,
@@ -207,7 +224,7 @@ const TimeAttack: React.FC = () => {
         },
         image: selectedImage,
         topic: challengeTopic,
-        ranking: 10, // 임시 값
+        ranking: 10,
         feedback: [
           `주제 "${translateTopic(
             challengeTopic
@@ -235,13 +252,12 @@ const TimeAttack: React.FC = () => {
             image: selectedImage,
             topic: challengeTopic,
             ranking: 10,
-            xpEarned: Math.floor(score * 1.2), // XP 계산 예시
+            xpEarned: Math.floor(score * 1.2),
           },
         },
       });
     } catch (error) {
       console.error("사진 분석 오류:", error);
-
       // 오류 발생 시 실패 결과 페이지로 이동
       navigate("/time-attack/result", {
         state: {
