@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { timeAttackApi } from "../../../api/timeAttackApi";
+import { useRankingStore } from "../../../store/rankingStore";
 
 interface AnalysisData {
   composition: number;
@@ -38,6 +39,11 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // 랭킹 스토어 액션 가져오기
+  const setRankings = useRankingStore((state) => state.setRankings);
+  const setTotalPages = useRankingStore((state) => state.setPagination);
+  const setTimeframe = useRankingStore((state) => state.setTimeframe);
+
   const handleTryAgain = () => {
     if (onTryAgain) {
       onTryAgain();
@@ -51,39 +57,31 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
     setErrorMessage(null);
 
     try {
-      // 1. 분석 차트와 텍스트를 JSON 문자열로 변환
-      const analysisChart = JSON.stringify(analysisData);
-      const analysisText = JSON.stringify([
-        `주제 "${translatedTopic || topic}"에 대한 연관성: ${topicAccuracy}%`,
-        `이미지 점수: ${score}점`,
-      ]);
-
-      // 2. 이미지 영구 저장 API 호출
-      const saveResponse = await timeAttackApi.savePhoto({
-        imageUrl: image || "",
-        imageName: imageName,
-        score: score,
-        analysisChart: analysisChart,
-        analysisText: analysisText,
-        isPublic: true, // 타임어택 결과는 기본적으로 공개
-        photoType: "timeattack", // 타임어택용 사진 타입
-      });
-
-      console.log("사진 저장 성공:", saveResponse);
-
-      // 3. 타임어택 결과 저장 API 호출
-      const saveTimeAttackResponse = await timeAttackApi.saveTimeAttackResult({
+      // 1. 타임어택 결과 저장 API 호출
+      const saveResponse = await timeAttackApi.saveTimeAttackResult({
         imageName: imageName,
         topic: topic,
         score: score,
       });
 
-      console.log("타임어택 결과 저장 성공:", saveTimeAttackResponse);
+      console.log("타임어택 결과 저장 성공:", saveResponse);
+
+      // 2. 응답 성공 후 랭킹 데이터 조회 API 호출 (1페이지)
+      const rankingResponse = await timeAttackApi.getRanking(1);
+      console.log("랭킹 데이터 조회 성공:", rankingResponse.data);
+
+      // 3. 가져온 랭킹 데이터를 스토어에 저장
+      const rankingData = rankingResponse.data.data;
+      if (rankingData && rankingData.ranking) {
+        setRankings(rankingData.ranking);
+        setTotalPages(1, rankingData.totalPage || 1);
+        setTimeframe("all"); // 기본 시간 프레임 설정
+      }
 
       // 4. 랭킹 페이지로 이동
       navigate("/ranking");
     } catch (error) {
-      console.error("결과 저장 실패:", error);
+      console.error("결과 저장 또는 랭킹 조회 실패:", error);
       setErrorMessage("결과 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
     } finally {
       setIsSaving(false);

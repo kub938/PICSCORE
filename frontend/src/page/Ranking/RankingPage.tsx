@@ -6,6 +6,7 @@ import RankingList from "./components/RankingList";
 import Pagination from "./components/Pagination";
 import { TimeFrame } from "../../types";
 import { rankingApi, RankingUser } from "../../api/rankingApi";
+import { timeAttackApi } from "../../api/timeAttackApi";
 
 // Import medal images
 import goldTrophy from "../../assets/gold.png";
@@ -21,27 +22,26 @@ const RankingPage: React.FC = () => {
   const [timeframe, setTimeframe] = useState<TimeFrame>("all"); // 나중에 필터 기능 추가될 경우 사용
 
   useEffect(() => {
-    fetchRankings();
-  }, [currentPage]);
+    const fetchRankings = async () => {
+      setIsLoading(true);
+      try {
+        const response = await timeAttackApi.getRanking(currentPage + 1);
+        const data = response.data.data;
 
-  const fetchRankings = async (): Promise<void> => {
-    setIsLoading(true);
-    try {
-      const response = await rankingApi.getRanking(currentPage);
-      const data = response.data.data;
-
-      // 랭킹 데이터 설정
-      if (data && data.ranking) {
-        setRankings(data.ranking);
-        setTotalPages(data.totalPage || 1);
+        // 랭킹 데이터 설정
+        if (data && data.ranking) {
+          setRankings(data.ranking);
+          setTotalPages(data.totalPage || 1);
+        }
+      } catch (error) {
+        console.error("랭킹 데이터 가져오기 실패:", error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("랭킹 데이터 가져오기 실패:", error);
-      // 에러 처리: 빈 배열 또는 에러 메시지 표시
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+
+    fetchRankings();
+  }, [currentPage]); // 페이지 변경시에도 데이터 다시 로드
 
   const handleNextPage = (): void => {
     if (currentPage < totalPages) {
