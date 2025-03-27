@@ -140,11 +140,9 @@ public class TimeAttackService {
                     .filter(tag -> tag.getName().toLowerCase().contains(request.getTopic().toLowerCase()))
                     .max(Comparator.comparing(AnalysisPhotoResponse::getConfidence))
                     .orElseGet(() -> {
-                        // 일치하는 태그가 없는 경우 가장 낮은 신뢰도의 태그 선택
-                        AnalysisPhotoResponse lowestConfidence = analysisResults.stream()
-                                .min(Comparator.comparing(AnalysisPhotoResponse::getConfidence))
-                                .orElse(new AnalysisPhotoResponse("일치 항목 없음", 0.0f));
-                        return new AnalysisPhotoResponse("일치 항목 없음", lowestConfidence.getConfidence());
+                        // 랜덤한 값(0.00 ~ 0.20) 생성
+                        float randomConfidence = new Random().nextFloat() * 0.20f;
+                        return new AnalysisPhotoResponse("일치 항목 없음", randomConfidence);
                     });
 
             return ResponseEntity.ok(BaseResponse.success("이미지 분석 성공", result));

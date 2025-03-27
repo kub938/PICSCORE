@@ -308,12 +308,19 @@ public class UserService {
      */
     public ResponseEntity<BaseResponse<GetUserStaticResponse>> getUserStatic(Long userId) {
         Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
-
         float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
-        int minRank = stats.get("minRank") != null ? ((Number) stats.get("minRank")).intValue() : 0;
+
+        List<TimeAttack> timeAttackList = timeAttackRepository.findHighestScoresAllUser();
+        int rank = 0;
+        for (int i = 0; i < timeAttackList.size(); i++) {
+            if (timeAttackList.get(i).getUser().getId().equals(userId)) {
+                rank = i + 1; // 등수는 1부터 시작
+                break;
+            }
+        }
 
         GetUserStaticResponse response = new GetUserStaticResponse(
-                avgScore, minRank
+                avgScore, rank
         );
 
         return ResponseEntity.ok(BaseResponse.success("유저의 통계 조회 성공", response));
