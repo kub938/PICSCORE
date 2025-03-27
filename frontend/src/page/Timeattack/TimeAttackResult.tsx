@@ -42,9 +42,25 @@ const TimeAttackResult: React.FC = () => {
         .then((response) => {
           const rankingData = response.data.data;
           if (rankingData && rankingData.ranking) {
-            // 가져온 랭킹 중에서 현재 사용자의 위치 추정
-            const userRank = Math.floor(Math.random() * 5) + 1; // 임시로 랜덤 순위 사용
-            setCurrentRanking(userRank);
+            // 현재 사용자 ID 가져오기 (Zustand 등에서 가져오는 방식으로 수정 필요)
+            const userId = localStorage.getItem("userId") || "currentUser";
+
+            // 사용자 ID로 랭킹 찾기
+            const userRanking = rankingData.ranking.find(
+              (user) => user.userId.toString() === userId
+            );
+
+            if (userRanking) {
+              // 실제 랭킹 정보 사용
+              setCurrentRanking(userRanking.rank);
+            } else {
+              // 랭킹에 사용자가 없으면 마지막 랭킹 + 1 또는 기본값 설정
+              const lastRank =
+                rankingData.ranking.length > 0
+                  ? rankingData.ranking[rankingData.ranking.length - 1].rank + 1
+                  : 1;
+              setCurrentRanking(lastRank);
+            }
           }
         })
         .catch((error) => {
@@ -125,6 +141,7 @@ const TimeAttackResult: React.FC = () => {
             localResult.message || "제한 시간 내에 사진을 제출하지 못했습니다."
           }
           topic={localResult.topic}
+          translatedTopic={localResult.translatedTopic}
           onTryAgain={handleTryAgain}
         />
       </Container>
@@ -157,6 +174,10 @@ const TimeAttackResult: React.FC = () => {
               analysisData={localResult.analysisData}
               image={localResult.image || null}
               topic={localResult.topic || ""}
+              translatedTopic={localResult.translatedTopic}
+              imageName={
+                localResult.imageName || `timeattack_${Date.now()}.jpg`
+              }
               ranking={currentRanking || localResult.ranking || 0}
               onTryAgain={handleTryAgain}
             />

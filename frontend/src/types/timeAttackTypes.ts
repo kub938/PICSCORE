@@ -144,3 +144,18 @@ export interface SaveTimeAttackRequest {
   topic: string;
   score: number;
 }
+
+// TimeAttack 결과 데이터 인터페이스 (컴포넌트용)
+export interface TimeAttackResultData {
+  score?: number;
+  topicAccuracy?: number;
+  analysisData?: AnalysisData;
+  image?: string | null;
+  topic?: string;
+  translatedTopic?: string; // 한글 번역된 주제
+  imageName?: string; // 이미지 파일 이름
+  ranking?: number;
+  success: boolean;
+  message?: string;
+  xpEarned?: number;
+}
