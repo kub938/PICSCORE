@@ -250,9 +250,13 @@ public class UserService {
         }
 
         String existingProfileImageUrl = userRepository.findProfileImageByUserId(userId);
-        photoService.deleteProfileFile(existingProfileImageUrl);
+        String profileImageUrl = existingProfileImageUrl; // 기본적으로 기존 이미지 유지
 
-        String profileImageUrl = photoService.uploadProfileFile(request.getProfileImageFile());
+        // 새 프로필 이미지가 들어왔을 때만 업데이트
+        if (request.getProfileImageFile() != null && !request.getProfileImageFile().isEmpty()) {
+            photoService.deleteProfileFile(existingProfileImageUrl); // 기존 이미지 삭제
+            profileImageUrl = photoService.uploadProfileFile(request.getProfileImageFile());
+        }
 
         String userKey = "refresh:" + userId;
 
