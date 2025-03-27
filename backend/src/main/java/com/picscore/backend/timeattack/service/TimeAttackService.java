@@ -195,8 +195,10 @@ public class TimeAttackService {
         );
         timeAttackRepository.save(timeAttack);
 
-        int plusExperience = (int) (request.getScore() * 10);
+        int experience = userRepository.findExperienceByUserId(userId);
+        int plusExperience = experience + (int) (request.getScore() * 10);
         user.updateExperience(plusExperience);
+        user.updateLevel(plusExperience);
         userRepository.save(user);
 
         return ResponseEntity.ok(BaseResponse.success("타임어택 저장 완료", HttpStatus.CREATED));

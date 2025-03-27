@@ -51,13 +51,29 @@ public class User extends BaseEntity {
         this.experience = experience;
     }
 
-    public void updateExperience(int experience) {
-        this.experience += experience;
-    }
-
     public void updateProfile(String nickName, String profileImage, String message) {
         this.nickName = nickName;
         this.profileImage = profileImage;
         this.message = message;
     }
+
+    public void updateExperience(int experience) {
+        this.experience = experience;
+    }
+
+    public void updateLevel(int experience) {
+        int level = 0;  // 기본 레벨
+
+        // 경험치를 기반으로 레벨 계산
+        int threshold = 1000;  // 첫 번째 레벨 기준 경험치
+        int increment = 500;   // 레벨 증가 간격
+
+        while (experience >= threshold) {
+            level++;
+            threshold += increment;  // 다음 레벨 기준 증가
+        }
+
+        this.level = level;
+    }
+
 }
