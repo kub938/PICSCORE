@@ -137,7 +137,7 @@ public class TimeAttackService {
             // API 응답에서 태그 정보 추출 및 변환
             List<AnalysisPhotoResponse> analysisResults = response.getBody().getTags().stream()
                     .map(tag -> new AnalysisPhotoResponse(
-                            tag.getName(), tag.getConfidence(), tag.getConfidence() * adjustedTime))
+                            tag.getName(), tag.getConfidence(), tag.getConfidence() * 0.7f + adjustedTime * 0.3f))
                     .collect(Collectors.toList());
 
             // 요청된 주제와 일치하는 태그 중 가장 높은 신뢰도를 가진 태그 선택
@@ -147,7 +147,7 @@ public class TimeAttackService {
                     .orElseGet(() -> {
                         // 랜덤한 값(0.00 ~ 0.20) 생성
                         float randomConfidence = new Random().nextFloat() * 0.20f;
-                        return new AnalysisPhotoResponse("일치 항목 없음", randomConfidence, randomConfidence * adjustedTime);
+                        return new AnalysisPhotoResponse("일치 항목 없음", randomConfidence, randomConfidence * 0.7f + adjustedTime * 0.3f);
                     });
 
             return ResponseEntity.ok(BaseResponse.success("이미지 분석 성공", result));
