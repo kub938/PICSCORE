@@ -4,11 +4,18 @@ import { boardApi, Photo } from "../api/boardApi";
 export const useGetPhotos = () => {
   return useInfiniteQuery({
     queryKey: ["photos"],
-    queryFn: ({ pageParam }) => {
+    queryFn: async ({ pageParam }) => {
+      await new Promise((resolve) => setTimeout(resolve, 1800));
+
       const response = boardApi.getPhotos(pageParam);
       return response;
     },
     getNextPageParam: (last) => {
+      console.log(
+        "다음 페이지 확인할게요",
+        last.data.data.currentPage,
+        last.data.data.totalPages
+      );
       if (last.data.data.currentPage < last.data.data.totalPages) {
         return last.data.data.currentPage + 1;
       }
