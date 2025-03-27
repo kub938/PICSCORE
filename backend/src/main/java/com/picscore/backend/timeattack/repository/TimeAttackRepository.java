@@ -15,8 +15,7 @@ public interface TimeAttackRepository extends JpaRepository<TimeAttack, Long> {
     List<TimeAttack> findByUserId(Long userId);
 
     @Query("SELECT " +
-            "AVG(t.score) as avgScore, " +
-            "MIN(t.ranking) as minRank " +
+            "AVG(t.score) as avgScore " +
             "FROM TimeAttack t " +
             "WHERE t.user.id = :userId")
     Map<String, Object> calculateStats(@Param("userId") Long userId);
@@ -33,6 +32,18 @@ public interface TimeAttackRepository extends JpaRepository<TimeAttack, Long> {
         """,
             countQuery = "SELECT COUNT(DISTINCT t.user) FROM TimeAttack t")
     Page<TimeAttack> findHighestScoresPerUser(Pageable pageable);
+
+    @Query(value = """
+        SELECT t FROM TimeAttack t
+        WHERE t.score = (
+            SELECT MAX(t2.score) FROM TimeAttack t2 WHERE t2.user = t.user
+        )
+        AND t.createdAt = (
+            SELECT MAX(t3.createdAt) FROM TimeAttack t3 WHERE t3.user = t.user AND t3.score = t.score
+        )
+        ORDER BY t.score DESC, t.createdAt DESC
+    """)
+    List<TimeAttack> findHighestScoresAllUser();
 
 
 
