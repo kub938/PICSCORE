@@ -1,42 +1,124 @@
 import { api, testApi } from "./api";
+import { useAuthStore } from "../store/authStore";
+import axios from "axios";
 
-// Follower/Following interfaces
-interface FollowerResponse {
+// 응답 인터페이스
+interface BaseResponse<T> {
+  timeStamp: string;
+  message: string;
+  data: T;
+}
+
+// 팔로우 사용자 정보 인터페이스
+export interface FollowerUser {
   userId: number;
   profileImage: string;
   nickName: string;
   isFollowing: boolean;
 }
 
-interface FollowingResponse {
+// 팔로잉 사용자 정보 인터페이스
+export interface FollowingUser {
   userId: number;
   profileImage: string;
   nickName: string;
 }
 
+// 팔로우 토글 요청 인터페이스
+interface ToggleFollowRequest {
+  followingId: number;
+}
+
 export const friendApi = {
-  // Follower/Following endpoints
+  // 내 팔로워 목록 조회
   getMyFollowers: () => {
-    return testApi.get<FollowerResponse[]>("/api/v1/user/follower/me");
+    const accessToken = useAuthStore.getState().accessToken;
+    return testApi.get<BaseResponse<FollowerUser[]>>(
+      "/api/v1/user/follower/me",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
   },
 
+  // 내 팔로잉 목록 조회
   getMyFollowings: () => {
-    return testApi.get<FollowingResponse[]>("/api/v1/user/following/me");
+    const accessToken = useAuthStore.getState().accessToken;
+    return testApi.get<BaseResponse<FollowingUser[]>>(
+      "/api/v1/user/following/me",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
   },
 
-  //   getUserFollowers: (userId: number) => {
-  //     return api.get<FollowerResponse[]>(`/api/v1/user/follower/${userId}`);
-  //   },
+  // 특정 사용자의 팔로워 목록 조회
+  getUserFollowers: (userId: number) => {
+    const accessToken = useAuthStore.getState().accessToken;
+    return testApi.get<BaseResponse<FollowerUser[]>>(
+      `/api/v1/user/follower/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+  },
 
-  //   getUserFollowings: (userId: number) => {
-  //     return api.get<FollowingResponse[]>(`/api/v1/user/following/${userId}`);
-  //   },
+  // 특정 사용자의 팔로잉 목록 조회
+  getUserFollowings: (userId: number) => {
+    const accessToken = useAuthStore.getState().accessToken;
+    return testApi.get<BaseResponse<FollowingUser[]>>(
+      `/api/v1/user/following/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+  },
 
-  //   toggleFollow: (followingId: number) => {
-  //     return api.post<void>("/api/v1/user/following/me", { followingId });
-  //   },
+  // 팔로우/언팔로우 토글
+  toggleFollow: async (followingId: number) => {
+    try {
+      const accessToken = useAuthStore.getState().accessToken;
+      const data: ToggleFollowRequest = { followingId };
 
-  //   deleteFollower: (userId: number) => {
-  //     return api.delete<void>(`/api/v1/user/follower/${userId}`);
-  //   },
+      // API 서버 기본 URL
+      const baseURL = "https://j12b104.p.ssafy.io";
+
+      // axios를 직접 사용하여 요청
+      const response = await axios({
+        method: "post",
+        url: `${baseURL}/api/v1/user/following/me`,
+        data: data,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      return response;
+    } catch (error) {
+      console.error("팔로잉 토글 에러:", error);
+      throw error;
+    }
+  },
+
+  // 팔로워 삭제 (차단)
+  deleteFollower: (userId: number) => {
+    const accessToken = useAuthStore.getState().accessToken;
+    return testApi.delete<BaseResponse<void>>(
+      `/api/v1/user/follower/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+  },
 };
