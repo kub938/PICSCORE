@@ -1,13 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
-import { boardApi } from "../api/boardApi";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { boardApi, Photo } from "../api/boardApi";
 
 export const useGetPhotos = () => {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["photos"],
-    queryFn: async () => {
-      const response = await boardApi.getPhotos();
-      console.log(response.data);
+    queryFn: ({ pageParam }) => {
+      const response = boardApi.getPhotos(pageParam);
       return response;
     },
+    getNextPageParam: (last) => {
+      if (last.data.data.currentPage < last.data.data.totalPages) {
+        return last.data.data.currentPage + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
   });
 };
