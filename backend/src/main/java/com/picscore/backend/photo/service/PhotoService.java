@@ -231,6 +231,7 @@ public class PhotoService {
         // 응답 데이터 구성
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("totalPages", photoPage.getTotalPages());
+        responseData.put("currentPage", pageNum);
         responseData.put("photos", photoResponses);
 
         // 응답 반환
