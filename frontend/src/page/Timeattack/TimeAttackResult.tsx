@@ -1,20 +1,23 @@
+// page/Timeattack/TimeAttackResult.tsx
 import React, { useEffect, useState, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTimeAttackStore } from "../../store/timeAttackStore";
 import trophyVideo from "../../assets/trophy.mp4";
 
 // 컴포넌트 임포트
 import Container from "./components/Container";
-import Header from "./components/Header";
 import LoadingState from "./components/LoadingState";
 import FailureResult from "./components/FailureResult";
 import SuccessResult from "./components/SuccessResult";
 import VideoAnimation from "./components/VideoAnimation";
 import { LocationState } from "../../types";
 import { TimeAttackResultData } from "../../types";
+import { timeAttackApi } from "../../api/timeAttackApi";
 
 const TimeAttackResult: React.FC = () => {
   const location = useLocation() as LocationState;
+  const navigate = useNavigate();
+
   // Zustand 상태 사용
   const result = useTimeAttackStore((state) => state.result);
 
@@ -24,10 +27,47 @@ const TimeAttackResult: React.FC = () => {
   const [showVideo, setShowVideo] = useState<boolean>(true);
   const [showXpGained, setShowXpGained] = useState<boolean>(false);
   const [showTotalXp, setShowTotalXp] = useState<boolean>(false);
+  const [currentRanking, setCurrentRanking] = useState<number | null>(null);
 
   const videoTimerRef = useRef<number | null>(null);
   const xpGainedTimerRef = useRef<number | null>(null);
   const totalXpTimerRef = useRef<number | null>(null);
+
+  // 랭킹 데이터 가져오기
+  useEffect(() => {
+    if (location.state?.result?.success === true) {
+      // 랭킹 데이터 가져오기 (1페이지)
+      timeAttackApi
+        .getRanking(1)
+        .then((response) => {
+          const rankingData = response.data.data;
+          if (rankingData && rankingData.ranking) {
+            // 현재 사용자 ID 가져오기 (Zustand 등에서 가져오는 방식으로 수정 필요)
+            const userId = localStorage.getItem("userId") || "currentUser";
+
+            // 사용자 ID로 랭킹 찾기
+            const userRanking = rankingData.ranking.find(
+              (user) => user.userId.toString() === userId
+            );
+
+            if (userRanking) {
+              // 실제 랭킹 정보 사용
+              setCurrentRanking(userRanking.rank);
+            } else {
+              // 랭킹에 사용자가 없으면 마지막 랭킹 + 1 또는 기본값 설정
+              const lastRank =
+                rankingData.ranking.length > 0
+                  ? rankingData.ranking[rankingData.ranking.length - 1].rank + 1
+                  : 1;
+              setCurrentRanking(lastRank);
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("랭킹 데이터 가져오기 실패:", error);
+        });
+    }
+  }, [location]);
 
   useEffect(() => {
     // Check if we have result data passed through location state
@@ -46,7 +86,7 @@ const TimeAttackResult: React.FC = () => {
         analysisData: result.analysisData,
         image: result.image,
         topic: result.topic,
-        ranking: result.ranking,
+        ranking: currentRanking || result.ranking,
         xpEarned: 97, // 가정
         success: result.score > 0, // 점수가 있으면 성공으로 간주
       });
@@ -76,11 +116,16 @@ const TimeAttackResult: React.FC = () => {
       if (xpGainedTimerRef.current) clearTimeout(xpGainedTimerRef.current);
       if (totalXpTimerRef.current) clearTimeout(totalXpTimerRef.current);
     };
-  }, [location, result]);
+  }, [location, result, currentRanking]);
 
   // Handle video ended event (as a backup if setTimeout fails)
   const handleVideoEnded = () => {
     setShowVideo(false);
+  };
+
+  // 다시 도전하기 버튼 핸들러
+  const handleTryAgain = () => {
+    navigate("/time-attack");
   };
 
   if (!localResult) {
@@ -91,12 +136,13 @@ const TimeAttackResult: React.FC = () => {
   if (localResult.success === false) {
     return (
       <Container>
-        <Header title="타임어택 결과" />
         <FailureResult
           message={
             localResult.message || "제한 시간 내에 사진을 제출하지 못했습니다."
           }
           topic={localResult.topic}
+          translatedTopic={localResult.translatedTopic}
+          onTryAgain={handleTryAgain}
         />
       </Container>
     );
@@ -118,7 +164,6 @@ const TimeAttackResult: React.FC = () => {
   // Original detailed result view after video ends (for successful submissions)
   return (
     <Container>
-      <Header title="타임어택 결과" />
       <main className="flex-1 p-4">
         {localResult.score &&
           localResult.topicAccuracy &&
@@ -129,7 +174,12 @@ const TimeAttackResult: React.FC = () => {
               analysisData={localResult.analysisData}
               image={localResult.image || null}
               topic={localResult.topic || ""}
-              ranking={localResult.ranking || 0}
+              translatedTopic={localResult.translatedTopic}
+              imageName={
+                localResult.imageName || `timeattack_${Date.now()}.jpg`
+              }
+              ranking={currentRanking || localResult.ranking || 0}
+              onTryAgain={handleTryAgain}
             />
           )}
       </main>

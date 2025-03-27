@@ -56,10 +56,51 @@ const Following: React.FC<FollowingProps> = ({
     refetch();
   }, [refetch]);
 
-  // 검색어로 필터링
-  const filteredData = followings.filter((user) =>
-    user.nickName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    fetchFollowings();
+  }, []);
+
+  // 검색어 변경 시 필터링
+  useEffect(() => {
+    if (searchQuery) {
+      const filtered = followings.filter((user) =>
+        user.nickName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredFollowings(filtered);
+    } else {
+      setFilteredFollowings(followings);
+    }
+  }, [searchQuery, followings]);
+
+  // 팔로우/언팔로우 토글
+  const handleToggleFollow = async (userId: number) => {
+    try {
+      await followApi.toggleFollow(userId);
+      // UI 상태 업데이트 (이 경우 팔로잉을 취소하면 목록에서 제거)
+      setFollowings((prev) => prev.filter((user) => user.userId !== userId));
+    } catch (error) {
+      console.error("팔로잉 상태 변경 실패:", error);
+    }
+  };
+
+  // 버튼 클릭 시 동작
+  const handleButtonClick = (user: FollowingUser) => {
+    setSelectedUserId(user.userId);
+    setShowModal(true);
+  };
+
+  // 모달 닫기
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedUserId(null);
+  };
+
+  // 모달에서 "팔로잉 취소" 버튼 클릭
+  const handleConfirmUnfollow = () => {
+    if (selectedUserId) {
+      handleToggleFollow(selectedUserId);
+    }
+    handleCloseModal();
+  };
 
   // 뒤로 가기
   const handleGoBack = () => {
@@ -102,10 +143,10 @@ const Following: React.FC<FollowingProps> = ({
           className="flex-1 py-3 text-center text-gray-500"
           onClick={goToFollower}
         >
-          {followerCount} 팔로워
+          팔로워
         </button>
         <button className="flex-1 py-3 text-center font-medium border-b-2 border-black">
-          {followingCount} 팔로우
+          {followings.length} 팔로우
         </button>
       </div>
 
@@ -173,18 +214,62 @@ const Following: React.FC<FollowingProps> = ({
                   console.log(`팔로잉 취소: ${user.userId}`);
                 }} // 버튼 클릭 시 동작
               >
-                팔로잉
+                <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
+                  <img
+                    src={user.profileImage || "/default-profile.jpg"}
+                    alt={`${user.nickName}의 프로필`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/default-profile.jpg";
+                    }}
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">{user.nickName}</p>
+                </div>
+                <button
+                  className="px-4 py-1.5 rounded-md text-sm font-medium bg-pic-primary text-white shadow-2xl"
+                  onClick={() => handleButtonClick(user)}
+                >
+                  팔로잉
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="p-4 text-center text-gray-500">
+              {searchQuery
+                ? "검색 결과가 없습니다."
+                : "팔로잉한 사용자가 없습니다."}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 모달 */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-80">
+            <p className="text-center font-bold text-lg mb-4">
+              팔로잉 취소하시겠습니까?
+            </p>
+            <div className="flex justify-around">
+              <button
+                className="px-4 py-2 bg-pic-primary text-white rounded-md"
+                onClick={handleConfirmUnfollow}
+              >
+                팔로잉 취소
+              </button>
+              <button
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md"
+                onClick={handleCloseModal}
+              >
+                취소
               </button>
             </div>
-          ))
-        ) : (
-          <div className="p-4 text-center text-gray-500">
-            {searchQuery
-              ? "검색 결과가 없습니다."
-              : "팔로잉한 사용자가 없습니다."}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

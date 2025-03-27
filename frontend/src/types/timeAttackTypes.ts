@@ -7,6 +7,14 @@ export interface TimeAttackState {
   selectedImageFile: File | null;
 }
 
+// 이미지 메타데이터 인터페이스
+export interface ImageMetadata {
+  captureTime: number;
+  originalSize: number;
+  processedSize: number;
+  topic: string;
+}
+
 // 분석 데이터 인터페이스
 export interface AnalysisData {
   composition: number;
@@ -61,6 +69,8 @@ export interface ExplanationStepProps {
 export interface FailureResultProps {
   message: string;
   topic?: string;
+  translatedTopic?: string;
+  onTryAgain?: () => void;
 }
 
 // 준비 단계 컴포넌트 속성 인터페이스
@@ -72,7 +82,9 @@ export interface PreparationStepProps {
 export interface PhotoUploadStepProps {
   timeLeft: number;
   challengeTopic: string;
+  translatedTopic: string;
   selectedImage: string | null;
+  isLoading: boolean;
   onImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onImageSubmit: () => void;
 }
@@ -84,7 +96,9 @@ export interface SuccessResultProps {
   analysisData: AnalysisData;
   image: string | null;
   topic: string;
+  translatedTopic?: string;
   ranking: number;
+  onTryAgain?: () => void;
 }
 
 // 비디오 애니메이션 컴포넌트 속성 인터페이스
@@ -94,4 +108,54 @@ export interface VideoAnimationProps {
   showXpGained: boolean;
   showTotalXp: boolean;
   onVideoEnd: () => void;
+}
+
+// 랭킹 사용자 정보 인터페이스
+export interface RankingUser {
+  userId: number;
+  nickName: string;
+  profileImage: string;
+  score: number;
+  rank: number;
+}
+
+// 타임어택 API 응답 인터페이스
+export interface TimeAttackApiResponse<T> {
+  timeStamp: string;
+  message: string;
+  data: T;
+}
+
+// 사진 분석 응답 인터페이스
+export interface AnalysisResponse {
+  name: string;
+  confidence: number;
+}
+
+// 랭킹 데이터 인터페이스
+export interface RankingData {
+  totalPage: number;
+  ranking: RankingUser[];
+}
+
+// 타임어택 결과 저장 요청 인터페이스
+export interface SaveTimeAttackRequest {
+  imageName: string;
+  topic: string;
+  score: number;
+}
+
+// TimeAttack 결과 데이터 인터페이스 (컴포넌트용)
+export interface TimeAttackResultData {
+  score?: number;
+  topicAccuracy?: number;
+  analysisData?: AnalysisData;
+  image?: string | null;
+  topic?: string;
+  translatedTopic?: string; // 한글 번역된 주제
+  imageName?: string; // 이미지 파일 이름
+  ranking?: number;
+  success: boolean;
+  message?: string;
+  xpEarned?: number;
 }
