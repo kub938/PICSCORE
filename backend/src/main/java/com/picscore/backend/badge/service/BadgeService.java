@@ -65,20 +65,30 @@ public class BadgeService {
             Long userId, TimeAttackScoreRequest request
     ) {
 
-        if (request.getScore() >= 90) {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+        boolean isObtain = userBadgeRepository.existsByUserIdAndBadgeId(userId, 7L);
 
-            Badge badge = badgeRepository.findById(1L)
-                    .orElseThrow(() -> new IllegalArgumentException("User not found with ID: 1"));
+        if (!isObtain) {
+            if (request.getScore() >= 90) {
+                User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
 
-            UserBadge userBadge = new UserBadge(user, badge);
-            userBadgeRepository.save(userBadge);
+                Badge badge = badgeRepository.findById(7L)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found with ID: 7"));
 
-            return ResponseEntity.ok(BaseResponse.withMessage("타임 어택 점수 뱃지 달성"));
+                UserBadge userBadge = new UserBadge(user, badge);
+                userBadgeRepository.save(userBadge);
+
+                return ResponseEntity.ok(BaseResponse.withMessage("타임 어택 점수 뱃지 달성"));
+            } else {
+                return ResponseEntity.ok(BaseResponse.withMessage("타임 어택 점수 뱃지 미달성"));
+            }
+        } else {
+            return ResponseEntity.ok(BaseResponse.withMessage("타임 어택 점수 뱃지 이미 달성"));
         }
 
-        return ResponseEntity.ok(BaseResponse.withMessage("타임 어택 점수 뱃지 미달성"));
+
+
+
     }
 }
 
