@@ -323,7 +323,6 @@ const RankingPage: React.FC = () => {
             alt={`${rank}등 트로피`}
             className="w-16 h-20 object-contain"
           />
-          <div className="text-center font-bold mt-1 text-xl">{rank}</div>
         </div>
         <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
           {user.profileImage ? (
@@ -466,7 +465,7 @@ const RankingPage: React.FC = () => {
         <div className="bg-gray-100 p-2.5 grid grid-cols-3 font-medium rounded-t-lg text-gray-700 border-b border-gray-200">
           <div className="text-left pl-1">순위</div>
           <div className="text-left -ml-2">프로필</div>
-          <div className="text-right pr-2">점수</div>
+          <div className="text-right pr-">점수</div>
         </div>
 
         {/* 로딩 상태 */}
