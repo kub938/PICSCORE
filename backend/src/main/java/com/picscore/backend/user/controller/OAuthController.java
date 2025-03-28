@@ -1,7 +1,6 @@
 package com.picscore.backend.user.controller;
 
 import com.picscore.backend.common.model.response.BaseResponse;
-import com.picscore.backend.user.model.response.ReissueResponse;
 import com.picscore.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

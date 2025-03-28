@@ -3,6 +3,7 @@ package com.picscore.backend.common.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picscore.backend.common.exeption.CustomException;
 import com.picscore.backend.common.model.response.BaseResponse;
+import com.picscore.backend.common.service.CustomHttpServletRequestWrapper;
 import com.picscore.backend.user.model.dto.CustomOAuth2User;
 import com.picscore.backend.user.model.dto.UserDto;
 import com.picscore.backend.user.service.OAuthService;
@@ -50,18 +51,19 @@ public class JWTFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        HttpServletRequest requestToUse = request;
         try {
             // 쿠키에서 액세스 토큰 추출
             String accessToken = null;
-            Cookie[] cookies = request.getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals("access")) {
-                        accessToken = cookie.getValue();
-                        break;
-                    }
-                }
-            }
+//            Cookie[] cookies = request.getCookies();
+//            if (cookies != null) {
+//                for (Cookie cookie : cookies) {
+//                    if (cookie.getName().equals("access")) {
+//                        accessToken = cookie.getValue();
+//                        break;
+//                    }
+//                }
+//            }
 
             // 개발 환경 임시 방편
             String authorizationHeader = request.getHeader("Authorization");
@@ -78,8 +80,22 @@ public class JWTFilter extends OncePerRequestFilter {
                 // 토큰 만료 검증
                 jwtUtil.isExpired(accessToken);
             } catch (ExpiredJwtException e) {
-                // 토큰 만료 시 재발급 처리
-                oAuthService.reissue(request, response);
+                try {
+                    // 토큰 만료 시 재발급 처리
+                    String newAccessToken = oAuthService.reissue(request, response);
+
+                    CustomHttpServletRequestWrapper updatedRequest = new CustomHttpServletRequestWrapper(request);
+                    updatedRequest.addHeader("Authorization", "Bearer " + newAccessToken); // 헤더 추가
+                    updatedRequest.updateCookie("access", newAccessToken); // 쿠키 업데이트
+                    accessToken = newAccessToken;
+                    requestToUse = updatedRequest; // 재발급된 경우 updatedRequest를 사용
+                } catch (CustomException ce) {
+                    // CustomException 처리
+                    response.setStatus(ce.getStatus().value());
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write(objectMapper.writeValueAsString(BaseResponse.error(ce.getMessage())));
+                    return; // 필터 체인 종료
+                }
             }
 
             // 토큰 카테고리 검증
@@ -115,7 +131,7 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(requestToUse, response);
     }
 }
 
