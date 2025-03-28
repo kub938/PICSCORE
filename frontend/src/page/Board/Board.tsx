@@ -3,6 +3,8 @@ import { useGetPhotos } from "../../hooks/useBoard";
 import { useInView } from "react-intersection-observer";
 import { useNavigate } from "react-router-dom";
 import { FadeLoader } from "react-spinners";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import SearchBar from "./components/SearchBar";
 
 function Board() {
   const navigate = useNavigate();
@@ -14,7 +16,6 @@ function Board() {
     hasNextPage,
     isFetchingNextPage,
   } = useGetPhotos();
-
   const photos = data?.pages.flatMap((page) => page.photos) || [];
   const totalPage = data?.pages[0].totalPages || 0;
 
@@ -42,9 +43,8 @@ function Board() {
 
   return (
     <div className="w-full h-screen flex flex-col">
-      <div className="sticky border-2 w-full h-15">
-        <input className="w-[95%] border m-3" />
-      </div>
+      <SearchBar />
+
       <div className="overflow-y-auto flex-1 mb-16">
         {Array.from({ length: totalPage * 8 }, (_, rowIndex) => (
           <div key={rowIndex} className="flex w-full ">
