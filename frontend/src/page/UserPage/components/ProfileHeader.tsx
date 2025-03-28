@@ -1,7 +1,6 @@
 // page/UserPage/components/ProfileHeader.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { achievementData } from "../../Archieve/achievementData";
 import { useAuthStore } from "../../../store/authStore";
 import { useLogout } from "../../../hooks/useUser";
 
@@ -26,17 +25,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
 
-  // 뱃지 아이콘 클릭 시 업적 페이지로 이동
-  const handleBadgeClick = () => {
-    // 선택 모드로 업적 페이지로 이동
-    navigate("/archieve", {
-      state: {
-        selectionMode: true,
-        currentBadgeId: profile.displayBadgeId,
-      },
-    });
-  };
-
   // 로그아웃 처리
   const logoutMutation = useLogout();
   const handleLogout = () => {
@@ -47,17 +35,10 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     });
   };
 
-  // 선택된 뱃지 정보 가져오기
-  const getSelectedBadge = () => {
-    if (!profile.displayBadgeId) return null;
-
-    // 모든 뱃지 중에서 선택된 뱃지 ID와 일치하는 뱃지 찾기
-    const allBadges =
-      achievementData.find((cat) => cat.id === "all")?.badges || [];
-    return allBadges.find((badge) => badge.id === profile.displayBadgeId);
+  // 업적 페이지로 이동
+  const handleAchievementClick = () => {
+    navigate("/archieve");
   };
-
-  const selectedBadge = getSelectedBadge();
 
   return (
     <div className="bg-pic-primary p-4 text-white">
@@ -103,37 +84,29 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <p className="text-sm text-white/80">{profile.statusMessage}</p>
         </div>
 
+        {/* 업적 버튼 */}
         {profile.isMyProfile && (
-          <div className="relative">
-            <div
-              className="bg-white text-pic-primary rounded p-1 absolute top-0 right-0 cursor-pointer"
-              onClick={handleBadgeClick}
+          <button
+            onClick={handleAchievementClick}
+            className="bg-white text-pic-primary px-2 py-1 rounded-md text-xs font-medium hover:bg-white/90 transition flex items-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-1"
             >
-              {selectedBadge ? (
-                <img
-                  src={selectedBadge.image}
-                  alt={selectedBadge.name}
-                  className="w-6 h-6 object-contain"
-                />
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-              )}
-            </div>
-          </div>
+              <circle cx="12" cy="8" r="7"></circle>
+              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+            </svg>
+            업적
+          </button>
         )}
       </div>
 

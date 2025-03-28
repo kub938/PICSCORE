@@ -1,4 +1,4 @@
-// 랭킹 사용자 인터페이스
+// 랭킹 사용자 인터페이스 (랭킹 페이지에서 사용)
 export interface RankingUser {
   rank: number;
   userId: string;

@@ -14,25 +14,26 @@ import { timeAttackApi } from "../../api/timeAttackApi";
 
 // 타임어택 주제 목록 (실제 환경에서는 서버에서 가져올 수 있음)
 const INDOOR_TOPICS = [
-  "book",
+  // "book",
   "cup",
-  "chair",
-  "clock",
-  "computer",
-  "food",
-  "plant",
-  "table",
+  // "chair",
+  // "clock",
+  // "computer",
+  // "food",
+  // "plant",
+  // "table",
+  // "coffee",
 ];
 
 const OUTDOOR_TOPICS = [
   "dog",
-  "cat",
-  "flower",
-  "car",
-  "tree",
-  "mountain",
-  "sky",
-  "building",
+  // "cat",
+  // "flower",
+  // "car",
+  // "tree",
+  // "mountain",
+  // "sky",
+  // "building",
 ];
 
 // 주제 영어-한글 매핑
@@ -53,6 +54,7 @@ const TOPIC_TRANSLATIONS: Record<string, string> = {
   plant: "식물",
   table: "테이블",
   building: "건물",
+  coffee: "커피",
 };
 
 const translateTopic = (englishTopic: string): string => {

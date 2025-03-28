@@ -18,17 +18,17 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
   onCategoryChange,
 }) => {
   return (
-    <div className="mb-4 overflow-x-auto">
-      <div className="flex space-x-2 min-w-max pb-2">
+    <div className="overflow-x-auto hide-scrollbar">
+      <div className="flex space-x-2 min-w-max pb-1 px-1">
         {categories.map((category) => (
           <button
             key={category.id}
             onClick={() => onCategoryChange(category.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
+            className={`px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 shadow-sm ${
               activeCategory === category.id
-                ? "bg-pic-primary text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            } transition-colors duration-200`}
+                ? "bg-pic-primary text-white shadow"
+                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+            }`}
           >
             {category.name}
           </button>

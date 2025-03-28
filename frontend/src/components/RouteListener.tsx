@@ -42,6 +42,21 @@ const routeLayouts: { [key: string]: LayoutConfig } = {
     showBottomBar: true,
     content: "게시글",
   },
+  "/mypage": {
+    showNavBar: true,
+    showBottomBar: true,
+    content: "환영합니다",
+  },
+  "/ranking": {
+    showNavBar: true,
+    showBottomBar: true,
+    content: "랭킹",
+  },
+  "/archieve": {
+    showNavBar: true,
+    showBottomBar: false,
+    content: "업적",
+  },
 };
 
 function RouteListener() {
