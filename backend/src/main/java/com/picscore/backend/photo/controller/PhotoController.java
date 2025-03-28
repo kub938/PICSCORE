@@ -78,12 +78,12 @@ public class PhotoController {
     /**
      * 특정 해시태그로 사진을 검색하는 엔드포인트
      *
-     * @param request 검색 요청 객체 (해시태그 키워드 포함)
+     * @param keyword 검색 요청 객체 (해시태그 키워드 포함)
      * @return ResponseEntity<BaseResponse<List<GetPhotosResponse>>> 검색된 사진 목록 응답
      */
     @GetMapping("/photo/search")
-    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> searchPhotosByHashtag(@RequestBody SearchPhotoRequest request) {
-        return photoService.searchPhotosByHashtag(request.getKeyword());
+    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> searchPhotosByHashtag(@RequestParam String keyword) {
+        return photoService.searchPhotosByHashtag(keyword);
     }
 
 
