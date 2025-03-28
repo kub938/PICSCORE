@@ -38,6 +38,7 @@ export interface UserPageProps {
 export interface FollowerStatsProps {
   followerCount: number;
   followingCount: number;
+  userId?: string | null; // 추가: 다른 사용자의 ID (null일 경우 내 프로필)
 }
 
 // 프로필 헤더 속성 인터페이스

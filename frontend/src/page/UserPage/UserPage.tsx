@@ -220,6 +220,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
       <FollowerStats
         followerCount={profile.followerCount}
         followingCount={profile.followingCount}
+        userId={userId} // 다른 사용자의 ID 전달 (내 프로필이면 null)
       />
 
       {profile.isMyProfile || profile.isFollowing ? (
