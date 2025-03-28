@@ -55,7 +55,7 @@ public class PhotoController {
     public ResponseEntity<BaseResponse<HttpStatus>> uploadFile(HttpServletRequest request,
                                                                @RequestBody UploadPhotoRequest payload) {
 
-        System.out.println("payload = " + payload);
+        System.out.println("hashTag = " + payload.getHashTag());
         // 토큰에서 사용자 정보 추출
         Long userId = oAuthService.findIdByNickName(request);
         if (userId == null) {

@@ -57,9 +57,7 @@ public class PhotoService {
      * @return ResponseEntity<BaseResponse<HttpStatus>> 저장 결과
      */
     public ResponseEntity<BaseResponse<HttpStatus>> savePhoto(Long userId, String imageName, Float score,
-                                                              Map<String, Integer> analysisChart, Map<String, List<String>> analysisText, Boolean isPublic, String photoType) {
-        System.out.println("userId = " + userId);
-        
+                                                              Map<String, Integer> analysisChart, Map<String, String> analysisText, Boolean isPublic, String photoType) {
         String tempFolder = "temp/";
         String permanentFolder = "permanent/";
         // S3에서 임시 폴더에서 영구 폴더로 이미지 이동
@@ -93,14 +91,7 @@ public class PhotoService {
         // ✅ analysisText가 null이면 빈 Map으로 초기화
         if (analysisText == null) {
             photo.setAnalysisText(new HashMap<>());
-        } else {
-            // ✅ 각 List<String>이 null이면 빈 리스트로 초기화
-            analysisText.forEach((key, value) -> {
-                if (value == null) {
-                    analysisText.put(key, new ArrayList<>()); // 빈 리스트로 초기화
-            }
-            });
-                photo.setAnalysisText(analysisText);
+        } else {photo.setAnalysisText(analysisText);
         }
         photoRepository.save(photo);
         return ResponseEntity.ok(BaseResponse.success("사진 업로드 완료", HttpStatus.CREATED));
