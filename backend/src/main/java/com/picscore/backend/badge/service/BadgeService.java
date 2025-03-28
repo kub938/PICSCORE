@@ -65,15 +65,14 @@ public class BadgeService {
             Long userId, TimeAttackScoreRequest request
     ) {
 
-        boolean isObtain = userBadgeRepository.existsByUserIdAndBadgeId(userId, 7L);
+        Badge badge = badgeRepository.findByName("badge7")
+                .orElseThrow(() -> new IllegalArgumentException("User not found with name: badge7"));
+        boolean isObtain = userBadgeRepository.existsByUserIdAndBadgeId(userId, badge.getId());
 
         if (!isObtain) {
             if (request.getScore() >= 90) {
                 User user = userRepository.findById(userId)
                         .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
-
-                Badge badge = badgeRepository.findById(7L)
-                        .orElseThrow(() -> new IllegalArgumentException("User not found with ID: 7"));
 
                 UserBadge userBadge = new UserBadge(user, badge);
                 userBadgeRepository.save(userBadge);
