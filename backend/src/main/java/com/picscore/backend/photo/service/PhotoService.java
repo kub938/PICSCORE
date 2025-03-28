@@ -2,6 +2,7 @@ package com.picscore.backend.photo.service;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.photo.model.entity.Photo;
+import com.picscore.backend.photo.model.entity.PhotoLike;
 import com.picscore.backend.photo.model.response.GetPhotoDetailResponse;
 import com.picscore.backend.photo.model.response.GetPhotoTop5Response;
 import com.picscore.backend.photo.model.response.GetPhotosResponse;
@@ -9,6 +10,7 @@ import com.picscore.backend.photo.repository.PhotoHashtagRepository;
 import com.picscore.backend.photo.repository.PhotoLikeRepository;
 import com.picscore.backend.photo.repository.PhotoRepository;
 import com.picscore.backend.photo.model.response.UploadPhotoResponse;
+import com.picscore.backend.user.model.entity.Follow;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -502,6 +504,30 @@ public class PhotoService {
                 folder,
                 fileName);
     }
+
+
+    public Boolean toggleLike(Long userId, Long photoId) {
+
+        Photo photo = photoRepository.findById(photoId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + photoId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID; " + userId));
+
+        Optional<PhotoLike> existPhotoLike = photoLikeRepository.findByPhotoIdAndUserId(photoId, userId);
+
+        if (existPhotoLike.isPresent()) {
+            // 기존 팔로우 관계가 있으면 삭제
+            photoLikeRepository.delete(existPhotoLike.get());
+            return false;
+        } else {
+            PhotoLike photoLike = new PhotoLike(
+                    photo, user
+            );
+            photoLikeRepository.save(photoLike);
+        }
+        return true;
+    }
+
 }
 
 

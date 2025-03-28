@@ -195,6 +195,26 @@ public class PhotoController {
                 .body(resource);
     }
 
+
+    @PostMapping("/photo/like/{photoId}")
+    public ResponseEntity<BaseResponse<Void>> toggleLike(
+            HttpServletRequest request, @PathVariable Long photoId
+    ) {
+
+        Long userId = oAuthService.findIdByNickName(request);
+
+        Boolean like = photoService.toggleLike(userId, photoId);
+
+        // 결과에 따른 응답 메시지 생성
+        BaseResponse<Void> baseResponse = like ?
+                BaseResponse.withMessage("사진 좋아요 완료") :
+                BaseResponse.withMessage("사진 좋아요 취소 완료");
+
+        // 응답 반환
+        return ResponseEntity.ok(baseResponse);
+    }
+
+
     @GetMapping("/list")
     public ResponseEntity<List<String>> listFiles() {
         return ResponseEntity.ok(photoService.listFiles());
