@@ -44,7 +44,7 @@ function Home() {
   /* 테스트 로직 */
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
-
+  const setUserId = useAuthStore((state) => state.setUserId);
   const useUserData = () => {
     const accessToken = useAuthStore((state) => state.accessToken);
 
@@ -74,14 +74,17 @@ function Home() {
     });
   };
 
-  const { isLoading, isError } = useUserData();
+  const { isLoading, isError, data } = useUserData();
+
   if (isLoading) {
     return <>로딩중 입니다</>;
   }
   if (isError) {
     return <>에러입니다</>;
   }
-
+  if (data) {
+    setUserId(data.data.userId);
+  }
   return (
     <>
       <div className="flex flex-col w-full items-center">
