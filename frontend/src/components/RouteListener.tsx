@@ -45,7 +45,7 @@ const routeLayouts: { [key: string]: LayoutConfig } = {
   "/mypage": {
     showNavBar: true,
     showBottomBar: true,
-    content: "환영합니다",
+    content: "마이페이지",
   },
   "/ranking": {
     showNavBar: true,

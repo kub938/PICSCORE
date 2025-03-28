@@ -8,6 +8,70 @@ import BadgeGrid from "./components/BadgeGrid";
 import ProgressBar from "./components/ProgressBar";
 import CategoryTabs from "./components/CategoryTabs";
 
+const BADGE_NAME_MAPPING: Record<string, string> = {
+  // 소셜 관련 배지
+  badge1: "첫 팔로워",
+  badge2: "인기 크리에이터",
+  badge11: "인기 콘텐츠",
+
+  // 평가 관련 배지
+  badge3: "첫 사진 평가",
+  badge4: "평가 마스터",
+  badge9: "고품질 사진작가",
+
+  // 게시글 관련 배지
+  badge5: "첫 게시글",
+  badge6: "콘텐츠 크리에이터",
+
+  // 타임어택 관련 배지
+  badge7: "첫 타임어택",
+  badge8: "타임어택 중독자",
+  badge10: "타임어택 챔피언",
+
+  // 마스터 배지
+  badge12: "업적 마스터",
+};
+
+// 배지 설명 매핑 객체 (필요한 경우)
+const BADGE_DESCRIPTION_MAPPING: Record<string, string> = {
+  badge1: "첫 번째 팔로워를 얻었습니다.",
+  badge2: "30명 이상의 팔로워를 달성했습니다.",
+  badge3: "첫 번째 사진 평가를 완료했습니다.",
+  badge4: "30회 이상의 사진 평가를 완료했습니다.",
+  badge5: "첫 번째 게시글을 작성했습니다.",
+  badge6: "20개 이상의 게시글을 작성했습니다.",
+  badge7: "첫 번째 타임어택에 참여했습니다.",
+  badge8: "20회 이상의 타임어택에 참여했습니다.",
+  badge9: "사진 평가에서 77점 이상을 달성했습니다.",
+  badge10: "타임어택에서 1위를 달성했습니다.",
+  badge11: "게시글이 좋아요 10개를 달성했습니다.",
+  badge12: "모든 업적을 달성했습니다.",
+};
+
+// API 응답을 배지 객체로 변환하는 함수 수정
+const formatBadgeFromApi = (apiData: ApiBadge): Badge => {
+  const badgeId = apiData.badgeId.toString();
+  const isAchieved = apiData.obtain === true;
+
+  // 이름 매핑 적용 (API에서 받은 이름 또는 매핑된 이름)
+  const displayName = BADGE_NAME_MAPPING[apiData.name] || apiData.name;
+
+  // 설명 매핑 적용 (API에서 받은 설명 또는 매핑된 설명)
+  const displayDescription =
+    BADGE_DESCRIPTION_MAPPING[apiData.name] || apiData.obtainCondition;
+
+  return {
+    id: badgeId,
+    name: displayName,
+    description: displayDescription,
+    image: apiData.image,
+    achieved: isAchieved,
+    achievedDate: isAchieved
+      ? new Date().toISOString().split("T")[0]
+      : undefined,
+  };
+};
+
 // 배지 타입 정의
 interface Badge {
   id: string;
@@ -109,39 +173,8 @@ const AchievementPage: React.FC = () => {
         if (response.data?.data && Array.isArray(response.data.data)) {
           const apiBadges: ApiBadge[] = response.data.data;
 
-          // 디버깅: 각 배지 정보 로그 출력 (특히 7번 배지 확인)
-          apiBadges.forEach((badge: any) => {
-            console.log(
-              `배지 ID: ${badge.badgeId}, 이름: ${badge.name}, 달성 여부: ${badge.obtain}`
-            );
-            if (badge.badgeId === 7) {
-              console.log("7번 배지(타임어택) 정보:", badge);
-            }
-          });
-
-          // API 응답에서 배지 정보 변환
-          const formattedBadges: Badge[] = apiBadges.map((badge: any) => {
-            // obtain 속성을 사용해 달성 여부 확인 (API 응답에서는 isObtain이 아닌 obtain이 사용됨)
-            const isAchieved = badge.obtain === true;
-
-            const formattedBadge = {
-              id: badge.badgeId.toString(),
-              name: badge.name,
-              description: badge.obtainCondition,
-              image: badge.image,
-              achieved: isAchieved,
-              achievedDate: isAchieved
-                ? new Date().toISOString().split("T")[0]
-                : undefined,
-            };
-
-            // 7번 배지 디버깅
-            if (badge.badgeId === 7) {
-              console.log("변환된 7번 배지 정보:", formattedBadge);
-            }
-
-            return formattedBadge;
-          });
+          // API 응답에서 배지 정보 변환 - formatBadgeFromApi 함수 사용
+          const formattedBadges: Badge[] = apiBadges.map(formatBadgeFromApi);
 
           // 상태 업데이트
           setBadges(formattedBadges);
@@ -166,7 +199,7 @@ const AchievementPage: React.FC = () => {
     };
 
     fetchBadges();
-  }, [accessToken]);
+  }, [accessToken, activeCategory]);
 
   // 카테고리 변경 시 필터링
   useEffect(() => {
@@ -222,7 +255,7 @@ const AchievementPage: React.FC = () => {
         </div>
 
         {/* 카테고리 탭 */}
-        <div className="mb-4 overflow-x-auto">
+        {/* <div className="mb-4 overflow-x-auto">
           <div className="flex space-x-2 pb-1">
             {defaultCategories.map((category) => (
               <button
@@ -238,7 +271,7 @@ const AchievementPage: React.FC = () => {
               </button>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* 로딩 상태 */}
         {isLoading ? (
