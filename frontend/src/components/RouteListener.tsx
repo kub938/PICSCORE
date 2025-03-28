@@ -2,13 +2,14 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import useLayoutStore from "../store/layoutStore";
+import { useGetPhoto } from "../hooks/useBoard";
 
 interface LayoutConfig {
   showNavBar: boolean;
   showBottomBar: boolean;
   content: string;
 }
-
+const nickname = "asdf";
 const routeLayouts: { [key: string]: LayoutConfig } = {
   "/": { showNavBar: false, showBottomBar: false, content: "" },
   "/image-upload": {
@@ -36,6 +37,11 @@ const routeLayouts: { [key: string]: LayoutConfig } = {
     showBottomBar: true,
     content: "게시글",
   },
+  "/photo/:number": {
+    showNavBar: true,
+    showBottomBar: true,
+    content: "게시글",
+  },
 };
 
 function RouteListener() {
@@ -56,8 +62,8 @@ function RouteListener() {
       setLayoutVisibility(routeLayouts[currentPath]);
     } else {
       setLayoutVisibility({
-        showNavBar: true,
-        showBottomBar: true,
+        showNavBar: false,
+        showBottomBar: false,
         content: "안됐어요",
       });
     }

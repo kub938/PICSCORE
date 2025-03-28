@@ -3,39 +3,199 @@ import {
   ShareIcon,
   EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
+import { useDeletePhoto, useGetPhoto } from "../../hooks/useBoard";
+import { useNavigate, useParams } from "react-router-dom";
+import ErrorPage from "../Error/ErrorPage";
+import { useState } from "react";
+import { FadeLoader } from "react-spinners";
+import ImageEvalDetail from "../ImageEval/ImageEvalDetail";
+import Modal from "../../components/Modal";
+import ContentNavBar from "../../components/NavBar/ContentNavBar";
+import { useAuthStore } from "../../store";
+import { useMutation } from "@tanstack/react-query";
+import { boardApi } from "../../api/boardApi";
 
 function PhotoPost() {
-  const likeCnt = 123;
-  const score = 40;
-  const profileImage = "";
-  const photo = "";
+  const { number } = useParams();
+  const photoId = number ? parseInt(number) : -1;
+  const { isError, isLoading, data } = useGetPhoto(photoId);
+  const navigate = useNavigate();
+  const [isOpenShareModal, setIsOpenShareModal] = useState(false);
+  const [showCopyMessage, setShowCopyMessage] = useState(false);
+  const [showPhotoEvalModal, setPhotoEvalModal] = useState(false);
+  const [showOptionModal, setShowOptionModal] = useState(false);
+  const deletePhotoMutation = useDeletePhoto(photoId);
+  const myId = useAuthStore((state) => state.userId);
 
-  return (
-    <div className="w-full flex flex-col mb-16">
-      <div className="border h-18 w-full flex items-center">
-        <div className="w-8/10 p-4 flex items-center ">
-          <div className="w-12 h-12 rounded-full border">
-            <img src="" alt="" />
-          </div>
-          <div className="ml-3">닉네임</div>
-        </div>
-        <div className="w-2/10 flex justify-center">
-          <EllipsisHorizontalIcon width={30} />
-        </div>
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center">
+        <FadeLoader color="#a4e857" height={12} radius={8} />;
       </div>
-      <div className="border h-110"></div>
-      <div className="border h-50 mx-3">
+    );
+  }
+  if (isError || !data) {
+    return <ErrorPage />;
+  }
+
+  const closeShareModal = () => {
+    setIsOpenShareModal(false);
+  };
+  const openShareModal = () => {
+    setIsOpenShareModal(true);
+  };
+  const closePhotoEval = () => {
+    setPhotoEvalModal(false);
+  };
+  const openPhotoEval = () => {
+    console.log(showPhotoEvalModal);
+
+    setPhotoEvalModal(true);
+  };
+  const closeOptionModal = () => {
+    setShowOptionModal(false);
+  };
+
+  const openOptionModal = () => {
+    setShowOptionModal(true);
+  };
+
+  const handleCopy = async (location: string) => {
+    try {
+      await navigator.clipboard.writeText(location);
+
+      setShowCopyMessage(true);
+
+      setTimeout(() => {
+        setShowCopyMessage(false);
+      }, 1500);
+    } catch (error) {
+      console.error("복사 실패", error);
+    }
+  };
+  const handleDeletePhoto = () => {
+    deletePhotoMutation.mutate();
+    closeOptionModal();
+    navigate(-1);
+  };
+
+  const navigateProfile = (id: number) => {
+    navigate(`/user/profile/${id}`);
+  };
+
+  const { hashTag, imageUrl, likeCnt, nickName, profileImage, score, userId } =
+    data;
+
+  const nowPhotoLocation = window.location.href;
+  const isMyPhoto = userId === myId;
+  return (
+    <div className="w-full flex flex-col ">
+      {isOpenShareModal && (
+        <div
+          className=" bottom-0 top-0 fixed  max-w-md w-full bg-black/40 z-50 flex items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeShareModal();
+          }}
+        >
+          <div className="rounded-xl w-70 h-35 bg-white flex flex-col justify-center items-center ">
+            <div className="text-xl font-bold mb-4">공유하기</div>
+            <div className="flex justify-center items-center">
+              <input
+                type="text"
+                readOnly
+                className="w-[60%] rounded-l-lg h-10 px-2 border-gray-300 border focus:outline-none"
+                value={nowPhotoLocation}
+              />
+              <button
+                onClick={() => handleCopy(nowPhotoLocation)}
+                className="w-[30%] h-10 text-sm border-gray-300 border border-l-0 bg-pic-primary text-white rounded-r-lg"
+              >
+                URL 복사
+              </button>
+            </div>
+            {showCopyMessage && (
+              <div className="text-gray-800 text-sm">복사되었습니다</div>
+            )}
+          </div>
+        </div>
+      )}
+      {showPhotoEvalModal && (
+        <ImageEvalDetail
+          isModalOpen={showPhotoEvalModal}
+          closeDetail={closePhotoEval}
+          score={score}
+        />
+      )}
+      <Modal
+        isOpen={showOptionModal}
+        onClose={closeOptionModal}
+        buttons={[
+          {
+            label: "공개 / 비공개",
+            textColor: "black",
+            onClick: () => {},
+          },
+          {
+            label: "삭제하기",
+            textColor: "red",
+            onClick: handleDeletePhoto,
+          },
+        ]}
+      />
+
+      <ContentNavBar content={nickName} />
+      <div className=" h-16 w-full flex items-center">
+        <div className="w-8/10 pl-2 flex items-center ">
+          <img
+            className="w-11 h-11  rounded-full cursor-pointer "
+            src={profileImage}
+            alt=""
+            onClick={() => navigateProfile(userId)}
+          />
+          <div
+            className="ml-3 cursor-pointer font-semibold "
+            onClick={() => navigateProfile(userId)}
+          >
+            {nickName}
+          </div>
+        </div>
+        {/* {isMyPhoto && ( */}
+        <div className="w-2/10 flex justify-center " onClick={openOptionModal}>
+          <EllipsisHorizontalIcon className="cursor-pointer" width={30} />
+        </div>
+        {/* )} */}
+      </div>
+      <div className=" h-110">
+        <img className="w-full h-full" src={imageUrl} alt="" />
+      </div>
+      <div className=" h-50 mx-3">
         <div className="flex items-center justify-between">
           <div className="flex">
-            <HeartIcon className="w-7" />
-            <ShareIcon className="w-6 m-2" />
+            <HeartIcon className="w-7 cursor-pointer" />
+            <ShareIcon
+              className="w-6 m-2 cursor-pointer"
+              onClick={openShareModal}
+            />
           </div>
 
-          <div className="mr-3">PICSCORE {score}</div>
+          <div className="mr-1 cursor-pointer" onClick={openPhotoEval}>
+            <span className="text-pic-primary">PIC</span>
+            <span>SCORE</span>
+            <span className="ml-0.5"> {score}</span>
+          </div>
         </div>
-        <div>이 사진을 {likeCnt}명이 좋아합니다</div>
-        <div>해쉬태그</div>
-        <div>자세히 보기</div>
+        <div className="inline-block">이 사진을 {likeCnt}명이 좋아합니다</div>
+        <div>
+          {hashTag.map((tag, index) => {
+            return <span key={index}>{tag}</span>;
+          })}
+        </div>
+        <div
+          onClick={openPhotoEval}
+          className="cursor-pointer inline-block text-gray-500"
+        >
+          자세히 보기
+        </div>
       </div>
     </div>
   );
