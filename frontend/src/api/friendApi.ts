@@ -21,7 +21,7 @@ export interface FollowingUser {
   userId: number;
   profileImage: string;
   nickName: string;
-  isFollowing: boolean; // This should always be defined for proper functionality
+  isFollowing: boolean; // 이 필드가 있는지 확인 필요
 }
 
 // 사용자 프로필 정보 인터페이스
@@ -43,11 +43,6 @@ interface ProfileBadge {
   badgeId: number;
   badgeName: string;
   badgeImage: string;
-}
-
-// 팔로우 토글 요청 인터페이스
-interface ToggleFollowRequest {
-  followingId: number;
 }
 
 export const friendApi = {
