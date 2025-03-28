@@ -152,8 +152,12 @@ public class PhotoController {
      * @return ResponseEntity<BaseResponse<GetPhotoDetailResponse>> 사진 상세 정보 응답
      */
     @GetMapping("/photo/{photoId}")
-    public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(@PathVariable Long photoId) {
-        return photoService.getPhotoDetail(photoId);
+    public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(
+            HttpServletRequest request, @PathVariable Long photoId) {
+
+        Long userId = oAuthService.findIdByNickName(request);
+
+        return photoService.getPhotoDetail(userId, photoId);
     }
 
 

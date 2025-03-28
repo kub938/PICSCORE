@@ -289,7 +289,8 @@ public class PhotoService {
      * @param photoId 조회할 사진의 ID
      * @return ResponseEntity<BaseResponse<GetPhotoDetailResponse>> 사진 상세 정보
      */
-    public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(Long photoId) {
+    public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(
+            Long userId, Long photoId) {
         // Photo 정보 조회
         Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사진을 찾을 수 없습니다."));
@@ -300,6 +301,8 @@ public class PhotoService {
         // 좋아요 수 조회
         int likeCnt = photoLikeRepository.countByPhotoId(photoId);
 
+        boolean isLike = photoLikeRepository.existsByPhotoIdAndUserId(photoId, userId);
+
         // 해시태그 조회
         List<String> hashTags = photoHashtagRepository.findByPhotoId(photoId)
                 .stream()
@@ -307,7 +310,7 @@ public class PhotoService {
                 .collect(Collectors.toList());
 
         // DTO에 데이터 설정
-        GetPhotoDetailResponse response = new GetPhotoDetailResponse(user, photo, likeCnt, hashTags);
+        GetPhotoDetailResponse response = new GetPhotoDetailResponse(user, photo, likeCnt, hashTags, isLike);
         return ResponseEntity.ok(BaseResponse.success("사진 상세 조회 성공",response));
     }
 
