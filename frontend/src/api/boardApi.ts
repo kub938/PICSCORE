@@ -55,7 +55,7 @@ export const boardApi = {
   getTopPhotos: () => {
     return testApi.get("/api/v1/photo/top5");
   },
-  getPhoto: (id: number) => {
+  getPhoto: (id: number | undefined) => {
     return testApi.get(`/api/v1/photo/${id}`);
   },
   deletePhoto: (id: number) => {

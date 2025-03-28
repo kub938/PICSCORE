@@ -15,8 +15,8 @@ function Board() {
     isFetchingNextPage,
   } = useGetPhotos();
 
-  const photos = data?.pages.flatMap((page) => page.data.data.photos) || [];
-  const totalPage = data?.pages[0].data.data.totalPages || 0;
+  const photos = data?.pages.flatMap((page) => page.photos) || [];
+  const totalPage = data?.pages[0].totalPages || 0;
 
   if (isLoading && !data) {
     <FadeLoader color="#a4e857" height={12} radius={8} />;
@@ -32,8 +32,6 @@ function Board() {
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
-      console.log(data?.pages[0].data.data);
-
       fetchNextPage();
     }
   }, [inView]);
