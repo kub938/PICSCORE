@@ -24,6 +24,8 @@ import { useAuthStore } from "../store/authStore";
 import { useEffect } from "react";
 import Following from "../page/UserPage/Following";
 import Follower from "../page/UserPage/Follower";
+import UserFollowing from "../page/UserPage/UserFollowing";
+import UserFollower from "../page/UserPage/UserFollower";
 
 const HomeRouter = () => {
   const [params] = useSearchParams();
@@ -127,6 +129,7 @@ const router = createBrowserRouter([
             path: "/login",
             element: <Login />,
           },
+          // 내 팔로잉/팔로워 페이지
           {
             path: "/following",
             element: <Following />,
@@ -134,6 +137,15 @@ const router = createBrowserRouter([
           {
             path: "/follower",
             element: <Follower />,
+          },
+          // 다른 사용자의 팔로잉/팔로워 페이지
+          {
+            path: "/user/following/:userId",
+            element: <UserFollowing />,
+          },
+          {
+            path: "/user/follower/:userId",
+            element: <UserFollower />,
           },
         ],
       },
