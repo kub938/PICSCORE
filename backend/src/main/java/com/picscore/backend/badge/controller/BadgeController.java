@@ -30,7 +30,7 @@ public class BadgeController {
      * @param request HTTP 요청 객체
      * @return ResponseEntity<BaseResponse < List < GetBadgeResponse>>> 사용자의 배지 목록을 포함한 응답
      */
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<BaseResponse<List<GetBadgeResponse>>> getBadge(HttpServletRequest request) {
         // 요청에서 사용자 ID를 추출
         Long userId = oAuthService.findIdByNickName(request);
