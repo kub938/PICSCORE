@@ -8,10 +8,7 @@ import com.picscore.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -44,7 +41,8 @@ public class BadgeController {
 
     @PostMapping("/time-attack/score")
     public ResponseEntity<BaseResponse<Void>> GetTimeAttackScore(
-            HttpServletRequest request, TimeAttackScoreRequest timeAttackScoreRequest
+            HttpServletRequest request,
+            @RequestBody TimeAttackScoreRequest timeAttackScoreRequest
     ) {
 
         Long userId = oAuthService.findIdByNickName(request);
