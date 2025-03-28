@@ -26,6 +26,8 @@ import Following from "../page/UserPage/Following";
 import Follower from "../page/UserPage/Follower";
 import UserFollowing from "../page/UserPage/UserFollowing";
 import UserFollower from "../page/UserPage/UserFollower";
+import PhotoPost from "../page/Board/PhotoPost";
+
 
 const HomeRouter = () => {
   const [params] = useSearchParams();
@@ -45,7 +47,6 @@ const HomeRouter = () => {
   if (isLoggedIn || (loginSuccess && accessToken)) {
     return <Home />;
   }
-
   // 그 외에는 Welcome으로
   return <Welcome />;
 };
@@ -76,7 +77,6 @@ const router = createBrowserRouter([
         path: "/image-upload",
         element: <ImageUpload />,
       },
-
       {
         element: <PrivateRouter />,
         children: [
@@ -122,6 +122,11 @@ const router = createBrowserRouter([
             element: <Board />,
           },
           {
+            path: "/photo/:number",
+            element: <PhotoPost />,
+          },
+
+          {
             path: "/contest",
             element: <Contest />,
           },
@@ -146,6 +151,9 @@ const router = createBrowserRouter([
           {
             path: "/user/follower/:userId",
             element: <UserFollower />,
+          {
+            path: "photo",
+            element: <>게시글을 찾을 수 없습니다.</>,
           },
         ],
       },
