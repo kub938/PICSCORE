@@ -4,6 +4,7 @@ import com.picscore.backend.badge.model.dto.ProfileBadgeDto;
 import com.picscore.backend.badge.model.entity.Badge;
 import com.picscore.backend.badge.model.entity.UserBadge;
 import com.picscore.backend.badge.repository.UserBadgeRepository;
+import com.picscore.backend.common.exeption.CustomException;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.photo.model.entity.Photo;
@@ -59,10 +60,10 @@ public class UserService {
      * 현재 로그인한 사용자의 정보를 가져오는 메서드
      *
      * @param request HTTP 요청 객체 (쿠키에서 AccessToken 추출)
-     * @return ResponseEntity<BaseResponse<LoginInfoResponse>>
+     * @return LoginInfoResponse
      *         - 로그인 정보를 포함하는 응답 객체
      */
-    public ResponseEntity<BaseResponse<LoginInfoResponse>> LoginInfo(HttpServletRequest request, HttpServletResponse responses) {
+    public LoginInfoResponse LoginInfo(HttpServletRequest request) {
 //        // 쿠키에서 AccessToken 찾기
 //        Optional<Cookie> accessTokenCookie = Arrays.stream(request.getCookies())
 //                .filter(cookie -> "access".equals(cookie.getName()))
@@ -81,8 +82,7 @@ public class UserService {
 
         // Authorization 헤더가 없거나 'Bearer '로 시작하지 않는 경우
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("유효한 Authorization 헤더 없음"));
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효한 Authorization 헤더 없음");
         }
 
         // 'Bearer ' 접두사 제거하여 실제 토큰 추출
@@ -96,23 +96,20 @@ public class UserService {
 
         // 유효하지 않은 토큰인 경우
         if (nickName == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(BaseResponse.error("유효하지 않은 토큰"));
+            throw new CustomException(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰");
         }
 
         // 닉네임으로 사용자 조회
         User user = userRepository.findByNickName(nickName);
         // 사용자를 찾을 수 없는 경우
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(BaseResponse.error("사용자를 찾을 수 없음"));
+            throw new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음");
         }
 
         // 유저 정보 + 토큰 반환
-        LoginInfoResponse response = new LoginInfoResponse(
+        return new LoginInfoResponse(
                 user.getId(), user.getNickName(), user.getMessage(),
                 user.getLevel(), user.getExperience());
-        return ResponseEntity.ok(BaseResponse.success("로그인 성공", response));
     }
 
 

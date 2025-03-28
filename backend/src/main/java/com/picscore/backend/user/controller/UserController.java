@@ -35,12 +35,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserRepository userRepository;
-    private final JWTUtil jwtUtil;
     private final UserService userService;
     private final FollowService followService;
     private final OAuthService oAuthService;
-    private final PhotoService photoService;
 
 
     /**
@@ -53,8 +50,9 @@ public class UserController {
      * - 사용자 정보를 포함하는 응답 객체
      */
     @GetMapping("/info")
-    public ResponseEntity<BaseResponse<LoginInfoResponse>> LoginInfo(HttpServletRequest request, HttpServletResponse responses) {
-        return userService.LoginInfo(request, responses);
+    public ResponseEntity<BaseResponse<LoginInfoResponse>> LoginInfo(HttpServletRequest request) {
+        LoginInfoResponse loginInfoResponse = userService.LoginInfo(request);
+        return ResponseEntity.ok(BaseResponse.success("로그인 성공", loginInfoResponse));
     }
 
 
