@@ -12,6 +12,7 @@ const Follower: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [followingCount, setFollowingCount] = useState<number>(0);
 
   const navigate = useNavigate();
 
@@ -22,6 +23,8 @@ const Follower: React.FC = () => {
     const fetchFollowers = async () => {
       try {
         setIsLoading(true);
+
+        // 팔로워 목록 가져오기
         if (data?.data) {
           setFollowers(data.data);
           setFilteredFollowers(data.data);
@@ -29,8 +32,14 @@ const Follower: React.FC = () => {
           setFollowers([]);
           setFilteredFollowers([]);
         }
+
+        // 팔로잉 수 가져오기
+        const followingResponse = await friendApi.getMyFollowings();
+        if (followingResponse.data?.data) {
+          setFollowingCount(followingResponse.data.data.length);
+        }
       } catch (error) {
-        console.error("팔로워 목록 가져오기 실패:", error);
+        console.error("팔로워 또는 팔로잉 데이터 가져오기 실패:", error);
       } finally {
         setIsLoading(false);
       }
@@ -129,7 +138,7 @@ const Follower: React.FC = () => {
           className="flex-1 py-3 text-center text-gray-500"
           onClick={goToFollowings}
         >
-          팔로우
+          {followingCount} 팔로잉
         </button>
       </div>
 

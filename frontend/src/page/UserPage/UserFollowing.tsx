@@ -12,6 +12,7 @@ const UserFollowingPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
+  const [followerCount, setFollowerCount] = useState<number>(0);
 
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
@@ -43,6 +44,7 @@ const UserFollowingPage: React.FC = () => {
             );
             if (userProfileResponse.data?.data) {
               setUserName(userProfileResponse.data.data.nickName);
+              setFollowerCount(userProfileResponse.data.data.followerCnt);
             }
           } catch (profileError) {
             console.error("사용자 프로필 가져오기 실패:", profileError);
@@ -130,7 +132,7 @@ const UserFollowingPage: React.FC = () => {
           className="flex-1 py-3 text-center text-gray-500"
           onClick={goToFollowers}
         >
-          팔로워
+          {followerCount} 팔로워
         </button>
         <button className="flex-1 py-3 text-center font-medium border-b-2 border-black">
           {followings.length} 팔로우
@@ -195,18 +197,16 @@ const UserFollowingPage: React.FC = () => {
                 <div className="flex-1">
                   <p className="font-medium">{user.nickName}</p>
                 </div>
-                {user.isFollowing !== undefined && (
-                  <button
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium ${
-                      user.isFollowing
-                        ? "bg-pic-primary text-white"
-                        : "border border-pic-primary text-pic-primary"
-                    }`}
-                    onClick={() => handleToggleFollow(user.userId)}
-                  >
-                    {user.isFollowing ? "팔로잉" : "팔로우"}
-                  </button>
-                )}
+                <button
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium ${
+                    user.isFollowing
+                      ? "bg-pic-primary text-white"
+                      : "border border-pic-primary text-pic-primary"
+                  }`}
+                  onClick={() => handleToggleFollow(user.userId)}
+                >
+                  {user.isFollowing ? "팔로잉" : "팔로우"}
+                </button>
               </div>
             ))
           ) : (

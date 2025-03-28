@@ -12,6 +12,7 @@ const UserFollowerPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
+  const [followingCount, setFollowingCount] = useState<number>(0);
 
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
@@ -43,6 +44,7 @@ const UserFollowerPage: React.FC = () => {
             );
             if (userProfileResponse.data?.data) {
               setUserName(userProfileResponse.data.data.nickName);
+              setFollowingCount(userProfileResponse.data.data.followingCnt);
             }
           } catch (profileError) {
             console.error("사용자 프로필 가져오기 실패:", profileError);
@@ -133,7 +135,7 @@ const UserFollowerPage: React.FC = () => {
           className="flex-1 py-3 text-center text-gray-500"
           onClick={goToFollowings}
         >
-          팔로우
+          {followingCount} 팔로잉
         </button>
       </div>
 

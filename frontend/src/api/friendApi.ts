@@ -21,7 +21,7 @@ export interface FollowingUser {
   userId: number;
   profileImage: string;
   nickName: string;
-  isFollowing?: boolean; // 추가: 팔로잉 여부 (다른 사용자의 팔로잉 목록에서 사용)
+  isFollowing: boolean; // This should always be defined for proper functionality
 }
 
 // 사용자 프로필 정보 인터페이스

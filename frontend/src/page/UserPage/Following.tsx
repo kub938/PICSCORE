@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom"; // useParams 가져오기
 import { friendApi, FollowingUser } from "../../api/friendApi";
 import { useMyFollowings } from "../../hooks/friend";
 
 const Following: React.FC = () => {
+  const { userId } = useParams<{ userId: string }>(); // URL에서 userId 가져오기
+  const numericUserId = parseInt(userId || "0", 10); // 숫자로 변환
+
   const [searchQuery, setSearchQuery] = useState("");
   const [followings, setFollowings] = useState<FollowingUser[]>([]);
   const [filteredFollowings, setFilteredFollowings] = useState<FollowingUser[]>(
@@ -12,6 +15,7 @@ const Following: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [followerCount, setFollowerCount] = useState<number>(0); // followerCount 상태 추가
 
   const navigate = useNavigate();
 
@@ -38,6 +42,29 @@ const Following: React.FC = () => {
 
     fetchFollowings();
   }, [data]);
+
+  // 사용자 프로필 정보 가져오기
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        if (!numericUserId) {
+          console.error("사용자 ID가 없습니다.");
+          return;
+        }
+
+        const response = await friendApi.getUserProfile(numericUserId);
+        console.log("사용자 프로필 응답 데이터:", response);
+
+        if (response.data?.data) {
+          setFollowerCount(response.data.data.followerCnt); // followerCount 설정
+        }
+      } catch (error) {
+        console.error("사용자 프로필 가져오기 실패:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, [numericUserId]);
 
   // 최신 데이터 가져오기
   useEffect(() => {
@@ -126,10 +153,10 @@ const Following: React.FC = () => {
           className="flex-1 py-3 text-center text-gray-500"
           onClick={goToFollowers}
         >
-          팔로워
+          {followerCount} 팔로워
         </button>
         <button className="flex-1 py-3 text-center font-medium border-b-2 border-black">
-          {followings.length} 팔로우
+          {followings.length} 팔로잉
         </button>
       </div>
 
@@ -214,13 +241,13 @@ const Following: React.FC = () => {
             </p>
             <div className="flex justify-around">
               <button
-                className="px-4 py-2 bg-pic-primary text-white rounded-md"
+                className="px-4 py-2 bg-pic-primary text-white rounded-md opacity-50 hover:opacity-100 hover:brightness-110 transition duration-200"
                 onClick={handleConfirmUnfollow}
               >
-                취소하기
+                팔로잉취소
               </button>
               <button
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md"
+                className="px-4 py-2 bg-pic-primary text-white rounded-md opacity-50 hover:opacity-100 hover:brightness-110 transition duration-200"
                 onClick={handleCloseModal}
               >
                 돌아가기
