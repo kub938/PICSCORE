@@ -10,6 +10,7 @@ import com.picscore.backend.photo.repository.PhotoLikeRepository;
 import com.picscore.backend.photo.repository.PhotoRepository;
 import com.picscore.backend.photo.model.response.UploadPhotoResponse;
 import com.picscore.backend.user.model.entity.User;
+import com.picscore.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PhotoService {
 
+
+    private final UserRepository userRepository;
     private final PhotoRepository photoRepository;
     private final PhotoLikeRepository photoLikeRepository;
     private final PhotoHashtagRepository photoHashtagRepository;
@@ -46,16 +49,17 @@ public class PhotoService {
     /**
      * 새로운 사진을 저장하는 메서드
      *
-     * @param user 사진을 업로드한 사용자
-     * @param imageUrl 사진 URL
+     * @param userId 사진을 업로드한 사용자
      * @param score 사진 점수
      * @param analysisChart 분석 차트
      * @param analysisText 분석 텍스트
      * @param isPublic 공개/비공개 여부
      * @return ResponseEntity<BaseResponse<HttpStatus>> 저장 결과
      */
-    public ResponseEntity<BaseResponse<HttpStatus>> savePhoto(User user, String imageUrl, String imageName, Float score,
+    public ResponseEntity<BaseResponse<HttpStatus>> savePhoto(Long userId, String imageName, Float score,
                                                               Map<String, Integer> analysisChart, Map<String, List<String>> analysisText, Boolean isPublic, String photoType) {
+        System.out.println("userId = " + userId);
+        
         String tempFolder = "temp/";
         String permanentFolder = "permanent/";
         // S3에서 임시 폴더에서 영구 폴더로 이미지 이동
@@ -67,15 +71,37 @@ public class PhotoService {
                 .build();
         s3Client.copyObject(copyObjectRequest);
         String permanImageUrl = getFileUrl(permanentFolder,imageName);
+        if (permanImageUrl == null || permanImageUrl.trim().isEmpty()) {
+            throw new IllegalArgumentException("이미지 URL이 생성되지 않았습니다: " + imageName);
+        }
         // mySQL에 저장
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저 없음; " + userId));
         Photo photo = new Photo();
         photo.setUser(user);
         photo.setImageUrl(permanImageUrl);
         photo.setScore(score);
-        photo.setAnalysisChart(analysisChart);
-        photo.setAnalysisText(analysisText);
         photo.setIsPublic(isPublic);
         photo.setPhotoType(photoType);
+
+        // ✅ analysisChart가 null이면 빈 Map으로 초기화
+        if (analysisChart == null) {
+            photo.setAnalysisChart(new HashMap<>());
+        } else {
+            photo.setAnalysisChart(analysisChart);
+        }
+        // ✅ analysisText가 null이면 빈 Map으로 초기화
+        if (analysisText == null) {
+            photo.setAnalysisText(new HashMap<>());
+        } else {
+            // ✅ 각 List<String>이 null이면 빈 리스트로 초기화
+            analysisText.forEach((key, value) -> {
+                if (value == null) {
+                    analysisText.put(key, new ArrayList<>()); // 빈 리스트로 초기화
+            }
+            });
+                photo.setAnalysisText(analysisText);
+        }
         photoRepository.save(photo);
         return ResponseEntity.ok(BaseResponse.success("사진 업로드 완료", HttpStatus.CREATED));
     }

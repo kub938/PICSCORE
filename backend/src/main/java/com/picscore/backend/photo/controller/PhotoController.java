@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,14 +54,18 @@ public class PhotoController {
     @PostMapping("/photo/save")
     public ResponseEntity<BaseResponse<HttpStatus>> uploadFile(HttpServletRequest request,
                                                                @RequestBody UploadPhotoRequest payload) {
+
+        System.out.println("payload = " + payload);
         // 토큰에서 사용자 정보 추출
         Long userId = oAuthService.findIdByNickName(request);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저 없음; " + userId));
-
+        if (userId == null) {
+            throw new IllegalArgumentException("userId가 null입니다.");
+        }
+        if (payload.getPhotoType() == null || payload.getPhotoType().trim().isEmpty()) {
+            throw new IllegalArgumentException("photoType 값이 비어있습니다.");
+        }
         return photoService.savePhoto(
-                user,
-                payload.getImageUrl(),
+                userId,
                 payload.getImageName(),
                 payload.getScore(),
                 payload.getAnalysisChart(),
