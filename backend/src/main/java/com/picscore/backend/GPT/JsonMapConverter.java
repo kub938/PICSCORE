@@ -1,4 +1,4 @@
-package com.picscore.backend.photo.controller;
+package com.picscore.backend.GPT;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

@@ -1,11 +1,9 @@
 package com.picscore.backend.photo.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picscore.backend.common.model.entity.BaseEntity;
-import com.picscore.backend.photo.controller.JsonListConverter;
-import com.picscore.backend.photo.controller.JsonMapConverter;
+import com.picscore.backend.GPT.JsonStringMapConverter;
+import com.picscore.backend.GPT.JsonMapConverter;
 import com.picscore.backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -13,7 +11,6 @@ import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -49,8 +46,8 @@ public class Photo extends BaseEntity {
     private Map<String, Integer> analysisChart = new HashMap<>();
 
     @Lob
-    @Convert(converter = JsonListConverter.class) // ✅ JSON 변환기 적용
+    @Convert(converter = JsonStringMapConverter.class) // ✅ JSON 변환기 적용
     @Column(name = "analysis_text", columnDefinition = "Text") // ✅ JSON을 String으로 저장
-    private Map<String, List<String>> analysisText = new HashMap<>();
+    private Map<String, String> analysisText = new HashMap<>();
 
 }

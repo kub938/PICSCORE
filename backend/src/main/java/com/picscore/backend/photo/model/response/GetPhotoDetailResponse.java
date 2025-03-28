@@ -20,7 +20,7 @@ public class GetPhotoDetailResponse {
     public String imageUrl;
     public Float score;
     public Map<String, Integer> analysisChart; // JSON 형태로 저장된 데이터
-    public Map<String, List<String>> analysisText;  // JSON 형태로 저장된 데이터
+    public Map<String, String> analysisText;  // JSON 형태로 저장된 데이터
     public LocalDateTime createdAt;
 
     // 기타 정보
