@@ -24,6 +24,7 @@ import { useAuthStore } from "../store/authStore";
 import { useEffect } from "react";
 import Following from "../page/UserPage/Following";
 import Follower from "../page/UserPage/Follower";
+import PhotoPost from "../page/Board/PhotoPost";
 
 const HomeRouter = () => {
   const [params] = useSearchParams();
@@ -120,6 +121,11 @@ const router = createBrowserRouter([
             element: <Board />,
           },
           {
+            path: "/photo/:number",
+            element: <PhotoPost />,
+          },
+
+          {
             path: "/contest",
             element: <Contest />,
           },
@@ -134,6 +140,10 @@ const router = createBrowserRouter([
           {
             path: "/follower",
             element: <Follower />,
+          },
+          {
+            path: "photo",
+            element: <>게시글을 찾을 수 없습니다.</>,
           },
         ],
       },
