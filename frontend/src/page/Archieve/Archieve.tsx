@@ -1,26 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
+import { testApi } from "../../api/api";
 
 // 컴포넌트 임포트
 import BadgeGrid from "./components/BadgeGrid";
 import ProgressBar from "./components/ProgressBar";
 import CategoryTabs from "./components/CategoryTabs";
-
-// 뱃지 이미지 가져오기
-import badge1 from "../../assets/badge1.png";
-import badge2 from "../../assets/badge2.png";
-import badge3 from "../../assets/badge3.png";
-import badge4 from "../../assets/badge4.png";
-import badge5 from "../../assets/badge5.png";
-import badge6 from "../../assets/badge6.png";
-import badge7 from "../../assets/badge7.png";
-import badge8 from "../../assets/badge8.png";
-import badge9 from "../../assets/badge9.png";
-import badge10 from "../../assets/badge10.png";
-import badge11 from "../../assets/badge11.png";
-import badge12 from "../../assets/badge12.png";
 
 // 배지 타입 정의
 interface Badge {
@@ -32,109 +18,14 @@ interface Badge {
   achievedDate?: string;
 }
 
-// 카테고리 타입 정의
-interface BadgeCategory {
-  id: string;
-  name: string;
-  badges: Badge[];
-}
-
 // API 응답 인터페이스
-interface BadgeApiResponse {
+interface ApiBadge {
   badgeId: number;
   name: string;
   image: string;
   obtainCondition: string;
-  isObtain: boolean;
+  obtain: boolean; // isObtain이 아닌 obtain 속성이 API에서 반환됨
 }
-
-// 하드코딩된 배지 데이터
-const staticBadges: Badge[] = [
-  {
-    id: "1",
-    name: "첫 팔로워",
-    description: "첫 번째 팔로워를 얻었습니다.",
-    image: badge1,
-    achieved: false,
-  },
-  {
-    id: "2",
-    name: "인기 크리에이터",
-    description: "30명 이상의 팔로워를 달성했습니다.",
-    image: badge2,
-    achieved: false,
-  },
-  {
-    id: "3",
-    name: "첫 사진 평가",
-    description: "첫 번째 사진 평가를 완료했습니다.",
-    image: badge3,
-    achieved: false,
-  },
-  {
-    id: "4",
-    name: "평가 마스터",
-    description: "30회 이상의 사진 평가를 완료했습니다.",
-    image: badge4,
-    achieved: false,
-  },
-  {
-    id: "5",
-    name: "첫 게시글",
-    description: "첫 번째 게시글을 작성했습니다.",
-    image: badge5,
-    achieved: false,
-  },
-  {
-    id: "6",
-    name: "콘텐츠 크리에이터",
-    description: "20개 이상의 게시글을 작성했습니다.",
-    image: badge6,
-    achieved: false,
-  },
-  {
-    id: "7",
-    name: "첫 타임어택",
-    description: "첫 번째 타임어택에 참여했습니다.",
-    image: badge7,
-    achieved: false,
-  },
-  {
-    id: "8",
-    name: "타임어택 중독자",
-    description: "20회 이상의 타임어택에 참여했습니다.",
-    image: badge8,
-    achieved: false,
-  },
-  {
-    id: "9",
-    name: "고품질 사진작가",
-    description: "사진 평가에서 77점 이상을 달성했습니다.",
-    image: badge9,
-    achieved: false,
-  },
-  {
-    id: "10",
-    name: "타임어택 챔피언",
-    description: "타임어택에서 1위를 달성했습니다.",
-    image: badge10,
-    achieved: false,
-  },
-  {
-    id: "11",
-    name: "인기 콘텐츠",
-    description: "게시글이 좋아요 10개를 달성했습니다.",
-    image: badge11,
-    achieved: false,
-  },
-  {
-    id: "12",
-    name: "업적 마스터",
-    description: "모든 업적을 달성했습니다.",
-    image: badge12,
-    achieved: false,
-  },
-];
 
 // 기본 카테고리 정의
 const defaultCategories = [
@@ -173,73 +64,108 @@ const filterBadgesByCategory = (
 };
 
 const AchievementPage: React.FC = () => {
-  const [badges, setBadges] = useState<Badge[]>(staticBadges);
-  const [filteredBadges, setFilteredBadges] = useState<Badge[]>(staticBadges);
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [filteredBadges, setFilteredBadges] = useState<Badge[]>([]);
   const [achievedCount, setAchievedCount] = useState<number>(0);
-  const [totalCount, setTotalCount] = useState<number>(staticBadges.length);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectionMode, setSelectionMode] = useState<boolean>(false);
+  const [selectedBadgeId, setSelectedBadgeId] = useState<string | undefined>(
+    undefined
+  );
 
   const navigate = useNavigate();
+  const location = useLocation();
   const accessToken = useAuthStore((state) => state.accessToken);
 
-  // API에서 달성 상태 가져오기
+  // URL 상태 확인 - 선택 모드인지 체크
   useEffect(() => {
-    const fetchAchievements = async () => {
+    if (location.state) {
+      const { selectionMode, currentBadgeId } = location.state as {
+        selectionMode?: boolean;
+        currentBadgeId?: string;
+      };
+
+      if (selectionMode) {
+        setSelectionMode(true);
+        setSelectedBadgeId(currentBadgeId);
+      }
+    }
+  }, [location]);
+
+  // API에서 배지 정보 가져오기
+  useEffect(() => {
+    const fetchBadges = async () => {
       setIsLoading(true);
+      setError(null);
 
-      // 기본적으로 모든 배지 표시 (미달성 상태로)
-      let updatedBadges = [...staticBadges];
+      try {
+        // 배지 목록 API 호출
+        const response = await testApi.get("/api/v1/badge");
+        console.log("배지 API 응답:", response.data);
 
-      // API 호출 시도 (토큰이 있는 경우)
-      if (accessToken) {
-        try {
-          const response = await axios.get(
-            "https://j12b104.p.ssafy.io/api/v1/badge",
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
+        if (response.data?.data && Array.isArray(response.data.data)) {
+          const apiBadges: ApiBadge[] = response.data.data;
+
+          // 디버깅: 각 배지 정보 로그 출력 (특히 7번 배지 확인)
+          apiBadges.forEach((badge: any) => {
+            console.log(
+              `배지 ID: ${badge.badgeId}, 이름: ${badge.name}, 달성 여부: ${badge.obtain}`
+            );
+            if (badge.badgeId === 7) {
+              console.log("7번 배지(타임어택) 정보:", badge);
             }
+          });
+
+          // API 응답에서 배지 정보 변환
+          const formattedBadges: Badge[] = apiBadges.map((badge: any) => {
+            // obtain 속성을 사용해 달성 여부 확인 (API 응답에서는 isObtain이 아닌 obtain이 사용됨)
+            const isAchieved = badge.obtain === true;
+
+            const formattedBadge = {
+              id: badge.badgeId.toString(),
+              name: badge.name,
+              description: badge.obtainCondition,
+              image: badge.image,
+              achieved: isAchieved,
+              achievedDate: isAchieved
+                ? new Date().toISOString().split("T")[0]
+                : undefined,
+            };
+
+            // 7번 배지 디버깅
+            if (badge.badgeId === 7) {
+              console.log("변환된 7번 배지 정보:", formattedBadge);
+            }
+
+            return formattedBadge;
+          });
+
+          // 상태 업데이트
+          setBadges(formattedBadges);
+          setFilteredBadges(
+            filterBadgesByCategory(formattedBadges, activeCategory)
           );
 
-          console.log("API 응답:", response.data);
-
-          // 응답에서 달성 정보 있으면 업데이트
-          if (response.data?.data && Array.isArray(response.data.data)) {
-            const achievements = response.data.data;
-
-            for (const achievement of achievements) {
-              const id = achievement.badgeId.toString();
-              const badgeIndex = updatedBadges.findIndex((b) => b.id === id);
-
-              if (badgeIndex !== -1 && achievement.isObtain) {
-                updatedBadges[badgeIndex].achieved = true;
-                updatedBadges[badgeIndex].achievedDate = new Date()
-                  .toISOString()
-                  .split("T")[0];
-              }
-            }
-          }
-        } catch (err) {
-          console.error("API 호출 오류:", err);
-          // API 호출 실패해도 기본 배지는 계속 표시
+          // 달성 카운트 업데이트
+          const achieved = formattedBadges.filter((b) => b.achieved).length;
+          console.log(`총 ${formattedBadges.length}개 중 ${achieved}개 달성`);
+          setAchievedCount(achieved);
+          setTotalCount(formattedBadges.length);
+        } else {
+          setError("배지 데이터 형식이 올바르지 않습니다.");
         }
+      } catch (err) {
+        console.error("배지 API 호출 오류:", err);
+        setError("배지 정보를 불러오는 중 오류가 발생했습니다.");
+      } finally {
+        setIsLoading(false);
       }
-
-      // 상태 업데이트
-      setBadges(updatedBadges);
-      setFilteredBadges(filterBadgesByCategory(updatedBadges, activeCategory));
-
-      // 달성 카운트 업데이트
-      const achieved = updatedBadges.filter((b) => b.achieved).length;
-      setAchievedCount(achieved);
-
-      setIsLoading(false);
     };
 
-    fetchAchievements();
+    fetchBadges();
   }, [accessToken]);
 
   // 카테고리 변경 시 필터링
@@ -252,13 +178,66 @@ const AchievementPage: React.FC = () => {
     setActiveCategory(categoryId);
   };
 
+  // 배지 선택 핸들러 (선택 모드일 때만 사용)
+  const handleSelectBadge = (badge: Badge) => {
+    if (!selectionMode || !badge.achieved) return;
+
+    // 프로필에 표시할 뱃지 API 호출 (PATCH)
+    const updateProfileBadge = async () => {
+      try {
+        const response = await testApi.patch("/api/v1/user/profile/badge", {
+          badgeId: parseInt(badge.id),
+        });
+
+        if (response.status === 200) {
+          // 선택 성공 시 프로필 페이지로 돌아감
+          navigate("/profile", {
+            state: {
+              updatedProfile: {
+                displayBadgeId: badge.id,
+              },
+            },
+          });
+        }
+      } catch (error) {
+        console.error("프로필 배지 업데이트 실패:", error);
+        setError("배지 선택 중 오류가 발생했습니다.");
+      }
+    };
+
+    updateProfileBadge();
+  };
+
   // 뒤로가기 핸들러
   const handleGoBack = () => {
-    navigate(-1);
+    navigate("/profile");
   };
 
   return (
     <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
+      {/* 헤더 */}
+      <div className="bg-white p-4 flex items-center border-b">
+        <button onClick={handleGoBack} className="p-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h1 className="text-lg font-bold flex-1 text-center">
+          {selectionMode ? "프로필 배지 선택" : "업적"}
+        </h1>
+        <div className="w-6"></div> {/* 균형을 위한 더미 요소 */}
+      </div>
+
       <div className="p-4">
         {/* 업적 달성도 */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
@@ -287,7 +266,19 @@ const AchievementPage: React.FC = () => {
             {error}
           </div>
         ) : (
-          <BadgeGrid badges={filteredBadges} />
+          <BadgeGrid
+            badges={filteredBadges}
+            isSelectable={selectionMode}
+            selectedBadgeId={selectedBadgeId}
+            onSelectBadge={handleSelectBadge}
+          />
+        )}
+
+        {/* 선택 모드 가이드 (선택 모드일 때만 표시) */}
+        {selectionMode && (
+          <div className="mt-4 bg-blue-50 p-3 rounded-lg text-sm text-blue-700">
+            <p>달성한 배지를 선택하면 프로필에 표시됩니다.</p>
+          </div>
         )}
       </div>
     </div>

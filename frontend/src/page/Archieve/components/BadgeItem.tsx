@@ -24,8 +24,20 @@ const BadgeItem: React.FC<BadgeItemProps> = ({
   isSelected = false,
   onSelect,
 }) => {
+  // 디버깅을 위한 로그 추가 - 특별히 7번 배지를 주목
+  if (badge.id === "7") {
+    console.log(
+      `7번 배지 렌더링 - 달성 여부: ${
+        badge.achieved
+      }, 타입: ${typeof badge.achieved}`
+    );
+  }
+
+  // achieved가 undefined인 경우 false로 처리
+  const isAchieved = badge.achieved === true;
+
   const handleClick = () => {
-    if (isSelectable && badge.achieved && onSelect) {
+    if (isSelectable && isAchieved && onSelect) {
       onSelect(badge);
     }
   };
@@ -33,14 +45,12 @@ const BadgeItem: React.FC<BadgeItemProps> = ({
   return (
     <div
       className={`bg-white p-4 rounded-lg border shadow-sm ${
-        badge.achieved
+        isAchieved
           ? isSelected
             ? "border-pic-primary bg-green-50"
             : "border-pic-primary border-opacity-30"
           : "border-gray-300 bg-gray-100"
-      } ${
-        isSelectable && badge.achieved ? "cursor-pointer hover:bg-gray-50" : ""
-      }`}
+      } ${isSelectable && isAchieved ? "cursor-pointer hover:bg-gray-50" : ""}`}
       onClick={handleClick}
     >
       <div className="flex flex-col items-center">
@@ -49,10 +59,15 @@ const BadgeItem: React.FC<BadgeItemProps> = ({
             src={badge.image}
             alt={badge.name}
             className={`w-full h-full object-contain ${
-              !badge.achieved ? "opacity-50 grayscale" : ""
+              !isAchieved ? "opacity-50 grayscale" : ""
             }`}
+            onError={(e) => {
+              console.error(`이미지 로드 오류: ${badge.image}`);
+              const target = e.target as HTMLImageElement;
+              target.src = "/default-badge.png"; // 기본 이미지로 대체
+            }}
           />
-          {badge.achieved && (
+          {isAchieved && (
             <div className="absolute -top-1 -right-1 bg-pic-primary text-white rounded-full p-1">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -95,7 +110,7 @@ const BadgeItem: React.FC<BadgeItemProps> = ({
 
         <h3 className="font-bold text-sm text-center">{badge.name}</h3>
 
-        {badge.achieved ? (
+        {isAchieved ? (
           <span className="text-xs text-pic-primary mt-1">
             {badge.achievedDate ? `${badge.achievedDate} 달성` : "달성 완료"}
           </span>

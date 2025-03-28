@@ -7,15 +7,43 @@ import { timeAttackApi } from "../../api/timeAttackApi";
 import goldTrophy from "../../assets/gold.png";
 import silverTrophy from "../../assets/silver.png";
 import bronzeTrophy from "../../assets/bronze.png";
+const TOPIC_TRANSLATIONS: Record<string, string> = {
+  dog: "강아지",
+  cat: "고양이",
+  flower: "꽃",
+  car: "자동차",
+  tree: "나무",
+  food: "음식",
+  mountain: "산",
+  sky: "하늘",
+  book: "책",
+  cup: "컵",
+  chair: "의자",
+  clock: "시계",
+  computer: "컴퓨터",
+  plant: "식물",
+  table: "테이블",
+  building: "건물",
+  coffee: "커피",
+};
 
-// 랭킹 사용자 타입 정의
-interface RankingUser {
+// 주제 번역 함수
+const translateTopic = (englishTopic: string): string => {
+  return TOPIC_TRANSLATIONS[englishTopic.toLowerCase()] || englishTopic;
+};
+// API 응답 타입 정의
+interface RankingApiUser {
   userId: number;
   nickName: string;
   profileImage: string;
+  imageUrl: string;
+  topic: string;
   score: number;
   rank: number;
 }
+
+// 랭킹 사용자 타입 정의 (애플리케이션 내에서 사용)
+type RankingUser = RankingApiUser;
 
 // 필터링 기간 타입
 type TimeFrame = "today" | "week" | "month" | "all";
@@ -29,6 +57,10 @@ const RankingPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [timeframe, setTimeframe] = useState<TimeFrame>("all");
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+
+  // 모달 관련 상태
+  const [selectedUser, setSelectedUser] = useState<RankingUser | null>(null);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   // API 요청 중복 방지를 위한 ref
   const isRequestPending = useRef(false);
@@ -53,7 +85,9 @@ const RankingPage: React.FC = () => {
           const data = responseData.data;
 
           if (data.ranking && Array.isArray(data.ranking)) {
-            setRankings(data.ranking);
+            // API 응답을 애플리케이션 타입으로 명시적 변환
+            const apiRankings = data.ranking as RankingApiUser[];
+            setRankings(apiRankings);
             setTotalPages(data.totalPage || 1);
           } else {
             console.error("Invalid ranking data:", data);
@@ -82,6 +116,17 @@ const RankingPage: React.FC = () => {
       setError("로그인이 필요한 서비스입니다.");
     }
   }, [currentPage, isLoggedIn]); // timeframe은 백엔드에서 아직 지원 안 함
+
+  // 랭킹 아이템 클릭 핸들러
+  const handleRankingItemClick = (user: RankingUser) => {
+    setSelectedUser(user);
+    setModalOpen(true);
+  };
+
+  // 모달 닫기 핸들러
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
 
   // 페이지 이동 핸들러
   const handleNextPage = () => {
@@ -113,6 +158,102 @@ const RankingPage: React.FC = () => {
       .sort((a, b) => a.rank - b.rank);
 
     return topUsers;
+  };
+
+  // 랭킹 사진 모달 컴포넌트
+  const RankingModal = ({
+    user,
+    isOpen,
+    onClose,
+  }: {
+    user: RankingUser | null;
+    isOpen: boolean;
+    onClose: () => void;
+  }) => {
+    if (!isOpen || !user) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg max-w-md w-full overflow-hidden shadow-xl">
+          {/* 헤더 */}
+          <div className="flex items-center justify-between px-4 py-3 border-b">
+            <div className="flex items-center">
+              <span className="font-bold text-lg">#{user.rank}</span>
+              <div className="flex items-center ml-2">
+                <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
+                  <img
+                    src={user.profileImage || "/default-profile.jpg"}
+                    alt={`${user.nickName}의 프로필`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/default-profile.jpg";
+                    }}
+                  />
+                </div>
+                <span className="font-semibold">{user.nickName}</span>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          {/* 이미지 */}
+          <div className="relative">
+            <img
+              src={user.imageUrl}
+              alt={`${user.nickName}의 타임어택 사진`}
+              className="w-full aspect-[4/3] object-cover"
+            />
+            <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white py-1 px-3 rounded-full text-sm font-bold">
+              {user.score.toFixed(1)}점
+            </div>
+          </div>
+
+          {/* 주제 및 정보 */}
+          <div className="p-4">
+            <div className="mb-4">
+              <h3 className="text-gray-500 text-sm mb-1">주제</h3>
+              <p className="font-semibold text-xl">
+                {translateTopic(user.topic)}
+              </p>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-gray-500 text-sm mb-1">랭킹</h3>
+                <p className="font-bold text-xl text-pic-primary">
+                  #{user.rank}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-gray-500 text-sm mb-1">점수</h3>
+                <p className="font-bold text-xl text-pic-primary">
+                  {user.score.toFixed(1)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // 트로피 카드 컴포넌트
@@ -158,7 +299,10 @@ const RankingPage: React.FC = () => {
     }
 
     return (
-      <div className="flex flex-col items-center p-4 border border-gray-200 rounded-lg bg-white shadow-sm">
+      <div
+        className="flex flex-col items-center p-4 border border-gray-200 rounded-lg bg-white shadow-sm cursor-pointer hover:bg-gray-50"
+        onClick={() => handleRankingItemClick(user)}
+      >
         <div className="mb-4">
           <img
             src={trophyImage}
@@ -202,7 +346,10 @@ const RankingPage: React.FC = () => {
 
   // 랭킹 아이템 컴포넌트
   const RankingItem = ({ user }: { user: RankingUser }) => (
-    <li className="border-b border-gray-100 py-4 grid grid-cols-3 items-center">
+    <li
+      className="border-b border-gray-100 py-4 grid grid-cols-3 items-center cursor-pointer hover:bg-gray-50"
+      onClick={() => handleRankingItemClick(user)}
+    >
       <div className="text-center text-xl font-bold">{user.rank}</div>
       <div className="flex items-center">
         <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center mr-2">
@@ -386,6 +533,13 @@ const RankingPage: React.FC = () => {
           타임어택 도전하기
         </Link>
       </footer>
+
+      {/* 랭킹 사진 모달 */}
+      <RankingModal
+        user={selectedUser}
+        isOpen={modalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };

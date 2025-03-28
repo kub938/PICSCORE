@@ -2,15 +2,15 @@
 import { api, testApi } from "./api";
 import { useAuthStore } from "../store/authStore";
 
-// 기본 응답 인터페이스
+// Badge API response type definitions
 interface BaseResponse<T> {
   timeStamp: string;
   message: string;
   data: T;
 }
 
-// 배지 정보 인터페이스
-interface BadgeResponse {
+// Badge information interface
+interface BadgeResponseData {
   badgeId: number;
   name: string;
   image: string;
@@ -18,7 +18,7 @@ interface BadgeResponse {
   isObtain: boolean;
 }
 
-// 프로필 배지 인터페이스
+// Profile badge interface as returned by API
 interface ProfileBadgeResponse {
   badgeId: number;
   badgeName: string;
@@ -26,17 +26,30 @@ interface ProfileBadgeResponse {
 }
 
 export const badgeApi = {
-  // 모든 배지 정보 조회
+  // Get all badges with their achievement status
   getAllBadges: () => {
     const accessToken = useAuthStore.getState().accessToken;
-    return testApi.get<BaseResponse<BadgeResponse[]>>("/api/v1/badge", {
+    return testApi.get<BaseResponse<BadgeResponseData[]>>("/api/v1/badge", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
   },
 
-  // 프로필에 표시할 배지 설정
+  // Get badges for user profile display
+  getUserBadges: (userId: number) => {
+    const accessToken = useAuthStore.getState().accessToken;
+    return testApi.get<BaseResponse<ProfileBadgeResponse[]>>(
+      `/api/v1/badge/user/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+  },
+
+  // Set the badge to display on user profile
   setDisplayBadge: (badgeId: number) => {
     const accessToken = useAuthStore.getState().accessToken;
     return testApi.patch<BaseResponse<void>>(
@@ -50,7 +63,21 @@ export const badgeApi = {
     );
   },
 
-  // 현재 프로필에 표시된 배지 조회
+  // For admin or testing - manually complete a badge
+  completeBadge: (badgeId: number) => {
+    const accessToken = useAuthStore.getState().accessToken;
+    return testApi.post<BaseResponse<void>>(
+      "/api/v1/badge/complete",
+      { badgeId },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+  },
+
+  // Get current display badge for user
   getCurrentDisplayBadge: () => {
     const accessToken = useAuthStore.getState().accessToken;
     return testApi.get<BaseResponse<ProfileBadgeResponse>>(
