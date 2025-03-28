@@ -2,6 +2,8 @@ package com.picscore.backend.photo.model.response;
 
 import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.user.model.entity.User;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,9 +25,10 @@ public class GetPhotoDetailResponse {
 
     // 기타 정보
     public int likeCnt;          // 좋아요 수
+    public boolean isLike;
     public List<String> hashTag; // 해시태그 리스트
 
-    public GetPhotoDetailResponse(User user, Photo photo, int likeCnt, List<String> hashTag) {
+    public GetPhotoDetailResponse(User user, Photo photo, int likeCnt, List<String> hashTag, boolean isLike) {
         // User 정보 설정
         this.userId = user.getId();
         this.nickName = user.getNickName();
@@ -41,6 +44,7 @@ public class GetPhotoDetailResponse {
 
         // 기타 정보 설정
         this.likeCnt = likeCnt;
+        this.isLike = isLike;
         this.hashTag = hashTag;
     }
 }

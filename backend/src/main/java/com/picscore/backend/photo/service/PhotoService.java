@@ -2,6 +2,7 @@ package com.picscore.backend.photo.service;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.photo.model.entity.Photo;
+import com.picscore.backend.photo.model.entity.PhotoLike;
 import com.picscore.backend.photo.model.response.GetPhotoDetailResponse;
 import com.picscore.backend.photo.model.response.GetPhotoTop5Response;
 import com.picscore.backend.photo.model.response.GetPhotosResponse;
@@ -9,6 +10,7 @@ import com.picscore.backend.photo.repository.PhotoHashtagRepository;
 import com.picscore.backend.photo.repository.PhotoLikeRepository;
 import com.picscore.backend.photo.repository.PhotoRepository;
 import com.picscore.backend.photo.model.response.UploadPhotoResponse;
+import com.picscore.backend.user.model.entity.Follow;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -287,7 +289,8 @@ public class PhotoService {
      * @param photoId 조회할 사진의 ID
      * @return ResponseEntity<BaseResponse<GetPhotoDetailResponse>> 사진 상세 정보
      */
-    public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(Long photoId) {
+    public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(
+            Long userId, Long photoId) {
         // Photo 정보 조회
         Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사진을 찾을 수 없습니다."));
@@ -298,6 +301,8 @@ public class PhotoService {
         // 좋아요 수 조회
         int likeCnt = photoLikeRepository.countByPhotoId(photoId);
 
+        boolean isLike = photoLikeRepository.existsByPhotoIdAndUserId(photoId, userId);
+
         // 해시태그 조회
         List<String> hashTags = photoHashtagRepository.findByPhotoId(photoId)
                 .stream()
@@ -305,7 +310,7 @@ public class PhotoService {
                 .collect(Collectors.toList());
 
         // DTO에 데이터 설정
-        GetPhotoDetailResponse response = new GetPhotoDetailResponse(user, photo, likeCnt, hashTags);
+        GetPhotoDetailResponse response = new GetPhotoDetailResponse(user, photo, likeCnt, hashTags, isLike);
         return ResponseEntity.ok(BaseResponse.success("사진 상세 조회 성공",response));
     }
 
@@ -502,6 +507,30 @@ public class PhotoService {
                 folder,
                 fileName);
     }
+
+
+    public Boolean toggleLike(Long userId, Long photoId) {
+
+        Photo photo = photoRepository.findById(photoId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + photoId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID; " + userId));
+
+        Optional<PhotoLike> existPhotoLike = photoLikeRepository.findByPhotoIdAndUserId(photoId, userId);
+
+        if (existPhotoLike.isPresent()) {
+            // 기존 팔로우 관계가 있으면 삭제
+            photoLikeRepository.delete(existPhotoLike.get());
+            return false;
+        } else {
+            PhotoLike photoLike = new PhotoLike(
+                    photo, user
+            );
+            photoLikeRepository.save(photoLike);
+        }
+        return true;
+    }
+
 }
 
 
