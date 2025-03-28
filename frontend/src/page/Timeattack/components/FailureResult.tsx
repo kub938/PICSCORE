@@ -1,13 +1,35 @@
+// page/Timeattack/components/FailureResult.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
 interface FailureResultProps {
   message: string;
   topic?: string;
+  translatedTopic?: string;
+  image?: string | null; // Added image prop
+  onTryAgain?: () => void;
 }
 
-const FailureResult: React.FC<FailureResultProps> = ({ message, topic }) => {
+const FailureResult: React.FC<FailureResultProps> = ({
+  message,
+  topic,
+  translatedTopic,
+  image,
+  onTryAgain,
+}) => {
   const navigate = useNavigate();
+
+  const handleTryAgain = () => {
+    if (onTryAgain) {
+      onTryAgain();
+    } else {
+      navigate("/time-attack");
+    }
+  };
+
+  const handleGoHome = () => {
+    navigate("/");
+  };
 
   return (
     <div className="flex-1 p-4 flex flex-col items-center justify-center">
@@ -32,28 +54,39 @@ const FailureResult: React.FC<FailureResultProps> = ({ message, topic }) => {
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-red-500 mb-2">시간 초과!</h2>
+        <h2 className="text-2xl font-bold text-red-500 mb-2">실패!</h2>
         <p className="text-gray-600 mb-6">
           {message || "제한 시간 내에 사진을 제출하지 못했습니다."}
         </p>
 
+        {/* Show uploaded image if available */}
+        {image && (
+          <div className="mb-4">
+            <img
+              src={image}
+              alt="업로드된 사진"
+              className="w-full h-auto rounded-lg object-contain max-h-48 mx-auto"
+            />
+          </div>
+        )}
+
         {topic && (
           <div className="bg-gray-100 p-4 rounded-lg mb-6">
             <p className="text-gray-800">
-              오늘의 주제: <span className="font-bold">{topic}</span>
+              오늘의 주제: <span className="font-bold">{translatedTopic}</span>
             </p>
           </div>
         )}
 
         <div className="flex space-x-4">
           <button
-            onClick={() => navigate("/time-attack")}
+            onClick={handleTryAgain}
             className="flex-1 bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition"
           >
             다시 도전하기
           </button>
           <button
-            onClick={() => navigate("/")}
+            onClick={handleGoHome}
             className="flex-1 border border-gray-300 py-3 rounded-lg font-medium hover:bg-gray-100 transition"
           >
             홈으로

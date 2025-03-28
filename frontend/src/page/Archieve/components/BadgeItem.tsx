@@ -1,6 +1,15 @@
 import React from "react";
-import { Badge } from "../../../types";
-import ProgressBar from "./ProgressBar";
+
+interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  achieved: boolean;
+  achievedDate?: string;
+  progress?: number;
+  maxProgress?: number;
+}
 
 interface BadgeItemProps {
   badge: Badge;
@@ -26,25 +35,25 @@ const BadgeItem: React.FC<BadgeItemProps> = ({
       className={`bg-white p-4 rounded-lg border shadow-sm ${
         badge.achieved
           ? isSelected
-            ? "border-green-500 bg-green-50"
-            : "border-green-200"
-          : "border-gray-200"
+            ? "border-pic-primary bg-green-50"
+            : "border-pic-primary border-opacity-30"
+          : "border-gray-300 bg-gray-100"
       } ${
         isSelectable && badge.achieved ? "cursor-pointer hover:bg-gray-50" : ""
       }`}
       onClick={handleClick}
     >
       <div className="flex flex-col items-center">
-        <div className="relative w-16 h-16 mb-2">
+        <div className="relative w-16 h-16 mb-2 flex items-center justify-center">
           <img
             src={badge.image}
             alt={badge.name}
             className={`w-full h-full object-contain ${
-              !badge.achieved ? "opacity-40 grayscale" : ""
+              !badge.achieved ? "opacity-50 grayscale" : ""
             }`}
           />
           {badge.achieved && (
-            <div className="absolute -top-1 -right-1 bg-green-500 text-white rounded-full p-1">
+            <div className="absolute -top-1 -right-1 bg-pic-primary text-white rounded-full p-1">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="12"
@@ -61,10 +70,10 @@ const BadgeItem: React.FC<BadgeItemProps> = ({
             </div>
           )}
 
-          {/* 선택된 뱃지 표시 */}
+          {/* 선택된 배지 표시 */}
           {isSelected && (
-            <div className="absolute inset-0 flex items-center justify-center bg-green-500 bg-opacity-20 rounded-full">
-              <div className="bg-green-500 text-white rounded-full p-1">
+            <div className="absolute inset-0 flex items-center justify-center bg-pic-primary bg-opacity-20 rounded-full">
+              <div className="bg-pic-primary text-white rounded-full p-1">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -87,22 +96,11 @@ const BadgeItem: React.FC<BadgeItemProps> = ({
         <h3 className="font-bold text-sm text-center">{badge.name}</h3>
 
         {badge.achieved ? (
-          <span className="text-xs text-green-500 mt-1">
-            {badge.achievedDate} 달성
+          <span className="text-xs text-pic-primary mt-1">
+            {badge.achievedDate ? `${badge.achievedDate} 달성` : "달성 완료"}
           </span>
         ) : (
-          badge.progress !== undefined &&
-          badge.maxProgress !== undefined && (
-            <div className="w-full mt-2">
-              <div className="flex justify-between text-xs text-gray-500 mb-1">
-                <span>{badge.progress}</span>
-                <span>{badge.maxProgress}</span>
-              </div>
-              <ProgressBar
-                progress={(badge.progress / badge.maxProgress) * 100}
-              />
-            </div>
-          )
+          <span className="text-xs text-gray-400 mt-1">미달성</span>
         )}
       </div>
 

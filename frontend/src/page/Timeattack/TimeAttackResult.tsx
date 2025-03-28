@@ -1,45 +1,146 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useLocation } from "react-router-dom";
+// page/Timeattack/TimeAttackResult.tsx
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTimeAttackStore } from "../../store/timeAttackStore";
-import trophyVideo from "../../assets/trophy.mp4";
+import { useAchievementCheck } from "../../hooks/useAchievement";
 
 // 컴포넌트 임포트
 import Container from "./components/Container";
-import Header from "./components/Header";
 import LoadingState from "./components/LoadingState";
 import FailureResult from "./components/FailureResult";
 import SuccessResult from "./components/SuccessResult";
-import VideoAnimation from "./components/VideoAnimation";
 import { LocationState } from "../../types";
 import { TimeAttackResultData } from "../../types";
+import { timeAttackApi } from "../../api/timeAttackApi";
+
+// 애니메이션 모달 컴포넌트
+interface AnimationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  score: number;
+  xpGained: number;
+  destination: "ranking" | "timeattack";
+}
+
+const AnimationModal: React.FC<AnimationModalProps> = ({
+  isOpen,
+  onClose,
+  score,
+  xpGained,
+  destination,
+}) => {
+  const [countdown, setCountdown] = useState(3);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isOpen) {
+      // XP 표시 후 카운트다운 시작
+      const countdownInterval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            // 카운트다운 완료 후 목적지로 이동
+            setTimeout(() => {
+              onClose();
+              if (destination === "ranking") {
+                navigate("/ranking");
+              } else {
+                navigate("/time-attack");
+              }
+            }, 500);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(countdownInterval);
+    }
+  }, [isOpen, navigate, onClose, destination]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+      <div className="w-full max-w-sm mx-auto">
+        <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 text-center animate-fadeIn">
+          <h2 className="text-3xl font-bold mb-4 text-white">축하합니다!</h2>
+          <div className="mb-6">
+            <p className="text-xl text-yellow-300">획득 점수</p>
+            <p className="text-5xl font-bold text-white">{score}</p>
+          </div>
+          <div className="mb-8">
+            <p className="text-xl text-green-300">경험치 획득</p>
+            <div className="flex items-center justify-center">
+              <span className="text-5xl font-bold text-white">+{xpGained}</span>
+              <span className="text-xl text-white ml-1">XP</span>
+            </div>
+          </div>
+          {countdown > 0 ? (
+            <p className="text-gray-200">
+              {countdown}초 후{" "}
+              {destination === "ranking" ? "랭킹 페이지" : "타임어택 페이지"}로
+              이동합니다...
+            </p>
+          ) : (
+            <p className="text-gray-200">이동 중...</p>
+          )}
+          <button
+            onClick={() => {
+              onClose();
+              if (destination === "ranking") {
+                navigate("/ranking");
+              } else {
+                navigate("/time-attack");
+              }
+            }}
+            className="mt-4 bg-pic-primary text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-pic-primary/90 transition"
+          >
+            바로 이동하기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const TimeAttackResult: React.FC = () => {
   const location = useLocation() as LocationState;
+  const navigate = useNavigate();
+
   // Zustand 상태 사용
   const result = useTimeAttackStore((state) => state.result);
 
   const [localResult, setLocalResult] = useState<TimeAttackResultData | null>(
     null
   );
-  const [showVideo, setShowVideo] = useState<boolean>(true);
-  const [showXpGained, setShowXpGained] = useState<boolean>(false);
-  const [showTotalXp, setShowTotalXp] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [currentRanking, setCurrentRanking] = useState<number | null>(null);
+  const [noMatch, setNoMatch] = useState<boolean>(false); // 일치 항목 없음 상태
 
-  const videoTimerRef = useRef<number | null>(null);
-  const xpGainedTimerRef = useRef<number | null>(null);
-  const totalXpTimerRef = useRef<number | null>(null);
+  // 애니메이션 모달 상태
+  const [showModal, setShowModal] = useState(false);
+  const [modalDestination, setModalDestination] = useState<
+    "ranking" | "timeattack"
+  >("ranking");
+  const [isSaving, setIsSaving] = useState(false);
 
+  // 컴포넌트 마운트 시 데이터 설정
   useEffect(() => {
-    // Check if we have result data passed through location state
+    console.log("분석 결과 데이터:", location.state?.result);
+    console.log("Zustand 결과 데이터:", result);
+
+    // 결과 데이터 설정
     if (location.state?.result) {
       setLocalResult(location.state.result);
 
-      // If it's a failure, don't show the success video
-      if (location.state.result.success === false) {
-        setShowVideo(false);
+      // 일치 항목 없음 직접 확인
+      if (location.state.result?.message?.includes("일치 항목 없음")) {
+        console.log("일치 항목 없음 감지됨 (location state)");
+        setNoMatch(true);
       }
-    } else {
-      // 만약 location.state에 결과가 없으면 Zustand에 저장된 결과 사용
+    } else if (result) {
+      // Zustand 상태에서 결과 가져오기
       setLocalResult({
         score: result.score,
         topicAccuracy: result.topicAccuracy,
@@ -47,92 +148,119 @@ const TimeAttackResult: React.FC = () => {
         image: result.image,
         topic: result.topic,
         ranking: result.ranking,
-        xpEarned: 97, // 가정
-        success: result.score > 0, // 점수가 있으면 성공으로 간주
+        imageName: `timeattack_${Date.now()}.jpg`,
+        success: result.score > 0,
       });
+
+      // 피드백에서 일치 항목 없음 확인
+      if (
+        result.feedback &&
+        Array.isArray(result.feedback) &&
+        result.feedback.some(
+          (item) => typeof item === "string" && item.includes("일치 항목 없음")
+        )
+      ) {
+        console.log("일치 항목 없음 감지됨 (zustand)");
+        setNoMatch(true);
+      }
     }
 
-    // Set timers for animations (only if it's a success)
-    if (!location.state?.result || location.state.result.success !== false) {
-      // 1.5 seconds after video starts, show the XP gained
-      xpGainedTimerRef.current = window.setTimeout(() => {
-        setShowXpGained(true);
-      }, 1500);
-
-      // 3 seconds after video starts, show total XP
-      totalXpTimerRef.current = window.setTimeout(() => {
-        setShowTotalXp(true);
-      }, 3000);
-
-      // 5 seconds after video starts, transition to result screen
-      videoTimerRef.current = window.setTimeout(() => {
-        setShowVideo(false);
-      }, 5000);
-    }
-
-    // Clean up timers on component unmount
-    return () => {
-      if (videoTimerRef.current) clearTimeout(videoTimerRef.current);
-      if (xpGainedTimerRef.current) clearTimeout(xpGainedTimerRef.current);
-      if (totalXpTimerRef.current) clearTimeout(totalXpTimerRef.current);
-    };
+    setIsLoading(false);
   }, [location, result]);
 
-  // Handle video ended event (as a backup if setTimeout fails)
-  const handleVideoEnded = () => {
-    setShowVideo(false);
+  // 다시 도전하기 핸들러
+  const handleTryAgain = () => {
+    setModalDestination("timeattack");
+    setShowModal(true);
   };
 
-  if (!localResult) {
+  // 랭킹 보기 핸들러
+  const handleViewRanking = async () => {
+    setIsSaving(true);
+
+    try {
+      if (!localResult) return;
+
+      // 타임어택 결과 저장 API 호출
+      await timeAttackApi.saveTimeAttackResult({
+        imageName: localResult.imageName || `timeattack_${Date.now()}.jpg`,
+        topic: localResult.topic || "",
+        score: localResult.score || 0,
+      });
+
+      // 랭킹 데이터 조회도 필요하다면 여기서 수행
+
+      // 애니메이션 모달 표시 (저장 성공 후)
+      setModalDestination("ranking");
+      setShowModal(true);
+    } catch (error) {
+      console.error("결과 저장 실패:", error);
+      // 오류 처리
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // 모달 닫기 핸들러
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  // 로딩 중이면 로딩 화면 표시
+  if (isLoading) {
     return <LoadingState />;
   }
 
-  // Failure screen
-  if (localResult.success === false) {
+  // 일치 항목 없음이면 실패 화면 표시
+  if (noMatch) {
     return (
       <Container>
-        <Header title="타임어택 결과" />
         <FailureResult
-          message={
-            localResult.message || "제한 시간 내에 사진을 제출하지 못했습니다."
-          }
-          topic={localResult.topic}
+          message={`주제 "${
+            localResult?.translatedTopic || localResult?.topic || ""
+          }"에 맞는 항목을 찾지 못했습니다.`}
+          topic={localResult?.topic}
+          translatedTopic={localResult?.translatedTopic}
+          image={localResult?.image} // 이미지 전달
+          onTryAgain={handleTryAgain}
         />
       </Container>
     );
   }
 
-  // Trophy video screen - for successful submissions
-  if (showVideo) {
-    return (
-      <VideoAnimation
-        videoSrc={trophyVideo}
-        xpGained={localResult.xpEarned || 97}
-        showXpGained={showXpGained}
-        showTotalXp={showTotalXp}
-        onVideoEnd={handleVideoEnded}
-      />
-    );
-  }
-
-  // Original detailed result view after video ends (for successful submissions)
+  // 결과 화면
   return (
     <Container>
-      <Header title="타임어택 결과" />
       <main className="flex-1 p-4">
-        {localResult.score &&
-          localResult.topicAccuracy &&
-          localResult.analysisData && (
+        {localResult?.score !== undefined &&
+          localResult?.topicAccuracy !== undefined &&
+          localResult?.analysisData && (
             <SuccessResult
               score={localResult.score}
               topicAccuracy={localResult.topicAccuracy}
               analysisData={localResult.analysisData}
               image={localResult.image || null}
               topic={localResult.topic || ""}
-              ranking={localResult.ranking || 0}
+              translatedTopic={localResult.translatedTopic}
+              imageName={
+                localResult.imageName || `timeattack_${Date.now()}.jpg`
+              }
+              ranking={currentRanking || localResult.ranking || 0}
+              onTryAgain={handleTryAgain}
+              onViewRanking={handleViewRanking}
+              isSaving={isSaving}
             />
           )}
       </main>
+
+      {/* 애니메이션 모달 */}
+      <AnimationModal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        score={localResult?.score || 0}
+        xpGained={Math.floor((localResult?.score || 0) * 10)} // XP 계산 로직: 점수 * 10
+        destination={modalDestination}
+      />
     </Container>
   );
 };

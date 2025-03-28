@@ -1,6 +1,14 @@
 import React from "react";
 import BadgeItem from "./BadgeItem";
-import { Badge } from "../../../types";
+
+interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  achieved: boolean;
+  achievedDate?: string;
+}
 
 interface BadgeGridProps {
   badges: Badge[];

@@ -75,7 +75,6 @@ function Home() {
   };
 
   const { isLoading, isError, data } = useUserData();
-
   if (isLoading) {
     return <>로딩중 입니다</>;
   }
@@ -89,9 +88,7 @@ function Home() {
     <>
       <div className="flex flex-col w-full items-center">
         <HomeNavBar />
-        <div onClick={handleLogout} className="border bg-black w-30 h-30">
-          로그아웃
-        </div>
+
         {/* 프로필 이미지 섹션 */}
         <Link
           to="/mypage"
