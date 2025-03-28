@@ -141,6 +141,10 @@ const router = createBrowserRouter([
             path: "/follower",
             element: <Follower />,
           },
+          {
+            path: "photo",
+            element: <>게시글을 찾을 수 없습니다.</>,
+          },
         ],
       },
     ],
