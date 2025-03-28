@@ -42,6 +42,7 @@ public class TimeAttackService {
     private final S3Client s3Client;
     private final PhotoService photoService;
 
+
     @Value("${AZURE_ENDPOINT}")  // 환경 변수에서 API URL 가져오기
     private String visionApiUrl;
 

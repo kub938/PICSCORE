@@ -5,6 +5,7 @@ import com.picscore.backend.user.model.entity.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public class GetPhotoDetailResponse {
     // User 정보
@@ -16,8 +17,8 @@ public class GetPhotoDetailResponse {
     public Long photoId;
     public String imageUrl;
     public Float score;
-    public String analysisChart; // JSON 형태로 저장된 데이터
-    public String analysisText;  // JSON 형태로 저장된 데이터
+    public Map<String, Integer> analysisChart; // JSON 형태로 저장된 데이터
+    public Map<String, List<String>> analysisText;  // JSON 형태로 저장된 데이터
     public LocalDateTime createdAt;
 
     // 기타 정보
