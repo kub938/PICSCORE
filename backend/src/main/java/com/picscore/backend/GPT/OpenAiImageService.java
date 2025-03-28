@@ -47,10 +47,14 @@ public class OpenAiImageService {
                         Map.of("role", "system", "content", "당신은 30년 경력의 사진작가이며 NIMA(Neural Image Assessment)모델을 학습하여 이미지를 분석하고 수치화 할 수 있습니다."),
                         Map.of("role", "user", "content", List.of(
                                 Map.of("type", "image_url", "image_url", Map.of("url", resizedImageUrl)), // ✅ 리사이징된 이미지 URL 사용
-                                Map.of("type", "text", "text", "출력을 반드시 한국어로 하세요. 1. 다음 여섯 가지 기준에 따라 이미지를 각각 100점 만점으로 평가하세요: 구도, 선명도, 노이즈, 색 조화, 노출, 미적 요소. 각 기준의 점수를 '기준: 점수' 형식으로 표현하세요. 2. 이미지와 관련된 주제를 단어로 출력하세요. 3. 이미지 분위기를 형용사 형태로 출력하세요.")
+                                Map.of("type", "text", "text", "출력을 반드시 한국어로 하세요. " +
+                                        "1. 다음 여섯 가지 기준에 따라 이미지를 각각 100점 만점으로 평가하세요: " +
+                                        "구도, 선명도, 노이즈, 노출, 화이트밸런스, 다이나믹 레인지. 각 기준의 점수를 '기준: 점수: 한 줄 피드백' 형식으로 표현하세요. " +
+                                        "2. 이미지와 관련된 주제를 '주제: 주제1, 주제2' 형식으로 출력하세요."
+)
                         ))
                 ),
-                "max_tokens", 500   // 500 >> 250
+                "max_tokens", 500
         );
 
         // ✅ 요청 헤더 설정
@@ -70,7 +74,7 @@ public class OpenAiImageService {
             );
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                System.out.printf("###분석 내용="+response.getBody());
+//                System.out.printf("###분석 내용="+response.getBody());
                 return parseGPTResponse(response.getBody());
             } else {
                 throw new RuntimeException("OpenAI API 요청 실패: HTTP " + response.getStatusCode());
@@ -162,36 +166,36 @@ public class OpenAiImageService {
             // 점수를 저장할 Map
             Map<String, Integer> scores = new HashMap<>();
             Map<String, Object> response = new HashMap<>();
-            Map<String, Object> analysisText = new HashMap<>();
+            Map<String, String> analysisText = new HashMap<>();
 
-            // 1️⃣ 정규식을 사용해 점수 추출
-            Pattern scorePattern = Pattern.compile("(구도|선명도|노이즈|색 조화|노출|미적 요소):\\s*(\\d+)");
+            // 1️⃣ 정규식을 사용해 점수 및 피드백 추출
+            Pattern scorePattern = Pattern.compile("(구도|선명도|노이즈|노출|화이트밸런스|다이나믹 레인지):\\s*(\\d+)점:\\s*(.+)");
             Matcher scoreMatcher = scorePattern.matcher(content);
             int totalScore = 0;
             int avgScore = 0;
             int count = 0;
+
             while (scoreMatcher.find()) {
+                String category = scoreMatcher.group(1);
                 int score = Integer.parseInt(scoreMatcher.group(2));
-                scores.put(scoreMatcher.group(1), score);
+                String feedback = scoreMatcher.group(3);
+
+                scores.put(category, score);
+                analysisText.put(category, feedback);
                 totalScore += score;
                 count++;
             }
+
             // 총합 점수 계산 후 추가 (반올림하여 정수로 저장)
             if (count > 0) {
-                avgScore =Math.round((float) totalScore / count);
+                avgScore = Math.round((float) totalScore / count);
             }
+
             // 2️⃣ 정규식을 사용해 theme(주제) 추출 -> 리스트로 변환
             Pattern themePattern = Pattern.compile("주제:\\s*(.+)");
             Matcher themeMatcher = themePattern.matcher(content);
             if (themeMatcher.find()) {
-                analysisText.put("theme", splitToList(themeMatcher.group(1)));
-            }
-
-            // 3️⃣ 정규식을 사용해 mood(분위기) 추출 -> 리스트로 변환
-            Pattern moodPattern = Pattern.compile("분위기:\\s*(.+)");
-            Matcher moodMatcher = moodPattern.matcher(content);
-            if (moodMatcher.find()) {
-                analysisText.put("mood", splitToList(moodMatcher.group(1)));
+                response.put("hashTag", splitToList(themeMatcher.group(1)));
             }
 
             // 최종 응답 데이터 구성
@@ -199,11 +203,12 @@ public class OpenAiImageService {
             response.put("analysisText", analysisText);
             response.put("score", avgScore);
 
-            return ResponseEntity.ok(BaseResponse.success("분석 완료",response));
+            return ResponseEntity.ok(BaseResponse.success("분석 완료", response));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(BaseResponse.error(e.getMessage()));
         }
     }
+
 
     /**
      * 쉼표(,) 또는 공백( )을 기준으로 문자열을 리스트로 변환하는 유틸 메서드
