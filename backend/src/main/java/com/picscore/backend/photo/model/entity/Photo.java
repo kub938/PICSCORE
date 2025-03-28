@@ -7,6 +7,7 @@ import com.picscore.backend.GPT.JsonMapConverter;
 import com.picscore.backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -15,7 +16,8 @@ import java.util.Map;
 
 @Entity
 @Table(name = "photo")
-@Getter @Setter
+@Getter
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @JsonInclude(JsonInclude.Include.ALWAYS) // null 가능, activity 통한 것은 null 가능
 public class Photo extends BaseEntity {
@@ -50,4 +52,14 @@ public class Photo extends BaseEntity {
     @Column(name = "analysis_text", columnDefinition = "Text") // ✅ JSON을 String으로 저장
     private Map<String, String> analysisText = new HashMap<>();
 
+    public Photo (User user, String imageUrl, Float score, Boolean isPublic, String photoType,
+                  Map<String, Integer> analysisChart, Map<String, String> analysisText) {
+        this.user = user;
+        this.imageUrl = imageUrl;
+        this.score = score;
+        this.isPublic = isPublic;
+        this.photoType = photoType;
+        this.analysisChart = analysisChart;
+        this.analysisText = analysisText;
+    }
 }
