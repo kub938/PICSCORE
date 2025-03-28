@@ -86,7 +86,7 @@ function Home() {
   }
   return (
     <>
-      <div className="flex flex-col w-full items-center">
+      <div className="flex flex-col w-full items-center justify-center">
         <HomeNavBar />
 
         {/* 프로필 이미지 섹션 */}
