@@ -14,6 +14,8 @@ import SuccessResult from "./components/SuccessResult";
 import { LocationState } from "../../types";
 import { TimeAttackResultData } from "../../types";
 import { timeAttackApi } from "../../api/timeAttackApi";
+import ContentNavBar from "../../components/NavBar/ContentNavBar";
+import BottomBar from "../../components/BottomBar/BottomBar";
 
 // 애니메이션 모달 컴포넌트
 interface AnimationModalProps {
@@ -292,6 +294,7 @@ const TimeAttackResult: React.FC = () => {
   // 결과 화면
   return (
     <Container>
+      <ContentNavBar content="타임어택 결과" />
       <main className="flex-1 p-4">
         {localResult?.score !== undefined &&
           localResult?.topicAccuracy !== undefined &&
@@ -313,6 +316,7 @@ const TimeAttackResult: React.FC = () => {
             />
           )}
       </main>
+      <BottomBar />
 
       {/* 애니메이션 모달 */}
       <AnimationModal

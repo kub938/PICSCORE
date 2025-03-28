@@ -208,39 +208,11 @@ const AchievementPage: React.FC = () => {
     updateProfileBadge();
   };
 
-  // 뒤로가기 핸들러
-  const handleGoBack = () => {
-    navigate("/profile");
-  };
-
   return (
-    <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <div className="bg-white p-4 flex items-center border-b">
-        <button onClick={handleGoBack} className="p-1">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <h1 className="text-lg font-bold flex-1 text-center">
-          {selectionMode ? "프로필 배지 선택" : "업적"}
-        </h1>
-        <div className="w-6"></div> {/* 균형을 위한 더미 요소 */}
-      </div>
-
+    <div className="flex flex-col w-full max-w-md mx-auto bg-gray-50 min-h-screen">
       <div className="p-4">
         {/* 업적 달성도 */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-4 border border-gray-200">
           <h2 className="font-bold mb-2">업적 달성도</h2>
           <div className="flex justify-between mb-1">
             <span className="text-sm">{achievedCount}개 달성</span>
@@ -250,11 +222,23 @@ const AchievementPage: React.FC = () => {
         </div>
 
         {/* 카테고리 탭 */}
-        <CategoryTabs
-          categories={defaultCategories}
-          activeCategory={activeCategory}
-          onCategoryChange={handleCategoryChange}
-        />
+        <div className="mb-4 overflow-x-auto">
+          <div className="flex space-x-2 pb-1">
+            {defaultCategories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryChange(category.id)}
+                className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${
+                  activeCategory === category.id
+                    ? "bg-pic-primary text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* 로딩 상태 */}
         {isLoading ? (
@@ -262,16 +246,106 @@ const AchievementPage: React.FC = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pic-primary"></div>
           </div>
         ) : error ? (
-          <div className="p-4 bg-red-50 text-red-600 rounded-lg text-center">
+          <div className="p-4 bg-red-50 text-red-500 rounded-lg text-center">
             {error}
           </div>
         ) : (
-          <BadgeGrid
-            badges={filteredBadges}
-            isSelectable={selectionMode}
-            selectedBadgeId={selectedBadgeId}
-            onSelectBadge={handleSelectBadge}
-          />
+          <div className="grid grid-cols-2 gap-3">
+            {filteredBadges.length > 0 ? (
+              filteredBadges.map((badge) => (
+                <div
+                  key={badge.id}
+                  className={`bg-white p-3 rounded-lg border shadow-sm ${
+                    badge.achieved
+                      ? selectedBadgeId === badge.id
+                        ? "border-pic-primary bg-green-50"
+                        : "border-pic-primary border-opacity-30"
+                      : "border-gray-300 bg-gray-100"
+                  } ${
+                    selectionMode && badge.achieved
+                      ? "cursor-pointer hover:bg-gray-50"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    selectionMode && badge.achieved && handleSelectBadge(badge)
+                  }
+                >
+                  <div className="flex flex-col items-center">
+                    <div className="relative w-16 h-16 mb-2 flex items-center justify-center">
+                      <img
+                        src={badge.image}
+                        alt={badge.name}
+                        className={`w-full h-full object-contain ${
+                          !badge.achieved ? "opacity-50 grayscale" : ""
+                        }`}
+                      />
+                      {badge.achieved && (
+                        <div className="absolute -top-1 -right-1 bg-pic-primary text-white rounded-full p-1">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        </div>
+                      )}
+
+                      {/* 선택된 배지 표시 */}
+                      {selectedBadgeId === badge.id && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-pic-primary bg-opacity-20 rounded-full">
+                          <div className="bg-pic-primary text-white rounded-full p-1">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path>
+                              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <h3 className="font-bold text-sm text-center">
+                      {badge.name}
+                    </h3>
+
+                    {badge.achieved ? (
+                      <span className="text-xs text-pic-primary mt-1">
+                        {badge.achievedDate
+                          ? `${badge.achievedDate} 달성`
+                          : "달성 완료"}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400 mt-1">미달성</span>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    {badge.description}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-2 p-8 text-center text-gray-500">
+                표시할 업적이 없습니다.
+              </div>
+            )}
+          </div>
         )}
 
         {/* 선택 모드 가이드 (선택 모드일 때만 표시) */}

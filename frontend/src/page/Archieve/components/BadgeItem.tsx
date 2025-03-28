@@ -24,51 +24,38 @@ const BadgeItem: React.FC<BadgeItemProps> = ({
   isSelected = false,
   onSelect,
 }) => {
-  // 디버깅을 위한 로그 추가 - 특별히 7번 배지를 주목
-  if (badge.id === "7") {
-    console.log(
-      `7번 배지 렌더링 - 달성 여부: ${
-        badge.achieved
-      }, 타입: ${typeof badge.achieved}`
-    );
-  }
-
-  // achieved가 undefined인 경우 false로 처리
-  const isAchieved = badge.achieved === true;
-
   const handleClick = () => {
-    if (isSelectable && isAchieved && onSelect) {
+    if (isSelectable && badge.achieved && onSelect) {
       onSelect(badge);
     }
   };
 
   return (
     <div
-      className={`bg-white p-4 rounded-lg border shadow-sm ${
-        isAchieved
+      className={`bg-white p-4 rounded-lg border shadow-sm transition-all ${
+        badge.achieved
           ? isSelected
             ? "border-pic-primary bg-green-50"
-            : "border-pic-primary border-opacity-30"
-          : "border-gray-300 bg-gray-100"
-      } ${isSelectable && isAchieved ? "cursor-pointer hover:bg-gray-50" : ""}`}
+            : "border-pic-primary/20 hover:border-pic-primary/50"
+          : "border-gray-200 bg-gray-50 opacity-70"
+      } ${
+        isSelectable && badge.achieved
+          ? "cursor-pointer transform hover:scale-[1.02] hover:shadow-md"
+          : ""
+      }`}
       onClick={handleClick}
     >
       <div className="flex flex-col items-center">
-        <div className="relative w-16 h-16 mb-2 flex items-center justify-center">
+        <div className="relative w-20 h-20 mb-3 flex items-center justify-center">
           <img
             src={badge.image}
             alt={badge.name}
-            className={`w-full h-full object-contain ${
-              !isAchieved ? "opacity-50 grayscale" : ""
+            className={`w-full h-full object-contain transition-all ${
+              !badge.achieved ? "grayscale opacity-50" : ""
             }`}
-            onError={(e) => {
-              console.error(`이미지 로드 오류: ${badge.image}`);
-              const target = e.target as HTMLImageElement;
-              target.src = "/default-badge.png"; // 기본 이미지로 대체
-            }}
           />
-          {isAchieved && (
-            <div className="absolute -top-1 -right-1 bg-pic-primary text-white rounded-full p-1">
+          {badge.achieved && (
+            <div className="absolute -top-1 -right-1 bg-pic-primary text-white rounded-full p-1 shadow-sm">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="12"
@@ -87,8 +74,8 @@ const BadgeItem: React.FC<BadgeItemProps> = ({
 
           {/* 선택된 배지 표시 */}
           {isSelected && (
-            <div className="absolute inset-0 flex items-center justify-center bg-pic-primary bg-opacity-20 rounded-full">
-              <div className="bg-pic-primary text-white rounded-full p-1">
+            <div className="absolute inset-0 flex items-center justify-center bg-pic-primary/10 rounded-full animate-pulse">
+              <div className="bg-pic-primary text-white rounded-full p-1 shadow-md">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -108,18 +95,20 @@ const BadgeItem: React.FC<BadgeItemProps> = ({
           )}
         </div>
 
-        <h3 className="font-bold text-sm text-center">{badge.name}</h3>
+        <h3 className="font-bold text-center mb-1">{badge.name}</h3>
 
-        {isAchieved ? (
-          <span className="text-xs text-pic-primary mt-1">
+        {badge.achieved ? (
+          <span className="text-xs text-pic-primary font-medium mt-1 mb-2">
             {badge.achievedDate ? `${badge.achievedDate} 달성` : "달성 완료"}
           </span>
         ) : (
-          <span className="text-xs text-gray-400 mt-1">미달성</span>
+          <span className="text-xs text-gray-400 font-medium mt-1 mb-2">
+            미달성
+          </span>
         )}
       </div>
 
-      <p className="text-xs text-gray-500 mt-2 text-center">
+      <p className="text-xs text-gray-600 mt-1 text-center leading-relaxed">
         {badge.description}
       </p>
     </div>

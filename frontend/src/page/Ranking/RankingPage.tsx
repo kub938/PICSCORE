@@ -51,6 +51,7 @@ type TimeFrame = "today" | "week" | "month" | "all";
 const RankingPage: React.FC = () => {
   // 상태 관리
   const [rankings, setRankings] = useState<RankingUser[]>([]);
+  const [topThreeUsers, setTopThreeUsers] = useState<RankingUser[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -64,6 +65,8 @@ const RankingPage: React.FC = () => {
 
   // API 요청 중복 방지를 위한 ref
   const isRequestPending = useRef(false);
+  // 첫 페이지 로드 여부 체크 ref
+  const isFirstLoad = useRef(true);
 
   // 랭킹 데이터 불러오기
   useEffect(() => {
@@ -89,6 +92,13 @@ const RankingPage: React.FC = () => {
             const apiRankings = data.ranking as RankingApiUser[];
             setRankings(apiRankings);
             setTotalPages(data.totalPage || 1);
+
+            // 첫 로드 시에만 상위 3명 설정
+            if (isFirstLoad.current && currentPage === 1) {
+              const topUsers = apiRankings.filter((user) => user.rank <= 3);
+              setTopThreeUsers(topUsers);
+              isFirstLoad.current = false;
+            }
           } else {
             console.error("Invalid ranking data:", data);
             setRankings([]);
@@ -146,18 +156,6 @@ const RankingPage: React.FC = () => {
     // 현재는 백엔드에서 지원하지 않으므로 UI만 변경
     setTimeframe(frame);
     //setCurrentPage(1); // 필터 변경 시 첫 페이지로 리셋
-  };
-
-  // 상위 3명 추출
-  const getTopThreeUsers = () => {
-    if (rankings.length === 0) return [];
-
-    // 깊은 복사를 통해 원본 배열 유지
-    const topUsers = [...rankings]
-      .filter((user) => user.rank <= 3)
-      .sort((a, b) => a.rank - b.rank);
-
-    return topUsers;
   };
 
   // 랭킹 사진 모달 컴포넌트
@@ -422,15 +420,14 @@ const RankingPage: React.FC = () => {
   );
 
   // 상위 3명 데이터 가져오기
-  const topThree = getTopThreeUsers();
-  const firstPlace = topThree.find((user) => user.rank === 1);
-  const secondPlace = topThree.find((user) => user.rank === 2);
-  const thirdPlace = topThree.find((user) => user.rank === 3);
+  const firstPlace = topThreeUsers.find((user) => user.rank === 1);
+  const secondPlace = topThreeUsers.find((user) => user.rank === 2);
+  const thirdPlace = topThreeUsers.find((user) => user.rank === 3);
 
   return (
     <div className="flex flex-col w-full max-w-md min-h-screen bg-gray-50">
       {/* TOP 3 섹션 - 로딩 중이 아닐 때만 표시 */}
-      {!isLoading && (
+      {!isLoading && topThreeUsers.length > 0 && (
         <div className="grid grid-cols-3 gap-2 p-4">
           {/* 2등 */}
           <TrophyCard user={secondPlace} rank={2} trophyImage={silverTrophy} />
@@ -448,7 +445,7 @@ const RankingPage: React.FC = () => {
         <div className="mb-4">
           <h2 className="text-lg font-bold mb-2">전체 참가자 랭킹</h2>
 
-          {/* 필터 버튼들 - 아직 백엔드에서 지원하지 않지만 UI 구현 */}
+          {/* 필터 버튼들 - 아직 백엔드에서 지원하지 않지만 UI 구현
           <div className="flex space-x-2 mb-4 overflow-x-auto">
             <button
               onClick={() => handleTimeFrameChange("today")}
@@ -490,7 +487,7 @@ const RankingPage: React.FC = () => {
             >
               전체
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* 랭킹 테이블 헤더 */}

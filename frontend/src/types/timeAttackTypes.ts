@@ -42,6 +42,8 @@ export interface TimeAttackResultData {
   analysisData?: AnalysisData;
   image?: string | null;
   topic?: string;
+  translatedTopic?: string; // 한글 번역된 주제
+  imageName?: string; // 이미지 파일 이름
   ranking?: number;
   success: boolean;
   message?: string;
@@ -110,15 +112,6 @@ export interface VideoAnimationProps {
   onVideoEnd: () => void;
 }
 
-// 랭킹 사용자 정보 인터페이스
-export interface RankingUser {
-  userId: number;
-  nickName: string;
-  profileImage: string;
-  score: number;
-  rank: number;
-}
-
 // 타임어택 API 응답 인터페이스
 export interface TimeAttackApiResponse<T> {
   timeStamp: string;
@@ -132,12 +125,6 @@ export interface AnalysisResponse {
   confidence: number;
 }
 
-// 랭킹 데이터 인터페이스
-export interface RankingData {
-  totalPage: number;
-  ranking: RankingUser[];
-}
-
 // 타임어택 결과 저장 요청 인터페이스
 export interface SaveTimeAttackRequest {
   imageName: string;
@@ -145,17 +132,19 @@ export interface SaveTimeAttackRequest {
   score: number;
 }
 
-// TimeAttack 결과 데이터 인터페이스 (컴포넌트용)
-export interface TimeAttackResultData {
-  score?: number;
-  topicAccuracy?: number;
-  analysisData?: AnalysisData;
-  image?: string | null;
+// 타임어택 랭킹 사용자 인터페이스 (타임어택 컴포넌트에서 사용)
+export interface TimeAttackRankingUser {
+  userId: number;
+  nickName: string;
+  profileImage: string;
+  score: number;
+  rank: number;
+  imageUrl?: string;
   topic?: string;
-  translatedTopic?: string; // 한글 번역된 주제
-  imageName?: string; // 이미지 파일 이름
-  ranking?: number;
-  success: boolean;
-  message?: string;
-  xpEarned?: number;
+}
+
+// 타임어택 랭킹 데이터 인터페이스
+export interface TimeAttackRankingData {
+  totalPage: number;
+  ranking: TimeAttackRankingUser[];
 }
