@@ -36,13 +36,14 @@ public class PhotoController {
 
     private final PhotoService photoService;
     private final OAuthService oAuthService;
-    private final UserRepository userRepository;
+
 
     // 임시저장
     @PostMapping("/photo")
     public ResponseEntity<BaseResponse<UploadPhotoResponse>> uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
         return photoService.uploadFile(file);
     }
+
 
     /**
      * 새로운 사진을 업로드하는 엔드포인트
@@ -74,6 +75,7 @@ public class PhotoController {
                 payload.getPhotoType()
         );
     }
+
 
     /**
      * 특정 해시태그로 사진을 검색하는 엔드포인트
@@ -126,7 +128,10 @@ public class PhotoController {
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>>
     getPhotosByUserId(
             @PathVariable Long userId, @RequestParam(required = false) Boolean isPublic) {
-        return photoService.getPhotosByUserId(userId, isPublic);
+
+        List<GetPhotosResponse> getPhotosResponseList = photoService.getPhotosByUserId(userId, isPublic);
+
+        return ResponseEntity.ok(BaseResponse.success("사진 조회 성공", getPhotosResponseList));
     }
 
 
@@ -139,9 +144,13 @@ public class PhotoController {
      */
     @GetMapping("/user/photo/me")
     public ResponseEntity<BaseResponse<List<GetPhotosResponse>>>
-    getMyPhotos(HttpServletRequest request, @RequestParam(required = false) Boolean isPublic) {
+    getMyPhotos(
+            HttpServletRequest request, @RequestParam(required = false) Boolean isPublic) {
+
         Long userId = oAuthService.findIdByNickName(request);
-        return photoService.getPhotosByUserId(userId, isPublic);
+        List<GetPhotosResponse> getPhotosResponseList = photoService.getPhotosByUserId(userId, isPublic);
+
+        return ResponseEntity.ok(BaseResponse.success("사진 조회 성공", getPhotosResponseList));
     }
 
 
@@ -156,8 +165,9 @@ public class PhotoController {
             HttpServletRequest request, @PathVariable Long photoId) {
 
         Long userId = oAuthService.findIdByNickName(request);
+        GetPhotoDetailResponse getPhotoDetailResponse = photoService.getPhotoDetail(userId, photoId);
 
-        return photoService.getPhotoDetail(userId, photoId);
+        return ResponseEntity.ok(BaseResponse.success("사진 상세 조회 성공", getPhotoDetailResponse));
     }
 
 
@@ -168,9 +178,11 @@ public class PhotoController {
      */
     @GetMapping("/photos/{pageNum}")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos(
-            @PathVariable int pageNum
-    ) {
-        return photoService.getPaginatedPhotos(pageNum);
+            @PathVariable int pageNum) {
+
+        Map<String, Object> response = photoService.getPaginatedPhotos(pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("사진 리스트 조회 성공", response));
     }
 
 
@@ -180,9 +192,14 @@ public class PhotoController {
      * @return ResponseEntity<BaseResponse<List<GetPhotoTop5Response>>> 상위 5개의 인기 사진 목록 응답
      */
     @GetMapping("/photo/top5")
-    public ResponseEntity<BaseResponse<List<GetPhotoTop5Response>>> getPhotoTop5() {
-        return photoService.getPhotoTop5();
+    public ResponseEntity<BaseResponse<List<GetPhotoTop5Response>>> getPhotoTop5(
+    ) {
+
+        List<GetPhotoTop5Response> getPhotoTop5ResponseList = photoService.getPhotoTop5();
+
+        return ResponseEntity.ok(BaseResponse.success("Top5 사진 조회", getPhotoTop5ResponseList));
     }
+
 
     /**
      * S3 관련 미완성 API
@@ -200,13 +217,18 @@ public class PhotoController {
     }
 
 
+    /**
+     * 사진 좋아요를 토글하는 API
+     *
+     * @param request   사용자 인증 정보를 포함한 HTTP 요청 객체
+     * @param photoId   좋아요를 토글할 사진의 ID
+     * @return ResponseEntity<BaseResponse<Void>> 좋아요 상태에 따른 응답 메시지 반환
+     */
     @PostMapping("/photo/like/{photoId}")
     public ResponseEntity<BaseResponse<Void>> toggleLike(
-            HttpServletRequest request, @PathVariable Long photoId
-    ) {
+            HttpServletRequest request, @PathVariable Long photoId) {
 
         Long userId = oAuthService.findIdByNickName(request);
-
         Boolean like = photoService.toggleLike(userId, photoId);
 
         // 결과에 따른 응답 메시지 생성
