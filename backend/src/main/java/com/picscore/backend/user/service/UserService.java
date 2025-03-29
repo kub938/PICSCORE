@@ -5,9 +5,7 @@ import com.picscore.backend.badge.model.entity.Badge;
 import com.picscore.backend.badge.model.entity.UserBadge;
 import com.picscore.backend.badge.repository.UserBadgeRepository;
 import com.picscore.backend.common.exeption.CustomException;
-import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
-import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.photo.service.PhotoService;
 import com.picscore.backend.timeattack.model.entity.TimeAttack;
 import com.picscore.backend.timeattack.model.response.GetMyStaticResponse;
@@ -26,9 +24,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -119,7 +115,7 @@ public class UserService {
      * @param searchText 검색할 닉네임 텍스트
      * @return ResponseEntity<BaseResponse<List<SearchUsersResponse>>> 검색된 사용자 목록을 포함한 응답
      */
-    public ResponseEntity<BaseResponse<List<SearchUsersResponse>>> searchUser(String searchText) {
+    public List<SearchUsersResponse> searchUser(String searchText) {
 
         // 1. 주어진 검색어로 시작하는 닉네임을 가진 사용자들을 데이터베이스에서 조회
         List<User> userList = userRepository.findByNickNameContaining(searchText);
@@ -138,7 +134,7 @@ public class UserService {
                         .collect(Collectors.toList()); // 변환된 객체들을 리스트로 수집
 
         // 3. 성공 응답 생성 및 반환
-        return ResponseEntity.ok(BaseResponse.success("친구 검색 성공", response));
+        return response;
     }
 
 
@@ -149,10 +145,10 @@ public class UserService {
      * @return ResponseEntity<BaseResponse<GetMyProfileResponse>> 사용자 프로필 정보 응답
      * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
      */
-    public ResponseEntity<BaseResponse<GetMyProfileResponse>> getMyProfile(Long userId) {
+    public GetMyProfileResponse getMyProfile(Long userId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
 
         int followerCnt = followRepository.countByFollowingId(userId);
         int followingCnt = followRepository.countByFollowerId(userId);
@@ -176,7 +172,7 @@ public class UserService {
                 followerCnt, followingCnt, profileBadgeList
         );
 
-        return ResponseEntity.ok(BaseResponse.success("내 프로필 조회 성공", response));
+        return response;
     }
 
 
@@ -188,12 +184,12 @@ public class UserService {
      * @return ResponseEntity<BaseResponse<GetUserProfileResponse>> 사용자 프로필 정보 응답
      * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
      */
-    public ResponseEntity<BaseResponse<GetUserProfileResponse>> getUserProfile(
+    public GetUserProfileResponse getUserProfile(
             Long myId, Long userId
     ) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
 
         int followerCnt = followRepository.countByFollowingId(userId);
         int followingCnt = followRepository.countByFollowerId(userId);
@@ -219,7 +215,7 @@ public class UserService {
                 followerCnt, followingCnt, isFollowing, profileBadgeList
         );
 
-        return ResponseEntity.ok(BaseResponse.success("유저 프로필 조회 성공", response));
+        return response;
     }
 
 
@@ -233,17 +229,17 @@ public class UserService {
      * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
      */
     @Transactional
-    public ResponseEntity<BaseResponse<Void>> updateMyProfile(
+    public void updateMyProfile(
             Long userId, UpdateMyProfileRequest request, HttpServletResponse response
     ) throws IOException {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
 
         User existingUser = userRepository.findByNickName(request.getNickName());
 
         if (existingUser != null && !existingUser.getId().equals(userId)) {
-            return ResponseEntity.ok(BaseResponse.error("닉네임 중복"));
+            throw new CustomException(HttpStatus.CONFLICT, "닉네임이 이미 사용 중입니다.");
         }
 
         String existingProfileImageUrl = userRepository.findProfileImageByUserId(userId);
@@ -270,7 +266,6 @@ public class UserService {
 
         user.updateProfile(request.getNickName(), profileImageUrl, request.getMessage());
         userRepository.save(user);
-        return ResponseEntity.ok(BaseResponse.error("프로필 수정 완료"));
     }
 
 
@@ -280,7 +275,9 @@ public class UserService {
      * @param userId 조회할 사용자의 ID
      * @return ResponseEntity<BaseResponse<GetMyStaticResponse>> 사용자 통계 정보 응답
      */
-    public ResponseEntity<BaseResponse<GetMyStaticResponse>> getMyStatic(Long userId) {
+    public GetMyStaticResponse getMyStatic(
+            Long userId) {
+
         Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
         float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
 
@@ -297,7 +294,7 @@ public class UserService {
                 avgScore, rank
         );
 
-        return ResponseEntity.ok(BaseResponse.success("나의 통계 조회 성공", response));
+        return response;
     }
 
 
@@ -307,7 +304,9 @@ public class UserService {
      * @param userId 조회할 사용자의 ID
      * @return ResponseEntity<BaseResponse<GetUserStaticResponse>> 사용자 통계 정보 응답
      */
-    public ResponseEntity<BaseResponse<GetUserStaticResponse>> getUserStatic(Long userId) {
+    public GetUserStaticResponse getUserStatic(
+            Long userId) {
+
         Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
         float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
 
@@ -324,7 +323,7 @@ public class UserService {
                 avgScore, rank
         );
 
-        return ResponseEntity.ok(BaseResponse.success("유저의 통계 조회 성공", response));
+        return response;
     }
 
 
@@ -344,5 +343,4 @@ public class UserService {
 
         return cookie;
     }
-
 }
