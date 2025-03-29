@@ -499,6 +499,30 @@ public class PhotoService {
                 fileName);
     }
 
+    /**
+     * S3에서 특정 파일이 존재하는지 확인하는 메서드
+     *
+     * @param key 파일 키 (폴더명 + 파일명)
+     * @return boolean 파일이 존재하면 true, 없으면 false
+     */
+    public boolean doesFileExist(String key) {
+        try {
+            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+
+            s3Client.headObject(headObjectRequest);
+            return true; // 요청 성공 시 파일이 존재함
+        } catch (S3Exception e) { // NoSuchKeyException 대신 S3Exception 사용
+            if (e.awsErrorDetails().errorCode().equals("404")) {
+                return false; // 파일이 존재하지 않음
+            }
+            throw e; // 다른 예외는 다시 던짐
+        }
+    }
+
+
 
     public Boolean toggleLike(Long userId, Long photoId) {
 

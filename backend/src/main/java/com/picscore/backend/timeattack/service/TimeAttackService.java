@@ -1,5 +1,6 @@
 package com.picscore.backend.timeattack.service;
 
+import com.picscore.backend.common.exeption.CustomException;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.photo.service.PhotoService;
@@ -24,6 +25,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.IOException;
 import java.util.*;
@@ -60,12 +62,24 @@ public class TimeAttackService {
      * @return ResponseEntity<BaseResponse<Map<String, Object>>> 랭킹 정보를 포함한 응답
      */
     @Transactional
-    public ResponseEntity<BaseResponse<Map<String, Object>>> getRanking(int pageNum) {
+    public Map<String, Object> getRanking(
+            int pageNum) {
+
+        // pageNum이 1보다 작은 경우 예외 처리
+        if (pageNum < 1) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
+        }
+
         // 페이지 요청 객체 생성 (페이지당 5개 항목)
         PageRequest pageRequest = PageRequest.of(pageNum-1, 5);
 
         // 레포지토리에서 사용자별 최고 점수 조회
         Page<TimeAttack> timeAttackPage = timeAttackRepository.findHighestScoresPerUser(pageRequest);
+
+        // 페이지 데이터 존재 여부 확인
+        if (pageNum > timeAttackPage.getTotalPages() || timeAttackPage.getContent().isEmpty()) {
+            throw new CustomException(HttpStatus.NOT_FOUND, "해당 페이지에 랭킹 정보가 없습니다");
+        }
 
         List<GetRankingResponse> rankingResponses = new ArrayList<>();
         int baseRank = (pageNum - 1) * 5; // 현재 페이지의 기본 순위 계산
@@ -97,7 +111,7 @@ public class TimeAttackService {
         responseData.put("ranking", rankingResponses);
 
         // 성공 응답 반환
-        return ResponseEntity.ok(BaseResponse.success("랭킹 전체 목록 조회 성공", responseData));
+        return responseData;
     }
 
 
@@ -108,9 +122,26 @@ public class TimeAttackService {
      * @return ResponseEntity<BaseResponse<AnalysisPhotoResponse>> 분석 결과 응답
      * @throws IOException 파일 처리 중 발생할 수 있는 입출력 예외
      */
-    public ResponseEntity<BaseResponse<AnalysisPhotoResponse>> analysisPhoto(
-            AnalysisPhotoRequest request
-    ) throws IOException {
+    public AnalysisPhotoResponse analysisPhoto(
+            AnalysisPhotoRequest request) throws IOException {
+
+        // 입력값 검증
+        if (request == null) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "요청 객체가 비어 있습니다.");
+        }
+
+        if (request.getImageFile() == null) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "이미지 파일은 필수 입력값입니다.");
+        }
+
+        if (request.getTopic() == null || request.getTopic().trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "주제(topic)는 필수 입력값입니다.");
+        }
+
+        if (request.getTime() == null || request.getTime().trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "시간(time)은 필수 입력값입니다.");
+        }
+
         String url = visionApiUrl + "vision/v3.2/analyze?visualFeatures=Tags";
 
         // HTTP 요청 헤더 설정
@@ -151,11 +182,9 @@ public class TimeAttackService {
                         return new AnalysisPhotoResponse("일치 항목 없음", randomConfidence, randomConfidence * 0.7f + adjustedTime * 0.3f);
                     });
 
-            return ResponseEntity.ok(BaseResponse.success("이미지 분석 성공", result));
+            return result;
         } catch (RestClientException e) {
-            // API 호출 실패 시 에러 응답 반환
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(BaseResponse.error("이미지 분석 실패: " + e.getMessage()));
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 분석 실패: " + e.getMessage());
         }
     }
 
@@ -168,24 +197,56 @@ public class TimeAttackService {
      * @return ResponseEntity<BaseResponse<HttpStatus>> 저장 결과 응답
      */
     @Transactional
-    public ResponseEntity<BaseResponse<HttpStatus>> saveTimeAttack(
-            Long userId, SaveTimeAttackRequest request
-    ) {
+    public void saveTimeAttack(
+            Long userId, SaveTimeAttackRequest request) {
+
+        // 요청 객체가 null인 경우
+        if (request == null) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "요청 값이 잘못되었습니다. 요청 객체가 비어 있습니다.");
+        }
+
+        // imageName이 null이거나 비어 있는 경우
+        if (request.getImageName() == null || request.getImageName().trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "이미지 이름은 필수 입력값입니다.");
+        }
+
+        // topic이 null이거나 비어 있는 경우
+        if (request.getTopic() == null || request.getTopic().trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "주제는 필수 입력값입니다.");
+        }
+
+        // score가 null인 경우
+        if (request.getScore() == null) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "점수(score)는 필수 입력값입니다.");
+        }
+
+        // score가 유효하지 않은 경우 (예: 음수 또는 너무 큰 값)
+        if (request.getScore() < 0 || request.getScore() > 100) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "점수는 0에서 100 사이의 값이어야 합니다.");
+        }
+
         // 사용자 정보 조회
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
 
         String tempFolder = "temp/";
         String activityFolder = "activity/";
 
-        // S3에서 임시 폴더의 이미지를 activity 폴더로 이동
-        CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
-                .sourceBucket(bucketName)
-                .sourceKey(tempFolder + request.getImageName())
-                .destinationBucket(bucketName)
-                .destinationKey(activityFolder + request.getImageName())
-                .build();
-        s3Client.copyObject(copyObjectRequest);
+        try {
+            // S3에서 임시 폴더의 이미지를 activity 폴더로 이동
+            CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
+                    .sourceBucket(bucketName)
+                    .sourceKey(tempFolder + request.getImageName())
+                    .destinationBucket(bucketName)
+                    .destinationKey(activityFolder + request.getImageName())
+                    .build();
+            s3Client.copyObject(copyObjectRequest);
+        } catch (S3Exception e) {
+            if (e.statusCode() == 404) { // HTTP 404 상태 코드 확인
+                throw new CustomException(HttpStatus.NOT_FOUND, "S3에 해당 이미지 파일이 존재하지 않습니다: " + request.getImageName());
+            }
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "S3 파일 이동 중 오류 발생: " + e.getMessage());
+        }
 
         // 새로운 이미지 URL 생성
         String activityImageUrl = photoService.getFileUrl(activityFolder, request.getImageName());
@@ -201,8 +262,6 @@ public class TimeAttackService {
         user.updateExperience(plusExperience);
         user.updateLevel(plusExperience);
         userRepository.save(user);
-
-        return ResponseEntity.ok(BaseResponse.success("타임어택 저장 완료", HttpStatus.CREATED));
     }
 }
 
