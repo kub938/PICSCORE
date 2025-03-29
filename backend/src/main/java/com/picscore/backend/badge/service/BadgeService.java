@@ -77,6 +77,10 @@ public class BadgeService {
     public String getTimeAttackScore(
             Long userId, TimeAttackScoreRequest request) {
 
+        if (request == null || request.getScore() == 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "점수(score)는 필수 입력값입니다.");
+        }
+
         // 뱃지 조회
         Badge badge = badgeRepository.findByName("badge7")
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "뱃지를 찾을 수 없음: badge7"));

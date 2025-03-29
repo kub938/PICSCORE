@@ -42,10 +42,12 @@ public class OAuthController {
      */
     @DeleteMapping("/user")
     public ResponseEntity<BaseResponse<Void>> deleteUser(
-            HttpServletRequest request, HttpServletResponse response
-    ) {
+            HttpServletRequest request, HttpServletResponse response) {
+
         Long userId = oAuthService.findIdByNickName(request);
-        return oAuthService.deleteUser(userId, response);
+        oAuthService.deleteUser(userId, response);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("회원탈퇴 완료"));
     }
 }
 

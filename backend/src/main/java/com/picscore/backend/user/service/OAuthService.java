@@ -1,7 +1,6 @@
 package com.picscore.backend.user.service;
 
 import com.picscore.backend.common.exeption.CustomException;
-import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.common.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
@@ -11,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -98,22 +96,6 @@ public class OAuthService {
         return newAccess;
     }
 
-    /**
-     * 쿠키를 생성합니다.
-     *
-     * @param key 쿠키 이름
-     * @param value 쿠키 값
-     * @return 생성된 Cookie 객체
-     */
-    private Cookie createCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 24); // 1일 유지
-//        cookie.setSecure(true); // HTTPS에서만 전송 (배포 환경에서는 필수)
-        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
-        cookie.setPath("/"); // 모든 경로에서 접근 가능
-
-        return cookie;
-    }
 
     /**
      * 현재 로그인한 사용자의 ID를 닉네임을 통해 조회하는 메서드
@@ -148,6 +130,7 @@ public class OAuthService {
         return userId;
     }
 
+
     /**
      * 사용자 계정을 삭제하는 메서드
      *
@@ -155,10 +138,12 @@ public class OAuthService {
      * @param response HTTP 응답 객체 (쿠키 삭제에 사용)
      * @return ResponseEntity<BaseResponse<Void>> 삭제 결과를 포함한 응답
      */
-    public ResponseEntity<BaseResponse<Void>> deleteUser(Long userId, HttpServletResponse response) {
-        // 사용자 조회 및 삭제
+    public void deleteUser(
+            Long userId, HttpServletResponse response) {
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
+
         userRepository.delete(user);
 
         // Redis에서 Refresh Token 삭제
@@ -168,9 +153,26 @@ public class OAuthService {
         // 쿠키에서 Access Token과 Refresh Token 삭제
         deleteCookie(response, "access");
         deleteCookie(response, "refresh");
-
-        return ResponseEntity.ok(BaseResponse.withMessage("회원탈퇴 완료"));
     }
+
+
+    /**
+     * 쿠키를 생성합니다.
+     *
+     * @param key 쿠키 이름
+     * @param value 쿠키 값
+     * @return 생성된 Cookie 객체
+     */
+    private Cookie createCookie(String key, String value) {
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(60 * 60 * 24); // 1일 유지
+//        cookie.setSecure(true); // HTTPS에서만 전송 (배포 환경에서는 필수)
+        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
+        cookie.setPath("/"); // 모든 경로에서 접근 가능
+
+        return cookie;
+    }
+
 
     /**
      * 특정 이름의 쿠키를 삭제하는 헬퍼 메서드
@@ -184,7 +186,5 @@ public class OAuthService {
         cookie.setPath("/"); // 쿠키 경로를 루트로 설정 (애플리케이션 전체에 적용)
         response.addCookie(cookie); // 응답에 삭제할 쿠키 추가
     }
-
-
 }
 

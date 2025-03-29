@@ -59,7 +59,9 @@ public class UserService {
      * @return LoginInfoResponse
      *         - 로그인 정보를 포함하는 응답 객체
      */
-    public LoginInfoResponse LoginInfo(HttpServletRequest request) {
+    public LoginInfoResponse LoginInfo(
+            HttpServletRequest request) {
+
 //        // 쿠키에서 AccessToken 찾기
 //        Optional<Cookie> accessTokenCookie = Arrays.stream(request.getCookies())
 //                .filter(cookie -> "access".equals(cookie.getName()))
@@ -115,7 +117,8 @@ public class UserService {
      * @param searchText 검색할 닉네임 텍스트
      * @return ResponseEntity<BaseResponse<List<SearchUsersResponse>>> 검색된 사용자 목록을 포함한 응답
      */
-    public List<SearchUsersResponse> searchUser(String searchText) {
+    public List<SearchUsersResponse> searchUser(
+            String searchText) {
 
         // 1. 주어진 검색어로 시작하는 닉네임을 가진 사용자들을 데이터베이스에서 조회
         List<User> userList = userRepository.findByNickNameContaining(searchText);
@@ -145,7 +148,8 @@ public class UserService {
      * @return ResponseEntity<BaseResponse<GetMyProfileResponse>> 사용자 프로필 정보 응답
      * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
      */
-    public GetMyProfileResponse getMyProfile(Long userId) {
+    public GetMyProfileResponse getMyProfile(
+            Long userId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
@@ -187,6 +191,10 @@ public class UserService {
     public GetUserProfileResponse getUserProfile(
             Long myId, Long userId
     ) {
+
+        if (userId == null || userId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다.");
+        }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
@@ -232,6 +240,14 @@ public class UserService {
     public void updateMyProfile(
             Long userId, UpdateMyProfileRequest request, HttpServletResponse response
     ) throws IOException {
+
+        if (request.getNickName() == null || request.getNickName().trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "닉네임은 필수 입력값입니다.");
+        }
+
+        if (request.getMessage() == null || request.getMessage().trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "상태 메시지는 필수 입력값입니다.");
+        }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
@@ -306,6 +322,10 @@ public class UserService {
      */
     public GetUserStaticResponse getUserStatic(
             Long userId) {
+
+        if (userId == null || userId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다.");
+        }
 
         Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
         float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;

@@ -40,9 +40,12 @@ public class TimeAttackService {
 
     private final TimeAttackRepository timeAttackRepository;
     private final UserRepository userRepository;
+
+    private final PhotoService photoService;
+
     private final RestTemplate restTemplate;
     private final S3Client s3Client;
-    private final PhotoService photoService;
+
 
 
     @Value("${AZURE_ENDPOINT}")  // 환경 변수에서 API URL 가져오기
@@ -125,7 +128,6 @@ public class TimeAttackService {
     public AnalysisPhotoResponse analysisPhoto(
             AnalysisPhotoRequest request) throws IOException {
 
-        // 입력값 검증
         if (request == null) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "요청 객체가 비어 있습니다.");
         }
@@ -200,27 +202,22 @@ public class TimeAttackService {
     public void saveTimeAttack(
             Long userId, SaveTimeAttackRequest request) {
 
-        // 요청 객체가 null인 경우
         if (request == null) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "요청 값이 잘못되었습니다. 요청 객체가 비어 있습니다.");
         }
 
-        // imageName이 null이거나 비어 있는 경우
         if (request.getImageName() == null || request.getImageName().trim().isEmpty()) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "이미지 이름은 필수 입력값입니다.");
         }
 
-        // topic이 null이거나 비어 있는 경우
         if (request.getTopic() == null || request.getTopic().trim().isEmpty()) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "주제는 필수 입력값입니다.");
         }
 
-        // score가 null인 경우
         if (request.getScore() == null) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "점수(score)는 필수 입력값입니다.");
         }
 
-        // score가 유효하지 않은 경우 (예: 음수 또는 너무 큰 값)
         if (request.getScore() < 0 || request.getScore() > 100) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "점수는 0에서 100 사이의 값이어야 합니다.");
         }
