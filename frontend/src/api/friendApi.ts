@@ -108,4 +108,8 @@ export const friendApi = {
       }
     );
   },
+
+  searchFriends: (searchText: string) => {
+    return testApi.get(`/api/v1/user/search/${searchText}`);
+  },
 };
