@@ -44,6 +44,7 @@ public class PhotoService {
     private final PhotoRepository photoRepository;
     private final PhotoLikeRepository photoLikeRepository;
     private final PhotoHashtagRepository photoHashtagRepository;
+    private final HashtagService hashtagService;
     private final S3Client s3Client;
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
@@ -59,8 +60,10 @@ public class PhotoService {
      * @param isPublic 공개/비공개 여부
      * @return ResponseEntity<BaseResponse<HttpStatus>> 저장 결과
      */
+    @Transactional
     public ResponseEntity<BaseResponse<HttpStatus>> savePhoto(Long userId, String imageName, Float score,
-                                                              Map<String, Integer> analysisChart, Map<String, String> analysisText, Boolean isPublic, String photoType) {
+                                                              Map<String, Integer> analysisChart, Map<String, String> analysisText,
+                                                              Boolean isPublic, String photoType, List hashtags) {
         String tempFolder = "temp/";
         String permanentFolder = "permanent/";
         // S3에서 임시 폴더에서 영구 폴더로 이미지 이동
@@ -78,25 +81,24 @@ public class PhotoService {
         // mySQL에 저장
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저 없음; " + userId));
-        Photo photo = new Photo();
-        photo.setUser(user);
-        photo.setImageUrl(permanImageUrl);
-        photo.setScore(score);
-        photo.setIsPublic(isPublic);
-        photo.setPhotoType(photoType);
+        Photo photo = new Photo(user, imageName, score,  isPublic, photoType, analysisChart, analysisText);
+        photoRepository.save(photo);
+
+        // 해시태그 저장은 HashtagService에 위임
+        hashtagService.saveHashtags(photo, hashtags);
 
         // ✅ analysisChart가 null이면 빈 Map으로 초기화
-        if (analysisChart == null) {
-            photo.setAnalysisChart(new HashMap<>());
-        } else {
-            photo.setAnalysisChart(analysisChart);
-        }
-        // ✅ analysisText가 null이면 빈 Map으로 초기화
-        if (analysisText == null) {
-            photo.setAnalysisText(new HashMap<>());
-        } else {photo.setAnalysisText(analysisText);
-        }
-        photoRepository.save(photo);
+//        if (analysisChart == null) {
+//            photo.setAnalysisChart(new HashMap<>());
+//        } else {
+//            photo.setAnalysisChart(analysisChart);
+//        }
+//        // ✅ analysisText가 null이면 빈 Map으로 초기화
+//        if (analysisText == null) {
+//            photo.setAnalysisText(new HashMap<>());
+//        } else {photo.setAnalysisText(analysisText);
+//        }
+//        photoRepository.save(photo);
         return ResponseEntity.ok(BaseResponse.success("사진 업로드 완료", HttpStatus.CREATED));
     }
 
@@ -108,6 +110,7 @@ public class PhotoService {
      * @return ResponseEntity<BaseResponse<UploadPhotoResponse>> 업로드 결과 응답
      * @throws IOException 파일 처리 중 발생할 수 있는 입출력 예외
      */
+    @Transactional
     public ResponseEntity<BaseResponse<UploadPhotoResponse>> uploadFile(MultipartFile file) throws IOException {
         // UUID를 사용하여 고유한 파일명 생성
         String fileName = UUID.randomUUID() + "." + getFileExtension(file.getOriginalFilename());

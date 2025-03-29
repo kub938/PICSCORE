@@ -72,7 +72,8 @@ public class PhotoController {
                 payload.getAnalysisChart(),
                 payload.getAnalysisText(),
                 payload.getIsPublic(),
-                payload.getPhotoType()
+                payload.getPhotoType(),
+                payload.getHashTag()
         );
     }
 
