@@ -1,6 +1,6 @@
 package com.picscore.backend.user.service;
 
-import com.picscore.backend.common.exeption.CustomException;
+import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.common.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;

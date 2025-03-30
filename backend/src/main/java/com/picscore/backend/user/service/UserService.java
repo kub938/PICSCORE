@@ -4,7 +4,7 @@ import com.picscore.backend.badge.model.dto.ProfileBadgeDto;
 import com.picscore.backend.badge.model.entity.Badge;
 import com.picscore.backend.badge.model.entity.UserBadge;
 import com.picscore.backend.badge.repository.UserBadgeRepository;
-import com.picscore.backend.common.exeption.CustomException;
+import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.photo.service.PhotoService;
 import com.picscore.backend.timeattack.model.entity.TimeAttack;

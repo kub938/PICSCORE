@@ -1,6 +1,6 @@
 package com.picscore.backend.photo.service;
 
-import com.picscore.backend.common.exeption.CustomException;
+import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.photo.model.entity.PhotoLike;
@@ -11,7 +11,6 @@ import com.picscore.backend.photo.repository.PhotoHashtagRepository;
 import com.picscore.backend.photo.repository.PhotoLikeRepository;
 import com.picscore.backend.photo.repository.PhotoRepository;
 import com.picscore.backend.photo.model.response.UploadPhotoResponse;
-import com.picscore.backend.user.model.entity.Follow;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.picscore.backend.common.exeption;
+package com.picscore.backend.common.exception;
 
 import com.picscore.backend.common.model.response.BaseResponse;
 import org.springframework.http.ResponseEntity;

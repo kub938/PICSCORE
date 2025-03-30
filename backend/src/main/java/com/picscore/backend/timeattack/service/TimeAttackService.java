@@ -1,8 +1,6 @@
 package com.picscore.backend.timeattack.service;
 
-import com.picscore.backend.common.exeption.CustomException;
-import com.picscore.backend.common.model.response.BaseResponse;
-import com.picscore.backend.photo.model.entity.Photo;
+import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.photo.service.PhotoService;
 import com.picscore.backend.timeattack.model.entity.TimeAttack;
 import com.picscore.backend.timeattack.model.request.AnalysisPhotoRequest;

@@ -1,6 +1,6 @@
 package com.picscore.backend.user.service;
 
-import com.picscore.backend.common.exeption.CustomException;
+import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.common.service.NotificationService;
 import com.picscore.backend.user.model.response.GetMyFollowingsResponse;
 import com.picscore.backend.user.model.response.GetUserFollowersResponse;

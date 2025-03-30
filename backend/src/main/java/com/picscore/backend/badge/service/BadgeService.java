@@ -6,13 +6,11 @@ import com.picscore.backend.badge.model.request.TimeAttackScoreRequest;
 import com.picscore.backend.badge.model.response.GetBadgeResponse;
 import com.picscore.backend.badge.repository.BadgeRepository;
 import com.picscore.backend.badge.repository.UserBadgeRepository;
-import com.picscore.backend.common.exeption.CustomException;
-import com.picscore.backend.common.model.response.BaseResponse;
+import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
