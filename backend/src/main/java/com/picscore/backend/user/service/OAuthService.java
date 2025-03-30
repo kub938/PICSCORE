@@ -1,5 +1,6 @@
 package com.picscore.backend.user.service;
 
+import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.common.jwt.JWTUtil;
@@ -30,36 +31,41 @@ public class OAuthService {
      * @param response HTTP 응답 객체
      * @return ResponseEntity 객체로 결과 반환
      */
-    public ResponseEntity<BaseResponse<ReissueResponse>> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public String reissue(HttpServletRequest request, HttpServletResponse response) {
 
         // 쿠키에서 리프레시 토큰 추출
         String refresh = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("refresh".equals(cookie.getName())) {
-                    refresh = cookie.getValue();
+//        Cookie[] cookies = request.getCookies();
+//        if (cookies != null) {
+//            for (Cookie cookie : cookies) {
+//                if ("refresh".equals(cookie.getName())) {
+//                    refresh = cookie.getValue();
+//                }
+//            }
+//        }
+        String cookieHeader = request.getHeader("Cookie");
+        if (cookieHeader != null) {
+            String[] cookies = cookieHeader.split(";");
+            for (String cookie : cookies) {
+                if (cookie.trim().startsWith("refresh=")) {
+                    refresh = cookie.substring(cookie.indexOf('=') + 1);
+                    break;
                 }
             }
         }
 
         if (refresh == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("RefreshToken 쿠키 없음"));
+            throw new CustomException(HttpStatus.BAD_REQUEST, "RefreshToken 쿠키 없음");
         }
 
         // 리프레시 토큰 만료 여부 확인
-        try {
-            jwtUtil.isExpired(refresh);
-        } catch (ExpiredJwtException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("유효하지 않은 토큰"));
+        if (jwtUtil.isExpired(refresh)) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 토큰");
         }
 
         // 토큰 유형 확인
         if (!"refresh".equals(jwtUtil.getCategory(refresh))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("RefreshToken이 아님"));
+            throw new CustomException(HttpStatus.BAD_REQUEST, "RefreshToken이 아님");
         }
 
         // 닉네임 및 Redis 키 생성
@@ -69,16 +75,14 @@ public class OAuthService {
         // Redis에 저장된 리프레시 토큰 존재 여부 확인
         Boolean isExist = redisUtil.exists(userKey);
         if (!isExist) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("Redis에 존재하지 않음"));
+            throw new CustomException(HttpStatus.BAD_REQUEST, "Redis에 존재하지 않음");
         }
 
         // Redis에 저장된 리프레시 토큰 동일 여부 확인
         Object storedRefreshTokenObj = redisUtil.get(userKey);
         String storedRefreshToken = storedRefreshTokenObj.toString();
         if (!storedRefreshToken.equals(refresh)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("Redis의 값과 다름"));
+            throw new CustomException(HttpStatus.BAD_REQUEST, "Redis의 값과 다름");
         }
 
         // 새로운 액세스 및 리프레시 토큰 생성
@@ -92,9 +96,7 @@ public class OAuthService {
         response.addCookie(createCookie("access", newAccess));
         response.addCookie(createCookie("refresh", newRefresh));
 
-        ReissueResponse data = new ReissueResponse(newAccess);
-
-        return ResponseEntity.ok(BaseResponse.success("토큰 재발급 성공", data));
+        return newAccess;
     }
 
     /**
