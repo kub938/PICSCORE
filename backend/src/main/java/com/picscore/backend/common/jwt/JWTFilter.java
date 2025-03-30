@@ -35,6 +35,7 @@ public class JWTFilter extends OncePerRequestFilter {
         String method = request.getMethod();
 
         return path.equals("/")
+                || path.equals("/actuator/health")
                 || (path.equals("/api/v1/user") && "GET".equalsIgnoreCase(method))
                 || path.matches("/api/v1/user/photo/\\d+");
     }
