@@ -35,12 +35,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserRepository userRepository;
-    private final JWTUtil jwtUtil;
     private final UserService userService;
     private final FollowService followService;
     private final OAuthService oAuthService;
-    private final PhotoService photoService;
 
 
     /**
@@ -53,8 +50,12 @@ public class UserController {
      * - 사용자 정보를 포함하는 응답 객체
      */
     @GetMapping("/info")
-    public ResponseEntity<BaseResponse<LoginInfoResponse>> LoginInfo(HttpServletRequest request, HttpServletResponse responses) {
-        return userService.LoginInfo(request, responses);
+    public ResponseEntity<BaseResponse<LoginInfoResponse>> LoginInfo(
+            HttpServletRequest request) {
+
+        LoginInfoResponse loginInfoResponse = userService.LoginInfo(request);
+
+        return ResponseEntity.ok(BaseResponse.success("로그인 성공", loginInfoResponse));
     }
 
 
@@ -70,7 +71,9 @@ public class UserController {
      * @throws IOException 리다이렉트 중 발생할 수 있는 입출력 예외
      */
     @PostMapping("/logout")
-    public ResponseEntity<BaseResponse<Void>> redirectToGoogleLogout(HttpServletResponse response) throws IOException {
+    public ResponseEntity<BaseResponse<Void>> redirectToGoogleLogout(
+            HttpServletResponse response) throws IOException {
+
 //        response.sendRedirect("/logout");
         BaseResponse<Void> baseResponse = BaseResponse.withMessage("로그아웃 완료");
         return ResponseEntity.ok(baseResponse);
@@ -88,18 +91,14 @@ public class UserController {
     public ResponseEntity<BaseResponse<Void>> toggleFollow(
             @RequestBody ToggleFollowRequest toggleFollowRequest,
             HttpServletRequest request) {
-        // 현재 사용자의 ID를 토큰에서 추출
-        Long followerId = oAuthService.findIdByNickName(request);
 
-        // 팔로우 상태 토글 및 결과 확인
+        Long followerId = oAuthService.findIdByNickName(request);
         Boolean follow = followService.toggleFollow(followerId, toggleFollowRequest.getFollowingId());
 
-        // 결과에 따른 응답 메시지 생성
         BaseResponse<Void> baseResponse = follow ?
                 BaseResponse.withMessage("팔로잉 추가 완료") :
                 BaseResponse.withMessage("팔로잉 취소 완료");
 
-        // 응답 반환
         return ResponseEntity.ok(baseResponse);
     }
 
@@ -111,12 +110,13 @@ public class UserController {
      * @return ResponseEntity<BaseResponse < GetMyFollowersResponse>> 팔로워 목록 정보
      */
     @GetMapping("/follower/me")
-    public ResponseEntity<BaseResponse<List<GetMyFollowersResponse>>> getMyFollowers(HttpServletRequest request) {
-        // 현재 사용자의 ID를 토큰에서 추출
-        Long userId = oAuthService.findIdByNickName(request);
+    public ResponseEntity<BaseResponse<List<GetMyFollowersResponse>>> getMyFollowers(
+            HttpServletRequest request) {
 
-        // 팔로워 목록 조회 및 응답 반환
-        return followService.getMyFollowers(userId);
+        Long userId = oAuthService.findIdByNickName(request);
+        List<GetMyFollowersResponse> getMyFollowersResponseList = followService.getMyFollowers(userId);
+
+        return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", getMyFollowersResponseList));
     }
 
 
@@ -128,11 +128,11 @@ public class UserController {
      */
     @GetMapping("/following/me")
     public ResponseEntity<BaseResponse<List<GetMyFollowingsResponse>>> getMyFollowings(HttpServletRequest request) {
-        // 현재 사용자의 ID를 토큰에서 추출
-        Long userId = oAuthService.findIdByNickName(request);
 
-        // 팔로잉 목록 조회 및 응답 반환
-        return followService.getMyFollowings(userId);
+        Long userId = oAuthService.findIdByNickName(request);
+        List<GetMyFollowingsResponse> getMyFollowingsResponseList = followService.getMyFollowings(userId);
+
+        return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", getMyFollowingsResponseList));
     }
 
 
@@ -147,8 +147,11 @@ public class UserController {
     public ResponseEntity<BaseResponse<List<GetUserFollowersResponse>>> getUserFollowers(
             HttpServletRequest request,
             @PathVariable Long userId) {
+
         Long myId = oAuthService.findIdByNickName(request);
-        return followService.getUserFollowers(myId, userId);
+        List<GetUserFollowersResponse> getUserFollowersResponseList = followService.getUserFollowers(myId, userId);
+
+        return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", getUserFollowersResponseList));
     }
 
 
@@ -164,8 +167,11 @@ public class UserController {
             HttpServletRequest request,
             @PathVariable Long userId
     ) {
+
         Long myId = oAuthService.findIdByNickName(request);
-        return followService.getUserFollowings(myId, userId);
+        List<GetUserFollowingsResponse> getUserFollowingsResponseList = followService.getUserFollowings(myId, userId);
+
+        return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", getUserFollowingsResponseList));
     }
 
 
@@ -181,8 +187,11 @@ public class UserController {
             HttpServletRequest request,
             @PathVariable Long userId
     ) {
+
         Long myId = oAuthService.findIdByNickName(request);
-        return followService.deleteMyFollower(myId, userId);
+        followService.deleteMyFollower(myId, userId);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("팔로워 삭제 완료"));
     }
 
 
@@ -196,7 +205,10 @@ public class UserController {
     public ResponseEntity<BaseResponse<List<SearchUsersResponse>>> searchUser(
             @PathVariable String searchText
     ) {
-        return userService.searchUser(searchText);
+
+        List<SearchUsersResponse> searchUsersResponseList = userService.searchUser(searchText);
+
+        return ResponseEntity.ok(BaseResponse.success("친구 검색 성공", searchUsersResponseList));
     }
 
 
@@ -210,8 +222,11 @@ public class UserController {
     public ResponseEntity<BaseResponse<GetMyProfileResponse>> getMyProfile(
             HttpServletRequest request
     ) {
+
         Long userId = oAuthService.findIdByNickName(request);
-        return userService.getMyProfile(userId);
+        GetMyProfileResponse getMyProfileResponse = userService.getMyProfile(userId);
+
+        return ResponseEntity.ok(BaseResponse.success("내 프로필 조회 성공", getMyProfileResponse));
     }
 
 
@@ -227,8 +242,11 @@ public class UserController {
             HttpServletRequest request,
             @PathVariable Long userId
     ) {
+
         Long myId = oAuthService.findIdByNickName(request);
-        return userService.getUserProfile(myId, userId);
+        GetUserProfileResponse getUserProfileResponse = userService.getUserProfile(myId, userId);
+
+        return ResponseEntity.ok(BaseResponse.success("유저 프로필 조회 성공", getUserProfileResponse));
     }
 
 
@@ -248,8 +266,9 @@ public class UserController {
     ) throws IOException {
 
         Long userId = oAuthService.findIdByNickName(request);
+        userService.updateMyProfile(userId, updateMyProfileRequest, response);
 
-        return userService.updateMyProfile(userId, updateMyProfileRequest, response);
+        return ResponseEntity.ok(BaseResponse.withMessage("프로필 수정 완료"));
     }
 
 
@@ -263,8 +282,11 @@ public class UserController {
     public ResponseEntity<BaseResponse<GetMyStaticResponse>> getMyStatic(
             HttpServletRequest request
     ) {
+
         Long userId = oAuthService.findIdByNickName(request);
-        return userService.getMyStatic(userId);
+        GetMyStaticResponse getMyStaticResponse = userService.getMyStatic(userId);
+
+        return ResponseEntity.ok(BaseResponse.success("나의 통계 조회 성공", getMyStaticResponse));
     }
 
 
@@ -278,7 +300,10 @@ public class UserController {
     public ResponseEntity<BaseResponse<GetUserStaticResponse>> getUserStatic(
             @PathVariable Long userId
     ) {
-        return userService.getUserStatic(userId);
+
+        GetUserStaticResponse getUserStaticResponse = userService.getUserStatic(userId);
+
+        return ResponseEntity.ok(BaseResponse.success("유저의 통계 조회 성공", getUserStaticResponse));
     }
 
 }

@@ -2,6 +2,7 @@ package com.picscore.backend.common.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picscore.backend.common.exception.CustomException;
+
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.service.CustomHttpServletRequestWrapper;
 import com.picscore.backend.user.model.dto.CustomOAuth2User;
@@ -10,7 +11,6 @@ import com.picscore.backend.user.service.OAuthService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -56,15 +56,15 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             // 쿠키에서 액세스 토큰 추출
             String accessToken = null;
-            Cookie[] cookies = request.getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals("access")) {
-                        accessToken = cookie.getValue();
-                        break;
-                    }
-                }
-            }
+//            Cookie[] cookies = request.getCookies();
+//            if (cookies != null) {
+//                for (Cookie cookie : cookies) {
+//                    if (cookie.getName().equals("access")) {
+//                        accessToken = cookie.getValue();
+//                        break;
+//                    }
+//                }
+//            }
 
             // 개발 환경 임시 방편
             String authorizationHeader = request.getHeader("Authorization");

@@ -38,10 +38,11 @@ public class TimeAttackController {
      */
     @GetMapping("/time-attack/{pageNum}")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getRanking(
-            @PathVariable int pageNum
-    ) {
-        // TimeAttackService의 getRanking 메소드를 호출하여 랭킹 정보를 조회하고 반환
-        return timeAttackService.getRanking(pageNum);
+            @PathVariable int pageNum) {
+
+        Map<String, Object> reponse = timeAttackService.getRanking(pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("랭킹 전체 목록 조회 성공", reponse));
     }
 
 
@@ -54,10 +55,11 @@ public class TimeAttackController {
      */
     @PostMapping(value = "/analysis", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponse<AnalysisPhotoResponse>> analysisPhoto(
-            @ModelAttribute AnalysisPhotoRequest request
-    ) throws IOException {
-        // 사진 분석 서비스 호출 및 결과 반환
-        return timeAttackService.analysisPhoto(request);
+            @ModelAttribute AnalysisPhotoRequest request) throws IOException {
+
+        AnalysisPhotoResponse analysisPhotoResponse = timeAttackService.analysisPhoto(request);
+
+        return ResponseEntity.ok(BaseResponse.success("이미지 분석 성공", analysisPhotoResponse));
     }
 
 
@@ -71,13 +73,12 @@ public class TimeAttackController {
     @PostMapping("/save")
     public ResponseEntity<BaseResponse<HttpStatus>> saveTimeAttack(
             HttpServletRequest request,
-            @RequestBody SaveTimeAttackRequest saveTimeAttackRequest
-    ) {
-        // 사용자 닉네임을 기반으로 사용자 ID 조회
-        Long userId = oAuthService.findIdByNickName(request);
+            @RequestBody SaveTimeAttackRequest saveTimeAttackRequest) {
 
-        // 시간 공격 데이터 저장 서비스 호출 및 결과 반환
-        return timeAttackService.saveTimeAttack(userId, saveTimeAttackRequest);
+        Long userId = oAuthService.findIdByNickName(request);
+        timeAttackService.saveTimeAttack(userId, saveTimeAttackRequest);
+
+        return ResponseEntity.ok(BaseResponse.success("타임어택 저장 완료", HttpStatus.CREATED));
     }
 }
 

@@ -31,23 +31,32 @@ public class BadgeController {
      * @return ResponseEntity<BaseResponse < List < GetBadgeResponse>>> 사용자의 배지 목록을 포함한 응답
      */
     @GetMapping("")
-    public ResponseEntity<BaseResponse<List<GetBadgeResponse>>> getBadge(HttpServletRequest request) {
-        // 요청에서 사용자 ID를 추출
-        Long userId = oAuthService.findIdByNickName(request);
+    public ResponseEntity<BaseResponse<List<GetBadgeResponse>>> getBadge(
+            HttpServletRequest request) {
 
-        // 배지 서비스를 통해 사용자의 배지 정보를 조회하고 반환
-        return badgeService.getBadge(userId);
+        Long userId = oAuthService.findIdByNickName(request);
+        List<GetBadgeResponse> getBadgeResponseList = badgeService.getBadge(userId);
+
+        return ResponseEntity.ok(BaseResponse.success("전체 뱃지 목록 조회", getBadgeResponseList));
     }
 
+
+    /**
+     * 타임 어택 점수에 따라 뱃지를 획득하거나 상태를 반환하는 API
+     *
+     * @param request 클라이언트 요청 객체 (사용자 인증 정보를 포함)
+     * @param timeAttackScoreRequest 타임 어택 점수 요청 객체 (점수 정보를 포함)
+     * @return ResponseEntity<BaseResponse<Void>> 결과 메시지를 포함한 응답 객체
+     */
     @PostMapping("/time-attack/score")
-    public ResponseEntity<BaseResponse<Void>> GetTimeAttackScore(
+    public ResponseEntity<BaseResponse<Void>> getTimeAttackScore(
             HttpServletRequest request,
-            @RequestBody TimeAttackScoreRequest timeAttackScoreRequest
-    ) {
+            @RequestBody TimeAttackScoreRequest timeAttackScoreRequest) {
 
         Long userId = oAuthService.findIdByNickName(request);
+        String resultMessage = badgeService.getTimeAttackScore(userId, timeAttackScoreRequest);
 
-        return badgeService.getTimeAttackScore(userId, timeAttackScoreRequest);
+        return ResponseEntity.ok(BaseResponse.withMessage(resultMessage));
     }
 }
 

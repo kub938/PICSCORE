@@ -1,5 +1,6 @@
 package com.picscore.backend.photo.service;
 
+import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.photo.model.entity.PhotoLike;
@@ -10,7 +11,6 @@ import com.picscore.backend.photo.repository.PhotoHashtagRepository;
 import com.picscore.backend.photo.repository.PhotoLikeRepository;
 import com.picscore.backend.photo.repository.PhotoRepository;
 import com.picscore.backend.photo.model.response.UploadPhotoResponse;
-import com.picscore.backend.user.model.entity.Follow;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -237,13 +237,23 @@ public class PhotoService {
      * @param pageNum 조회할 페이지 번호 (1부터 시작)
      * @return ResponseEntity<BaseResponse<Map<String, Object>>> 페이징된 사진 목록
      */
-    public ResponseEntity<BaseResponse<Map<String, Object>>> getPaginatedPhotos(int pageNum) {
+    public Map<String, Object> getPaginatedPhotos(
+            int pageNum) {
+
+        if (pageNum < 1) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
+        }
 
         // PageRequest 객체 생성 (0부터 시작하는 페이지 번호 사용)
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 24, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         // 레포지토리에서 페이징된 데이터 조회
         Page<Photo> photoPage = photoRepository.findAllWithPublic(pageRequest);
+
+        // 페이지 데이터 존재 여부 확인
+        if (pageNum > photoPage.getTotalPages() || photoPage.getContent().isEmpty()) {
+            throw new CustomException(HttpStatus.NOT_FOUND, "해당 페이지에 랭킹 정보가 없습니다");
+        }
 
         // DTO 변환
         List<GetPhotosResponse> photoResponses = photoPage.getContent().stream()
@@ -257,7 +267,7 @@ public class PhotoService {
         responseData.put("photos", photoResponses);
 
         // 응답 반환
-        return ResponseEntity.ok(BaseResponse.success("사진 리스트 조회 성공", responseData));
+        return responseData;
     }
 
 
@@ -268,12 +278,23 @@ public class PhotoService {
      * @param isPublic 공개/비공개 여부
      * @return ResponseEntity<BaseResponse<List<GetPhotosResponse>>> 조회된 사진 목록
      */
-    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> getPhotosByUserId(Long userId, Boolean isPublic) {
+    public List<GetPhotosResponse> getPhotosByUserId(
+            Long userId, Boolean isPublic) {
+
+        if (userId == null || userId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다.");
+        }
+
+        if (isPublic == null) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "공개 여부(isPublic)는 필수 입력값입니다.");
+        }
+
         List<Photo> photos = photoRepository.findPhotosByUserId(userId, isPublic);
         List<GetPhotosResponse> getPhotoResponses = photos.stream()
                 .map(photo -> new GetPhotosResponse(photo.getId(), photo.getImageUrl()))
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(BaseResponse.success("사진 조회 성공", getPhotoResponses));
+
+        return getPhotoResponses;
     }
 
 
@@ -283,11 +304,20 @@ public class PhotoService {
      * @param photoId 조회할 사진의 ID
      * @return ResponseEntity<BaseResponse<GetPhotoDetailResponse>> 사진 상세 정보
      */
-    public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(
+    public GetPhotoDetailResponse getPhotoDetail(
             Long userId, Long photoId) {
+
+        if (userId == null || userId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다.");
+        }
+
+        if (photoId == null || photoId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사진 ID입니다.");
+        }
+
         // Photo 정보 조회
         Photo photo = photoRepository.findById(photoId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사진을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사진을 찾을 수 없습니다."));
 
         // User 정보 조회 (Photo와 연관된 User)
         User user = photo.getUser();
@@ -305,7 +335,8 @@ public class PhotoService {
 
         // DTO에 데이터 설정
         GetPhotoDetailResponse response = new GetPhotoDetailResponse(user, photo, likeCnt, hashTags, isLike);
-        return ResponseEntity.ok(BaseResponse.success("사진 상세 조회 성공",response));
+
+        return response;
     }
 
 
@@ -344,7 +375,7 @@ public class PhotoService {
      *
      * @return ResponseEntity<BaseResponse<List<GetPhotoTop5Response>>> 상위 5개 사진 목록
      */
-    public ResponseEntity<BaseResponse<List<GetPhotoTop5Response>>> getPhotoTop5() {
+    public List<GetPhotoTop5Response> getPhotoTop5() {
 
         PageRequest pageRequest = PageRequest.of(0, 5);
 
@@ -364,7 +395,7 @@ public class PhotoService {
                         })
                         .collect(Collectors.toList());
 
-        return ResponseEntity.ok(BaseResponse.success("Top5 사진 조회", responses));
+        return responses;
     }
 
 
@@ -502,13 +533,47 @@ public class PhotoService {
                 fileName);
     }
 
+    /**
+     * S3에서 특정 파일이 존재하는지 확인하는 메서드
+     *
+     * @param key 파일 키 (폴더명 + 파일명)
+     * @return boolean 파일이 존재하면 true, 없으면 false
+     */
+    public boolean doesFileExist(String key) {
+        try {
+            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
 
-    public Boolean toggleLike(Long userId, Long photoId) {
+            s3Client.headObject(headObjectRequest);
+            return true; // 요청 성공 시 파일이 존재함
+        } catch (S3Exception e) { // NoSuchKeyException 대신 S3Exception 사용
+            if (e.awsErrorDetails().errorCode().equals("404")) {
+                return false; // 파일이 존재하지 않음
+            }
+            throw e; // 다른 예외는 다시 던짐
+        }
+    }
+
+
+
+    public Boolean toggleLike(
+            Long userId, Long photoId) {
+
+        if (userId == null || userId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다.");
+        }
+
+        if (photoId == null || photoId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사진 ID입니다.");
+        }
 
         Photo photo = photoRepository.findById(photoId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + photoId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사진을 찾을 수 없습니다. 사진 ID: " + photoId));
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID; " + userId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
 
         Optional<PhotoLike> existPhotoLike = photoLikeRepository.findByPhotoIdAndUserId(photoId, userId);
 
