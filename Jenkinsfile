@@ -63,7 +63,6 @@ pipeline {
                             steps {
                                 sshagent(credentials: ['ec2-ssh-key']) {
                                     sh "scp -o StrictHostKeyChecking=no .env ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/.env"
-                                    sh "scp -o StrictHostKeyChecking=no .env.front ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/.env.front"
                                     sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/docker-compose.yml"
                                     sh "scp -o StrictHostKeyChecking=no ./nginx.conf ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/nginx.conf"
                                     sh "scp -o StrictHostKeyChecking=no prometheus.yml ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/prometheus.yml"
