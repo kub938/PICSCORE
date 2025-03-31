@@ -14,11 +14,13 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -89,15 +91,27 @@ public class OpenAiImageService {
         // ✅ 안전한 이미지 다운로드
         BufferedImage originalImage = downloadImage(imageUrl);
 
-        // ✅ 이미지 리사이징 (해상도 낮추기)
+        // 1️⃣ Thumbnails로 해상도 리사이징
         BufferedImage resizedImage = Thumbnails.of(originalImage)
                 .size(width, height)
-                .outputQuality(0.8) //0.7 >> 0.5 >> 0.3
+                .outputQuality(0.8) // 품질 설정 (0.0 ~ 1.0)
                 .asBufferedImage();
+
+        // 2️⃣ PNG의 알파 채널을 제거하고 RGB로 변환 (JPG 저장 가능하도록)
+        BufferedImage convertedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = convertedImage.createGraphics();
+
+        // 3️⃣ 배경을 흰색으로 설정 (투명도 제거)
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, 0, width, height);
+
+        // 4️⃣ 리사이징된 이미지를 복사 (투명 부분은 흰색으로 채워짐)
+        g2d.drawImage(resizedImage, 0, 0, width, height, null);
+        g2d.dispose();
 
         // ✅ 압축된 이미지 변환 (Byte 배열로 변환하여 API로 전달 가능)
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(resizedImage, "jpg", baos);
+        ImageIO.write(convertedImage, "jpg", baos);
         return baos.toByteArray();
     }
 
@@ -162,7 +176,7 @@ public class OpenAiImageService {
 
             // GPT 응답에서 "choices.message.content" 부분 추출
             String content = root.path("choices").get(0).path("message").path("content").asText();
-
+            System.out.printf("분석 결과!!!"+content);
             // 점수를 저장할 Map
             Map<String, Integer> scores = new HashMap<>();
             Map<String, Object> response = new HashMap<>();
