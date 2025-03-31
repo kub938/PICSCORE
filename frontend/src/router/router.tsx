@@ -25,6 +25,8 @@ import { useEffect } from "react";
 import Following from "../page/UserPage/Following";
 import Follower from "../page/UserPage/Follower";
 import PhotoPost from "../page/Board/PhotoPost";
+import SearchResult from "../page/Board/SearchResult";
+import Loading from "../components/Loading";
 
 const HomeRouter = () => {
   const [params] = useSearchParams();
@@ -121,6 +123,10 @@ const router = createBrowserRouter([
             element: <Board />,
           },
           {
+            path: "/search/:string",
+            element: <SearchResult />,
+          },
+          {
             path: "/photo/:number",
             element: <PhotoPost />,
           },
@@ -144,6 +150,10 @@ const router = createBrowserRouter([
           {
             path: "photo",
             element: <>게시글을 찾을 수 없습니다.</>,
+          },
+          {
+            path: "/loading",
+            element: <Loading />,
           },
         ],
       },
