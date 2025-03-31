@@ -13,12 +13,15 @@ import com.picscore.backend.timeattack.model.response.GetUserStaticResponse;
 import com.picscore.backend.timeattack.repository.TimeAttackRepository;
 import com.picscore.backend.common.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
+import com.picscore.backend.user.model.entity.UserFeedback;
+import com.picscore.backend.user.model.request.SaveFeedbackRequest;
 import com.picscore.backend.user.model.request.UpdateMyProfileRequest;
 import com.picscore.backend.user.model.response.GetMyProfileResponse;
 import com.picscore.backend.user.model.response.GetUserProfileResponse;
 import com.picscore.backend.user.model.response.LoginInfoResponse;
 import com.picscore.backend.user.model.response.SearchUsersResponse;
 import com.picscore.backend.user.repository.FollowRepository;
+import com.picscore.backend.user.repository.UserFeedbackRepository;
 import com.picscore.backend.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,6 +48,7 @@ public class UserService {
     private final FollowRepository followRepository;
     private final UserBadgeRepository userBadgeRepository;
     private final TimeAttackRepository timeAttackRepository;
+    private final UserFeedbackRepository userFeedbackRepository;
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
@@ -344,6 +348,28 @@ public class UserService {
         );
 
         return response;
+    }
+
+    @Transactional
+    public void saveFeedback(
+            SaveFeedbackRequest request) {
+
+        if (request == null) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "요청 객체가 비어 있습니다.");
+        }
+
+        if (request.getPhoneNumber() == null || request.getPhoneNumber().trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "전화번호(phoneNumber)는 필수 입력값입니다.");
+        }
+
+        if (request.getMessage() == null || request.getMessage().trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "메시지(message)는 필수 입력값입니다.");
+        }
+
+        UserFeedback userFeedback = new UserFeedback(
+                request.getPhoneNumber(), request.getMessage()
+        );
+        userFeedbackRepository.save(userFeedback);
     }
 
 
