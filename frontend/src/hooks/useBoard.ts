@@ -77,7 +77,7 @@ export const useDeletePhoto = (photoId: number) => {
   });
 };
 
-export const useSearchPhotos = (inputText: string) => {
+export const useSearchPhotos = (inputText: string | undefined) => {
   return useQuery({
     queryKey: ["search-photos", inputText],
     queryFn: async () => {
