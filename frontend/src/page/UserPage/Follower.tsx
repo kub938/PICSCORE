@@ -1,47 +1,93 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-// 팔로우 리스트에서 사용할 임시 사용자 타입
-interface FollowUser {
-  id: string;
-  username: string;
-  profileImageUrl: string | null;
-  isFollowing: boolean;
-}
+import { friendApi, FollowerUser } from "../../api/friendApi";
+import { useMyFollowers } from "../../hooks/friend";
 
 const Follower: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [dummyFollowers, setDummyFollowers] = useState<FollowUser[]>(
-    Array(7)
-      .fill(null)
-      .map((_, index) => ({
-        id: `follower-${index + 1}`,
-        username: `kub938`,
-        profileImageUrl: "https://via.placeholder.com/150/771796",
-        isFollowing: index % 2 === 0, // 예시: 짝수 인덱스만 팔로잉 중
-      }))
+  const [followers, setFollowers] = useState<FollowerUser[]>([]);
+  const [filteredFollowers, setFilteredFollowers] = useState<FollowerUser[]>(
+    []
   );
-
-  const [showModal, setShowModal] = useState(false); // 모달 상태
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null); // 선택된 사용자 ID
+  const [isLoading, setIsLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [followingCount, setFollowingCount] = useState<number>(0);
 
   const navigate = useNavigate();
 
-  // 검색어로 필터링
-  const filteredData = dummyFollowers.filter((user) =>
-    user.username.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // 팔로워 목록 불러오기
+  const { data, refetch, isFetching } = useMyFollowers();
 
-  // 사용자 삭제 처리
-  const handleDeleteUser = (userId: string) => {
-    setDummyFollowers((prev) => prev.filter((user) => user.id !== userId));
+  useEffect(() => {
+    const fetchFollowers = async () => {
+      try {
+        setIsLoading(true);
+
+        // 팔로워 목록 가져오기
+        if (data?.data) {
+          setFollowers(data.data);
+          setFilteredFollowers(data.data);
+        } else {
+          setFollowers([]);
+          setFilteredFollowers([]);
+        }
+
+        // 팔로잉 수 가져오기
+        const followingResponse = await friendApi.getMyFollowings();
+        if (followingResponse.data?.data) {
+          setFollowingCount(followingResponse.data.data.length);
+        }
+      } catch (error) {
+        console.error("팔로워 또는 팔로잉 데이터 가져오기 실패:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFollowers();
+  }, [data]);
+
+  // 최신 데이터 가져오기
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  // 검색어 변경 시 필터링
+  useEffect(() => {
+    if (searchQuery) {
+      const filtered = followers.filter((user) =>
+        user.nickName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredFollowers(filtered);
+    } else {
+      setFilteredFollowers(followers);
+    }
+  }, [searchQuery, followers]);
+
+  // 팔로워 삭제 처리
+  const handleDeleteUser = async (userId: number) => {
+    try {
+      await friendApi.deleteFollower(userId);
+      // 삭제 성공 후 팔로워 목록에서 제거
+      setFollowers((prev) => prev.filter((user) => user.userId !== userId));
+      setFilteredFollowers((prev) =>
+        prev.filter((user) => user.userId !== userId)
+      );
+    } catch (error) {
+      console.error("팔로워 삭제 실패:", error);
+    }
   };
 
   // 버튼 클릭 시 동작
-  const handleButtonClick = (user: FollowUser) => {
-    // 삭제 확인 모달 표시
-    setSelectedUserId(user.id);
+  const handleButtonClick = (user: FollowerUser) => {
+    setSelectedUserId(user.userId);
     setShowModal(true);
+  };
+
+  // 사용자 클릭 시 프로필 페이지로 이동
+  const handleUserClick = (userId: number) => {
+    navigate(`/user/profile/${userId}`);
   };
 
   // 모달 닫기
@@ -53,9 +99,9 @@ const Follower: React.FC = () => {
   // 모달에서 "삭제" 버튼 클릭
   const handleConfirmDelete = () => {
     if (selectedUserId) {
-      handleDeleteUser(selectedUserId); // 사용자 삭제
+      handleDeleteUser(selectedUserId);
     }
-    handleCloseModal(); // 모달 닫기
+    handleCloseModal();
   };
 
   // 뒤로 가기
@@ -91,13 +137,13 @@ const Follower: React.FC = () => {
       {/* 탭 */}
       <div className="flex border-b">
         <button className="flex-1 py-3 text-center font-medium border-b-2 border-black">
-          {dummyFollowers.length} 팔로워
+          {followers.length} 팔로워
         </button>
         <button
           className="flex-1 py-3 text-center text-gray-500"
           onClick={goToFollowings}
         >
-          7 팔로우
+          {followingCount} 팔로잉
         </button>
       </div>
 
@@ -127,46 +173,58 @@ const Follower: React.FC = () => {
         </div>
       </div>
 
-      {/* 사용자 목록 */}
-      <div className="flex-1 overflow-y-auto">
-        {filteredData.length > 0 ? (
-          filteredData.map((user) => (
-            <div
-              key={user.id}
-              className="flex items-center p-4 border-b bg-white"
-            >
-              <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
-                <img
-                  src={user.profileImageUrl || "/default-profile.jpg"}
-                  alt={`${user.username}의 프로필`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "/default-profile.jpg";
-                  }}
-                />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium">{user.username}</p>
-              </div>
-              <button
-                className="px-4 py-1.5 rounded-md text-sm font-medium bg-pic-primary text-white"
-                onClick={() => handleButtonClick(user)} // 버튼 클릭 시 동작
+      {/* 로딩 상태 */}
+      {isLoading || isFetching ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pic-primary"></div>
+        </div>
+      ) : (
+        /* 사용자 목록 */
+        <div className="flex-1 overflow-y-auto">
+          {filteredFollowers.length > 0 ? (
+            filteredFollowers.map((user) => (
+              <div
+                key={user.userId}
+                className="flex items-center p-4 border-b bg-white"
               >
-                삭제
-              </button>
+                <div
+                  className="flex-1 flex items-center cursor-pointer"
+                  onClick={() => handleUserClick(user.userId)}
+                >
+                  <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
+                    <img
+                      src={user.profileImage || "/default-profile.jpg"}
+                      alt={`${user.nickName}의 프로필`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/default-profile.jpg";
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <p className="font-medium">{user.nickName}</p>
+                  </div>
+                </div>
+                <button
+                  className="px-4 py-1.5 rounded-md text-sm font-medium bg-pic-primary text-white"
+                  onClick={() => handleButtonClick(user)}
+                >
+                  삭제
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="p-4 text-center text-gray-500">
+              {searchQuery ? "검색 결과가 없습니다." : "팔로워가 없습니다."}
             </div>
-          ))
-        ) : (
-          <div className="p-4 text-center text-gray-500">
-            {searchQuery ? "검색 결과가 없습니다." : "팔로워가 없습니다."}
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* 삭제 확인 모달 */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 bg-opacity-50  flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-80">
             <p className="text-center font-bold text-lg mb-4">
               삭제 하시겠습니까?
@@ -174,13 +232,13 @@ const Follower: React.FC = () => {
             <div className="flex justify-around">
               <button
                 className="px-4 py-2 bg-pic-primary text-white rounded-md"
-                onClick={handleConfirmDelete} // 삭제 확인
+                onClick={handleConfirmDelete}
               >
                 삭제
               </button>
               <button
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md"
-                onClick={handleCloseModal} // 모달 닫기
+                onClick={handleCloseModal}
               >
                 취소
               </button>

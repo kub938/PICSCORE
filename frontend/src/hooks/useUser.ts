@@ -1,4 +1,4 @@
-import { api, testApi } from "../api/api";
+import { testApi } from "../api/api";
 import { useAuthStore } from "../store/authStore";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -17,6 +17,7 @@ export const useMyProfile = () => {
 };
 
 export const useUserProfile = (userId: number) => {
+  console.log("userId", userId);
   return useQuery({
     queryKey: ["userProfile", userId],
     queryFn: async () => {
@@ -35,6 +36,9 @@ export const useUpdateProfile = () => {
     onSuccess: () => {
       // Invalidate and refetch the myProfile query after successful update
       queryClient.invalidateQueries({ queryKey: ["myProfile"] });
+    },
+    onError: (error) => {
+      console.log("프로필 업데이트 실패", error);
     },
   });
 };
@@ -152,11 +156,11 @@ export const useMyPhotos = (isPublic: boolean) => {
   });
 };
 
-export const useUserPhotos = (userId: number, isPublic: boolean) => {
+export const useUserPhotos = (userId: number) => {
   return useQuery({
-    queryKey: ["userPhotos", userId, isPublic],
+    queryKey: ["userPhotos", userId],
     queryFn: async () => {
-      const response = await userApi.getUserPhotos(userId, isPublic);
+      const response = await userApi.getUserPhotos(userId, true); // or false, depending on your requirement
       return response.data;
     },
     enabled: !!userId,

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../UserPage/components/Header";
 import ProfileSection from "./components/ProfileSection";
 import SettingsSection from "./components/SettingsSection";
 import NotificationSettings from "./components/NotificationSettings";
@@ -9,16 +8,29 @@ import {
   FormErrors,
   NotificationSettings as NotificationSettingsType,
 } from "../../types/userTypes";
+import { useMyProfile, useUpdateProfile } from "../../hooks/useUser";
+import { useAuthStore } from "../../store/authStore";
 
 const ChangeInfoPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuthStore((state) => state);
+
+  // 사용자 프로필 가져오기 hook
+  const {
+    data: profileData,
+    isLoading: profileLoading,
+    error: profileError,
+  } = useMyProfile();
+
+  // 프로필 업데이트 hook
+  const updateProfileMutation = useUpdateProfile();
 
   const [profile, setProfile] = useState<UserProfile>({
-    userId: "user123",
-    nickname: "김선진",
-    bio: "상태메세지는 입력하는 창인데 표시할게요",
+    userId: "",
+    nickname: "",
+    bio: "",
     profileImage: null,
-    email: "user@example.com",
+    email: "user@example.com", // 기본값
     isPrivate: false,
     allowPhotoDownload: true,
     notificationSettings: {
@@ -34,22 +46,48 @@ const ChangeInfoPage: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  // API에서 가져온 프로필 데이터로 상태 업데이트
   useEffect(() => {
-    // 실제 구현에서는 API 호출을 사용할 것입니다.
-    // const fetchProfile = async () => {
-    //   try {
-    //     const response = await axios.get('api/v1/user/profile/me');
-    //     setProfile(response.data);
-    //   } catch (error) {
-    //     console.error('Error fetching profile:', error);
-    //   }
-    // };
+    if (profileData) {
+      const userData = profileData.data;
+      console.log("API에서 가져온 사용자 데이터:", userData);
 
-    // 목업 데이터 로딩 시뮬레이션
-    setTimeout(() => {
+      setProfile((prev) => ({
+        ...prev,
+        userId: userData.userId ? String(userData.userId) : "", // number를 string으로 변환
+        nickname: userData.nickName || "", // API는 nickName으로 반환
+        bio: userData.message || "", // API는 message로 반환
+        profileImage: userData.profileImage,
+        // 기존 값 유지
+        email: prev.email,
+        isPrivate: prev.isPrivate,
+        allowPhotoDownload: prev.allowPhotoDownload,
+        notificationSettings: prev.notificationSettings,
+      }));
+
       setLoading(false);
-    }, 500);
-  }, []);
+    }
+  }, [profileData]);
+
+  // 로딩 상태 관리
+  useEffect(() => {
+    setLoading(profileLoading);
+  }, [profileLoading]);
+
+  // 오류 처리
+  useEffect(() => {
+    if (profileError) {
+      console.error("프로필 로딩 오류:", profileError);
+      setLoading(false);
+    }
+  }, [profileError]);
+
+  // 로그인 확인
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/login");
+    }
+  }, [isLoggedIn, navigate]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -91,7 +129,15 @@ const ChangeInfoPage: React.FC = () => {
       const file = e.target.files[0];
       setPreviewImage(URL.createObjectURL(file));
 
-      // 실제 구현에서는 파일을 FormData에 추가하여 별도로 저장할 수 있습니다.
+      // 파일을 base64로 변환하여 profile.profileImage에 저장
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfile((prev) => ({
+          ...prev,
+          profileImage: reader.result as string,
+        }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -122,15 +168,58 @@ const ChangeInfoPage: React.FC = () => {
     setIsSaving(true);
 
     try {
-      // 실제 구현에서는 API 호출을 사용할 것입니다.
-      // await axios.patch('api/v1/user/profile', profile);
+      // FormData 객체 생성
+      const formData = new FormData();
 
-      // 저장 성공 시뮬레이션
-      setTimeout(() => {
-        setIsSaving(false);
-        // 저장 성공 후 마이페이지로 이동
-        navigate("/mypage");
-      }, 1000);
+      // 프로필 이미지가 base64 문자열인 경우 파일로 변환
+      if (profile.profileImage && profile.profileImage.startsWith("data:")) {
+        // Base64 문자열에서 실제 바이너리 데이터 추출
+        const byteString = atob(profile.profileImage.split(",")[1]);
+        const mimeString = profile.profileImage
+          .split(",")[0]
+          .split(":")[1]
+          .split(";")[0];
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+
+        // Blob 생성 후 File 객체로 변환
+        const blob = new Blob([ab], { type: mimeString });
+        const file = new File([blob], "profile-image.jpg", {
+          type: mimeString,
+        });
+
+        // FormData에 파일 추가
+        formData.append("profileImageFile", file);
+      } else if (previewImage) {
+        // 이미 File 객체가 있는 경우 (input type="file"에서 선택한 경우)
+        const fileInput = document.querySelector(
+          'input[type="file"]'
+        ) as HTMLInputElement;
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          formData.append("profileImageFile", fileInput.files[0]);
+        }
+      }
+
+      // 나머지 필드 추가
+      formData.append("nickName", profile.nickname);
+      formData.append("message", profile.bio);
+
+      // API 호출 - FormData 전송을 위해 content-type을 multipart/form-data로 설정
+      updateProfileMutation.mutate(formData, {
+        onSuccess: () => {
+          setIsSaving(false);
+          navigate("/mypage");
+        },
+        onError: (error) => {
+          console.error("프로필 업데이트 실패:", error);
+          setIsSaving(false);
+          // 오류 메시지 표시 (추가 구현 필요)
+        },
+      });
     } catch (error) {
       console.error("Error saving profile:", error);
       setIsSaving(false);
@@ -145,7 +234,6 @@ const ChangeInfoPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-        <Header title="프로필 수정" />
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
         </div>
@@ -155,8 +243,6 @@ const ChangeInfoPage: React.FC = () => {
 
   return (
     <div className="flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
-      <Header title="프로필 수정" />
-
       <div className="flex-1 p-4">
         <ProfileSection
           profile={profile}
@@ -186,12 +272,16 @@ const ChangeInfoPage: React.FC = () => {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={isSaving}
+            disabled={isSaving || updateProfileMutation.isPending}
             className={`flex-1 py-3 rounded-lg text-white font-medium ${
-              isSaving ? "bg-gray-400" : "bg-green-500"
+              isSaving || updateProfileMutation.isPending
+                ? "bg-gray-400"
+                : "bg-green-500"
             }`}
           >
-            {isSaving ? "저장 중..." : "저장"}
+            {isSaving || updateProfileMutation.isPending
+              ? "저장 중..."
+              : "저장"}
           </button>
         </div>
       </div>
