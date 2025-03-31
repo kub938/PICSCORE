@@ -62,6 +62,10 @@ export const boardApi = {
     return testApi.delete(`/api/v1/photo/${id}`);
   },
   searchPhoto: (inputText: string) => {
-    return testApi.post(`/api/v1/photo/search`, { keyword: inputText });
+    return testApi.get(`/api/v1/photo/search`, {
+      params: {
+        keyword: inputText,
+      },
+    });
   },
 };

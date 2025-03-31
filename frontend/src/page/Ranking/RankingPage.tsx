@@ -1,3 +1,4 @@
+// src/page/Ranking/RankingPage.tsx
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
@@ -7,6 +8,9 @@ import { timeAttackApi } from "../../api/timeAttackApi";
 import goldTrophy from "../../assets/gold.png";
 import silverTrophy from "../../assets/silver.png";
 import bronzeTrophy from "../../assets/bronze.png";
+
+// 랭킹 타입
+type RankingType = "timeAttack" | "contest" | "arena";
 
 const TOPIC_TRANSLATIONS: Record<string, string> = {
   dog: "강아지",
@@ -61,6 +65,7 @@ const RankingPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [timeframe, setTimeframe] = useState<TimeFrame>("all");
+  const [rankingType, setRankingType] = useState<RankingType>("timeAttack");
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   // 모달 관련 상태
@@ -74,6 +79,14 @@ const RankingPage: React.FC = () => {
 
   // 랭킹 데이터 불러오기
   useEffect(() => {
+    // 컨테스트나 아레나는 아직 데이터가 없으므로 API 호출하지 않음
+    if (rankingType !== "timeAttack") {
+      setRankings([]);
+      setTopThreeUsers([]);
+      setIsLoading(false);
+      return;
+    }
+
     const fetchRankings = async () => {
       // 이미 요청 중이면 중복 요청 방지
       if (isRequestPending.current) return;
@@ -83,9 +96,8 @@ const RankingPage: React.FC = () => {
       setError(null);
 
       try {
-        console.log(`Fetching rankings for page ${currentPage}`);
+        // 타임어택 랭킹만 API 호출
         const response = await timeAttackApi.getRanking(currentPage);
-
         const responseData = response.data;
 
         if (responseData && responseData.data) {
@@ -129,7 +141,18 @@ const RankingPage: React.FC = () => {
       setIsLoading(false);
       setError("로그인이 필요한 서비스입니다.");
     }
-  }, [currentPage, isLoggedIn]); // timeframe은 백엔드에서 아직 지원 안 함
+  }, [currentPage, isLoggedIn, rankingType]);
+
+  // 랭킹 유형 변경 시 데이터 리셋
+  useEffect(() => {
+    // 랭킹 유형 변경 시 페이지 번호를 1로 리셋
+    setCurrentPage(1);
+    // 초기 로드 플래그 리셋
+    isFirstLoad.current = true;
+    // 선택된 유저 초기화
+    setSelectedUser(null);
+    setModalOpen(false);
+  }, [rankingType]);
 
   // 랭킹 아이템 클릭 핸들러
   const handleRankingItemClick = (user: RankingUser) => {
@@ -166,6 +189,11 @@ const RankingPage: React.FC = () => {
     // 현재는 백엔드에서 지원하지 않으므로 UI만 변경
     setTimeframe(frame);
     //setCurrentPage(1); // 필터 변경 시 첫 페이지로 리셋
+  };
+
+  // 랭킹 유형 변경 핸들러
+  const handleRankingTypeChange = (type: RankingType) => {
+    setRankingType(type);
   };
 
   // 랭킹 사진 모달 컴포넌트
@@ -357,119 +385,146 @@ const RankingPage: React.FC = () => {
     );
   };
 
-  // 랭킹 아이템 컴포넌트
-  const RankingItem = ({ user }: { user: RankingUser }) => (
-    <li
-      className="border-b border-gray-100 py-2 grid grid-cols-3 items-center cursor-pointer hover:bg-gray-50"
-      onClick={() => handleRankingItemClick(user)}
-    >
-      <div className="text-left pl-3 text-xl font-bold">{user.rank}</div>
-      <div className="flex items-center pl-2">
-        <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center mr-2">
-          {user.profileImage ? (
-            <img
-              src={user.profileImage}
-              alt={`${user.nickName} 프로필`}
-              className="w-full h-full rounded-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "/default-profile.jpg"; // 로드 실패 시 기본 이미지
-              }}
-            />
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="#AAAAAA"
-              stroke="#AAAAAA"
-              strokeWidth="0.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          )}
-        </div>
-        <span className="truncate max-w-[100px]">{user.nickName}</span>
-      </div>
-      <div className="text-right pr-4 font-bold text-lg">
-        {typeof user.score === "number" ? user.score.toFixed(1) : user.score}
-      </div>
-    </li>
-  );
-
-  // 페이지네이션 컴포넌트
-  const Pagination = () => (
-    <div className="flex justify-between items-center p-4 mt-2">
-      <button
-        onClick={handlePrevPage}
-        className={`px-6 py-2 ${
-          currentPage === 1
-            ? "text-gray-400 cursor-not-allowed"
-            : "text-black cursor-pointer"
-        }`}
-        disabled={currentPage === 1 || isLoading}
-      >
-        이전
-      </button>
-
-      <div className="w-10 h-10 rounded-full bg-pic-primary flex items-center justify-center text-white font-bold">
-        {currentPage}
-      </div>
-
-      <button
-        onClick={handleNextPage}
-        className={`px-6 py-2 ${
-          currentPage === totalPages
-            ? "text-gray-400 cursor-not-allowed"
-            : "text-black cursor-pointer"
-        }`}
-        disabled={currentPage === totalPages || isLoading}
-      >
-        다음
-      </button>
-    </div>
-  );
-
   // 상위 3명 데이터 가져오기
   const firstPlace = topThreeUsers.find((user) => user.rank === 1);
   const secondPlace = topThreeUsers.find((user) => user.rank === 2);
   const thirdPlace = topThreeUsers.find((user) => user.rank === 3);
 
+  // 랭킹 유형에 따른 제목 반환
+  const getRankingTitle = () => {
+    switch (rankingType) {
+      case "timeAttack":
+        return "타임어택 랭킹";
+      case "contest":
+        return "컨테스트 랭킹";
+      case "arena":
+        return "아레나 랭킹";
+      default:
+        return "전체 랭킹";
+    }
+  };
+
   return (
-    <div className="flex flex-col w-full max-w-md min-h-screen bg-gray-50">
-      {/* TOP 3 섹션 - 로딩 중이 아닐 때만 표시 */}
-      {!isLoading && topThreeUsers.length > 0 && (
-        <div className="grid grid-cols-3 gap-2 p-4">
-          {/* 2등 */}
-          <TrophyCard user={secondPlace} rank={2} trophyImage={silverTrophy} />
+    <div className="flex flex-col w-full max-w-md bg-gray-50">
+      {/* 랭킹 유형 탭 */}
+      <div className="flex border-b bg-white mb-2 shadow-sm">
+        <button
+          className={`flex-1 py-4 text-center font-medium relative ${
+            rankingType === "timeAttack" ? "text-pic-primary" : "text-gray-600"
+          }`}
+          onClick={() => handleRankingTypeChange("timeAttack")}
+        >
+          타임어택
+          {rankingType === "timeAttack" && (
+            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-pic-primary"></div>
+          )}
+        </button>
+        <button
+          className={`flex-1 py-4 text-center font-medium relative ${
+            rankingType === "contest" ? "text-pic-primary" : "text-gray-600"
+          }`}
+          onClick={() => handleRankingTypeChange("contest")}
+        >
+          컨테스트
+          {rankingType === "contest" && (
+            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-pic-primary"></div>
+          )}
+        </button>
+        <button
+          className={`flex-1 py-4 text-center font-medium relative ${
+            rankingType === "arena" ? "text-pic-primary" : "text-gray-600"
+          }`}
+          onClick={() => handleRankingTypeChange("arena")}
+        >
+          아레나
+          {rankingType === "arena" && (
+            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-pic-primary"></div>
+          )}
+        </button>
+      </div>
 
-          {/* 1등 */}
-          <TrophyCard user={firstPlace} rank={1} trophyImage={goldTrophy} />
+      {/* TOP 3 섹션 - 타임어택이고 로딩 중이 아닐 때만 표시 */}
+      {rankingType === "timeAttack" &&
+        !isLoading &&
+        topThreeUsers.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 p-4">
+            {/* 2등 */}
+            <TrophyCard
+              user={secondPlace}
+              rank={2}
+              trophyImage={silverTrophy}
+            />
 
-          {/* 3등 */}
-          <TrophyCard user={thirdPlace} rank={3} trophyImage={bronzeTrophy} />
-        </div>
-      )}
+            {/* 1등 */}
+            <TrophyCard user={firstPlace} rank={1} trophyImage={goldTrophy} />
+
+            {/* 3등 */}
+            <TrophyCard user={thirdPlace} rank={3} trophyImage={bronzeTrophy} />
+          </div>
+        )}
 
       {/* 랭킹 목록 섹션 */}
       <div className="p-5 mt-2 bg-white rounded-lg mx-4 border border-gray-200 shadow-md">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-800">전체 참가자 랭킹</h2>
+          <h2 className="text-lg font-bold text-gray-800">
+            {getRankingTitle()}
+          </h2>
+
+          {/* 데이터 필터 드롭다운 (필요 시 추가) */}
+          {/*
+          <div className="relative">
+            <select
+              value={timeframe}
+              onChange={(e) => handleTimeFrameChange(e.target.value as TimeFrame)}
+              className="bg-white border border-gray-300 text-gray-700 py-1 px-3 pr-8 rounded-lg shadow-sm focus:border-pic-primary focus:ring-pic-primary"
+            >
+              <option value="today">오늘</option>
+              <option value="week">이번 주</option>
+              <option value="month">이번 달</option>
+              <option value="all">전체</option>
+            </select>
+          </div>
+          */}
         </div>
 
         {/* 랭킹 테이블 헤더 */}
         <div className="bg-gray-100 p-2.5 grid grid-cols-3 font-medium rounded-t-lg text-gray-700 border-b border-gray-200">
           <div className="text-left pl-1">순위</div>
           <div className="text-left -ml-2">프로필</div>
-          <div className="text-right pr-">점수</div>
+          <div className="text-right pr-6">점수</div>
         </div>
 
-        {/* 로딩 상태 */}
-        {isLoading ? (
+        {/* 컨테스트/아레나 준비 중 메시지 */}
+        {rankingType !== "timeAttack" ? (
+          <div className="p-8 text-center my-4">
+            <div className="mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mx-auto text-gray-400"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              {rankingType === "contest" ? "컨테스트" : "아레나"} 랭킹 준비 중
+            </h3>
+            <p className="text-gray-500">
+              현재 {rankingType === "contest" ? "컨테스트" : "아레나"} 랭킹
+              시스템을 준비 중입니다.
+              <br />곧 서비스를 이용하실 수 있습니다.
+            </p>
+          </div>
+        ) : isLoading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pic-primary"></div>
           </div>
@@ -536,7 +591,7 @@ const RankingPage: React.FC = () => {
                     {user.nickName}
                   </span>
                 </div>
-                <div className="text-right pr-4 font-bold text-pic-primary">
+                <div className="text-right pr-8 font-bold text-pic-primary">
                   {typeof user.score === "number"
                     ? user.score.toFixed(1)
                     : user.score}
@@ -546,8 +601,8 @@ const RankingPage: React.FC = () => {
           </ul>
         )}
 
-        {/* 페이지네이션 - 로딩 중이 아니고 데이터가 있을 때만 표시 */}
-        {!isLoading && rankings.length > 0 && (
+        {/* 페이지네이션 - 타임어택이고 로딩 중이 아니고 데이터가 있을 때만 표시 */}
+        {rankingType === "timeAttack" && !isLoading && rankings.length > 0 && (
           <div className="flex justify-between items-center pt-5 mt-4 border-t border-gray-100">
             <button
               onClick={handlePrevPage}
@@ -607,16 +662,6 @@ const RankingPage: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* 타임어택 버튼 */}
-      <footer className="p-4 mt-auto">
-        <Link
-          to="/time-attack"
-          className="block bg-pic-primary text-white py-3 rounded-lg text-center font-bold hover:bg-green-600 transition"
-        >
-          타임어택 도전하기
-        </Link>
-      </footer>
 
       {/* 랭킹 사진 모달 */}
       <RankingModal

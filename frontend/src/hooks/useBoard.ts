@@ -6,6 +6,26 @@ import {
 } from "@tanstack/react-query";
 import { boardApi, Photo } from "../api/boardApi";
 import { testApi } from "../api/api";
+import { AnalysisFeedbackType, AnalysisScoreType } from "../types/evalTypes";
+
+interface PhotoResponse {
+  analysisChart: AnalysisScoreType;
+  analysisText: AnalysisFeedbackType;
+  createdAt: Date;
+  hashTag: [];
+  imageUrl: string;
+  likeCnt: number;
+  nickName: string;
+  photoId: number;
+  profileImage: string;
+  score: number;
+  userId: number;
+}
+
+interface SearchPhotoResponse {
+  id: number;
+  imageUrl: string;
+}
 
 export const useGetPhotos = () => {
   return useInfiniteQuery({
@@ -25,19 +45,6 @@ export const useGetPhotos = () => {
   });
 };
 
-interface PhotoResponse {
-  analysisChart: [];
-  analysisText: [];
-  createdAt: Date;
-  hashTag: [];
-  imageUrl: string;
-  likeCnt: number;
-  nickName: string;
-  photoId: number;
-  profileImage: string;
-  score: number;
-  userId: number;
-}
 export const useGetPhoto = (photoId: number | null) => {
   return useQuery<PhotoResponse>({
     queryKey: ["photo", photoId],
@@ -68,5 +75,21 @@ export const useDeletePhoto = (photoId: number) => {
     onError: (error) => {
       console.log("게시글 삭제 실패", error);
     },
+  });
+};
+
+export const useSearchPhotos = (inputText: string | undefined) => {
+  return useQuery({
+    queryKey: ["search-photos", inputText],
+    queryFn: async () => {
+      if (!inputText || inputText.trim() === "") {
+        return [];
+      }
+
+      const response = await boardApi.searchPhoto(inputText);
+      console.log(response);
+      return response.data.data;
+    },
+    enabled: !!inputText && inputText.trim() !== "",
   });
 };

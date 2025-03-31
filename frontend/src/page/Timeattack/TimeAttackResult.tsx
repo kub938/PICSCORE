@@ -150,6 +150,15 @@ const TimeAttackResult: React.FC = () => {
         console.log("일치 항목 없음 감지됨 (location state)");
         setNoMatch(true);
       }
+
+      // 실패 상태 확인
+      if (location.state.result.success === false) {
+        console.log("타임어택 실패 감지됨");
+        // 이미 noMatch가 true면 두번째 확인은 건너뛼
+        if (!noMatch) {
+          setNoMatch(true);
+        }
+      }
     } else if (result) {
       // Zustand 상태에서 결과 가져오기
       setLocalResult({
@@ -179,10 +188,12 @@ const TimeAttackResult: React.FC = () => {
     setIsLoading(false);
   }, [location, result]);
 
-  // 다시 도전하기 핸들러
+  // 다시 도전하기 핸들러 - 사용하지 않음 (SuccessResult에서 직접 처리)
   const handleTryAgain = () => {
-    setModalDestination("timeattack");
-    setShowModal(true);
+    // 이전: 모달을 통해 경험치 표시 후 이동
+    // setModalDestination("timeattack");
+    // setShowModal(true);
+    // 수정: 사용하지 않음 (SuccessResult에서 직접 navigate 처리)
   };
 
   // 타임어택 결과를 저장하고 업적을 확인하는 함수
@@ -216,7 +227,7 @@ const TimeAttackResult: React.FC = () => {
             !achievementResponse.message.includes("이미")
           ) {
             setAchievementMessage(
-              "🎉 축하합니다! '첫 타임어택' 업적을 달성했습니다!"
+              "🎉 축하합니다! '첫 타임어택 90점' 업적을 달성했습니다!"
             );
             setShowAchievementModal(true);
           }
@@ -253,7 +264,7 @@ const TimeAttackResult: React.FC = () => {
         <div className="mb-4 flex justify-center">
           <img
             src="/path/to/badge7.png"
-            alt="첫 타임어택 업적"
+            alt="첫 타임어택 90점 업적"
             className="w-24 h-24 object-contain"
           />
         </div>
@@ -271,22 +282,9 @@ const TimeAttackResult: React.FC = () => {
 
   // 로딩 중이면 로딩 화면 표시
   if (isLoading) {
-    return <LoadingState />;
-  }
-
-  // 일치 항목 없음이면 실패 화면 표시
-  if (noMatch) {
     return (
       <Container>
-        <FailureResult
-          message={`주제 "${
-            localResult?.translatedTopic || localResult?.topic || ""
-          }"에 맞는 항목을 찾지 못했습니다.`}
-          topic={localResult?.topic}
-          translatedTopic={localResult?.translatedTopic}
-          image={localResult?.image} // 이미지 전달
-          onTryAgain={handleTryAgain}
-        />
+        <LoadingState />
       </Container>
     );
   }
@@ -294,29 +292,46 @@ const TimeAttackResult: React.FC = () => {
   // 결과 화면
   return (
     <Container>
-      <ContentNavBar content="타임어택 결과" />
-      <main className="flex-1 p-4">
-        {localResult?.score !== undefined &&
-          localResult?.topicAccuracy !== undefined &&
-          localResult?.analysisData && (
-            <SuccessResult
-              score={localResult.score}
-              topicAccuracy={localResult.topicAccuracy}
-              analysisData={localResult.analysisData}
-              image={localResult.image || null}
-              topic={localResult.topic || ""}
-              translatedTopic={localResult.translatedTopic}
-              imageName={
-                localResult.imageName || `timeattack_${Date.now()}.jpg`
-              }
-              ranking={currentRanking || localResult.ranking || 0}
-              onTryAgain={handleTryAgain}
-              onViewRanking={handleViewRanking}
-              isSaving={isSaving}
-            />
-          )}
-      </main>
-      <BottomBar />
+      {/* 일치 항목 없거나 실패했을 때는 실패 화면 표시 */}
+      {noMatch || (localResult && localResult.success === false) ? (
+        <FailureResult
+          message={
+            localResult?.message ||
+            `주제 "${
+              localResult?.translatedTopic || localResult?.topic || ""
+            }"에 맞는 항목을 찾지 못했습니다.`
+          }
+          topic={localResult?.topic}
+          translatedTopic={localResult?.translatedTopic}
+          image={localResult?.image} // 이미지 전달
+        />
+      ) : (
+        <>
+          <ContentNavBar content="타임어택 결과" />
+          <main className="flex-1 p-3">
+            {localResult?.score !== undefined &&
+              localResult?.topicAccuracy !== undefined &&
+              localResult?.analysisData && (
+                <SuccessResult
+                  score={localResult.score}
+                  topicAccuracy={localResult.topicAccuracy}
+                  analysisData={localResult.analysisData}
+                  image={localResult.image || null}
+                  topic={localResult.topic || ""}
+                  translatedTopic={localResult.translatedTopic}
+                  imageName={
+                    localResult.imageName || `timeattack_${Date.now()}.jpg`
+                  }
+                  ranking={currentRanking || localResult.ranking || 0}
+                  onTryAgain={handleTryAgain}
+                  onViewRanking={handleViewRanking}
+                  isSaving={isSaving}
+                />
+              )}
+          </main>
+          <BottomBar />
+        </>
+      )}
 
       {/* 애니메이션 모달 */}
       <AnimationModal
