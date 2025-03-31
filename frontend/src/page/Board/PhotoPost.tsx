@@ -83,8 +83,18 @@ function PhotoPost() {
     navigate(`/user/profile/${id}`);
   };
 
-  const { hashTag, imageUrl, likeCnt, nickName, profileImage, score, userId } =
-    data;
+  console.log(data);
+  const {
+    analysisChart,
+    analysisText,
+    hashTag,
+    imageUrl,
+    likeCnt,
+    nickName,
+    profileImage,
+    score,
+    userId,
+  } = data;
 
   const nowPhotoLocation = window.location.href;
   const isMyPhoto = userId === myId;
@@ -124,6 +134,8 @@ function PhotoPost() {
           isModalOpen={showPhotoEvalModal}
           closeDetail={closePhotoEval}
           score={score}
+          analysisScore={analysisChart}
+          analysisFeedback={analysisText}
         />
       )}
       <Modal

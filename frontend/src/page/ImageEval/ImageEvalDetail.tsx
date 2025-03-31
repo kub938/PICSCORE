@@ -4,37 +4,18 @@ import {
   ChatBubbleLeftRightIcon,
   ChatBubbleBottomCenterIcon,
   PhotoIcon,
-  DocumentTextIcon,
+  SunIcon,
 } from "@heroicons/react/24/outline";
 import Chart from "./components/Chart";
-
-interface ImageEvalDetailProps {
-  isModalOpen: boolean;
-  closeDetail: () => void;
-  score: number;
-}
-
-interface ImageEvalData {
-  composition: number;
-  lighting: number;
-  color: number;
-  sharpness: number;
-  technique: number;
-}
+import { ImageEvalDetailProps } from "../../types/evalTypes";
 
 function ImageEvalDetail({
   isModalOpen,
   closeDetail,
   score,
+  analysisScore,
+  analysisFeedback,
 }: ImageEvalDetailProps) {
-  const evalData: ImageEvalData = {
-    composition: 85,
-    lighting: 78,
-    color: 92,
-    sharpness: 83,
-    technique: 88,
-  };
-
   return (
     <>
       {isModalOpen && (
@@ -69,50 +50,90 @@ function ImageEvalDetail({
               </div>
 
               <div className=" bg-white rounded m-3 p-7 ">
-                <div className="font-bold mb-2 text-xl">주제 분석</div>
+                <div className="font-bold mb-2 text-xl">점수 상세</div>
                 <div className="border-y-2  border-gray-200 ">
                   <div className="flex items-center my-2">
                     <ChatBubbleBottomCenterIcon className="text-pic-primary w-7 my-2 mx-4" />
                     <div>
-                      <div className="font-bold text-gray-700">주요 주제</div>
-                      <div className="text-sm">일반</div>
+                      <div className="font-bold text-gray-700">
+                        구도{" "}
+                        <span className="text-pic-primary">
+                          {analysisScore.구도}점
+                        </span>
+                      </div>
+                      <div className="text-sm">{analysisFeedback.구도}</div>
                     </div>
                   </div>
 
                   <div className="flex items-center my-2">
                     <ChatBubbleLeftRightIcon className="text-pic-primary w-7 my-2 mx-4" />
                     <div>
-                      <div className="font-bold text-gray-700">관련 주제</div>
-                      <div className="text-sm">일반</div>
+                      <div className="font-bold text-gray-700">
+                        노이즈{" "}
+                        <span className="text-pic-primary">
+                          {analysisScore.노이즈}점
+                        </span>
+                      </div>
+                      <div className="text-sm">{analysisFeedback.노이즈}</div>
                     </div>
                   </div>
                   <div className="flex items-center my-2">
-                    <DocumentTextIcon className="text-pic-primary w-7 my-2 mx-4" />
+                    <SunIcon className="text-pic-primary w-7 my-2 mx-4" />
                     <div>
-                      <div className="font-bold text-gray-700">내용</div>
-                      <div className="text-sm">일반</div>
+                      <div className="font-bold text-gray-700">
+                        노출{" "}
+                        <span className="text-pic-primary">
+                          {analysisScore.노출}점
+                        </span>
+                      </div>
+                      <div className="text-sm">{analysisFeedback.노출}</div>
                     </div>
                   </div>
                   <div className="flex items-center my-2">
                     <ClockIcon className="text-pic-primary w-7 my-2 mx-4" />
                     <div>
-                      <div className="font-bold text-gray-700">시간대</div>
-                      <div className="text-sm">일반</div>
+                      <div className="font-bold text-gray-700">
+                        다이나믹 레인지{" "}
+                        <span className="text-pic-primary">
+                          {analysisScore["다이나믹 레인지"]}점
+                        </span>
+                      </div>
+                      <div className="text-sm">
+                        {analysisFeedback["다이나믹 레인지"]}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center my-2">
                     <PhotoIcon className="text-pic-primary w-7 my-2 mx-4" />
                     <div>
-                      <div className="font-bold text-gray-700">분위기</div>
-                      <div className="text-sm">일반</div>
+                      <div className="font-bold text-gray-700">
+                        선명도{" "}
+                        <span className="text-pic-primary">
+                          {analysisScore.선명도}점
+                        </span>
+                      </div>
+                      <div className="text-sm">{analysisFeedback.선명도}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center my-2">
+                    <PhotoIcon className="text-pic-primary w-7 my-2 mx-4" />
+                    <div>
+                      <div className="font-bold text-gray-700">
+                        화이트밸런스{" "}
+                        <span className="text-pic-primary">
+                          {analysisScore.화이트밸런스}점
+                        </span>
+                      </div>
+                      <div className="text-sm">
+                        {analysisFeedback.화이트밸런스}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-
               <div className="bg-white rounded m-3 p-7 ">
                 <div className="font-bold mb-2 text-xl">요소 분석</div>
-                <Chart />
+                <Chart analysisScore={analysisScore} />
               </div>
             </div>
           </div>

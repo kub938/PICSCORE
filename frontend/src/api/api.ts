@@ -3,6 +3,25 @@ import { useAuthStore } from "../store";
 
 const baseURL = "https://j12b104.p.ssafy.io";
 
+export const evalTestApi = axios.create({
+  baseURL,
+  headers: {
+    "Content-Type": "multipart/form-data",
+  },
+});
+
+evalTestApi.interceptors.request.use((config) => {
+  // 요청 시점에 스토어에서 최신 토큰 가져오기
+  const accessToken = useAuthStore.getState().accessToken;
+
+  // 토큰이 있으면 요청 헤더에 추가
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  return config;
+});
+
 export const testApi = axios.create({
   baseURL,
   headers: {
