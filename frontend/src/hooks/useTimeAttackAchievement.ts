@@ -29,7 +29,7 @@ export const useTimeAttackAchievement = () => {
         if (response.message && response.message.includes("달성")) {
           setAchievementEarned(true);
           setAchievementMessage(
-            "🎉 축하합니다! 첫 타임어택 업적을 달성했습니다!"
+            "🎉 축하합니다! 첫 타임어택 90점 업적을 달성했습니다!"
           );
         } else {
           setAchievementEarned(false);
