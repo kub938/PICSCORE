@@ -28,7 +28,6 @@ import UserFollowing from "../page/UserPage/UserFollowing";
 import UserFollower from "../page/UserPage/UserFollower";
 import PhotoPost from "../page/Board/PhotoPost";
 
-
 const HomeRouter = () => {
   const [params] = useSearchParams();
   const accessToken = params.get("access");
@@ -151,6 +150,7 @@ const router = createBrowserRouter([
           {
             path: "/user/follower/:userId",
             element: <UserFollower />,
+          },
           {
             path: "photo",
             element: <>게시글을 찾을 수 없습니다.</>,

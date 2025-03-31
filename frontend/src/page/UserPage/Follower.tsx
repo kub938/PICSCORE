@@ -85,6 +85,11 @@ const Follower: React.FC = () => {
     setShowModal(true);
   };
 
+  // 사용자 클릭 시 프로필 페이지로 이동
+  const handleUserClick = (userId: number) => {
+    navigate(`/user/profile/${userId}`);
+  };
+
   // 모달 닫기
   const handleCloseModal = () => {
     setShowModal(false);
@@ -182,19 +187,24 @@ const Follower: React.FC = () => {
                 key={user.userId}
                 className="flex items-center p-4 border-b bg-white"
               >
-                <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
-                  <img
-                    src={user.profileImage || "/default-profile.jpg"}
-                    alt={`${user.nickName}의 프로필`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/default-profile.jpg";
-                    }}
-                  />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium">{user.nickName}</p>
+                <div
+                  className="flex-1 flex items-center cursor-pointer"
+                  onClick={() => handleUserClick(user.userId)}
+                >
+                  <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
+                    <img
+                      src={user.profileImage || "/default-profile.jpg"}
+                      alt={`${user.nickName}의 프로필`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/default-profile.jpg";
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <p className="font-medium">{user.nickName}</p>
+                  </div>
                 </div>
                 <button
                   className="px-4 py-1.5 rounded-md text-sm font-medium bg-pic-primary text-white"
