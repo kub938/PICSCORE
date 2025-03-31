@@ -36,6 +36,7 @@ const Following: React.FC = () => {
 
           setFollowings(followingsWithState);
           setFilteredFollowings(followingsWithState);
+          setFollowingCount(followingsWithState.length);
         } else {
           setFollowings([]);
           setFilteredFollowings([]);
@@ -50,28 +51,21 @@ const Following: React.FC = () => {
     fetchFollowings();
   }, [data]);
 
-  // 사용자 프로필 정보 가져오기
+  // 팔로워 수 가져오기
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchFollowerCount = async () => {
       try {
-        if (!numericUserId) {
-          console.error("사용자 ID가 없습니다.");
-          return;
-        }
-
-        const response = await friendApi.getUserProfile(numericUserId);
-        console.log("사용자 프로필 응답 데이터:", response);
-
+        const response = await friendApi.getMyFollowers();
         if (response.data?.data) {
-          setFollowerCount(response.data.data.followerCnt); // followerCount 설정
+          setFollowerCount(response.data.data.length);
         }
       } catch (error) {
-        console.error("사용자 프로필 가져오기 실패:", error);
+        console.error("팔로워 데이터 가져오기 실패:", error);
       }
     };
 
-    fetchUserProfile();
-  }, [numericUserId]);
+    fetchFollowerCount();
+  }, []);
 
   // 최신 데이터 가져오기
   useEffect(() => {
@@ -96,6 +90,11 @@ const Following: React.FC = () => {
     const count = followings.filter((user) => user.isFollowing).length;
     setFollowingCount(count);
   }, [followings]); // followings 상태가 변경될 때마다 실행
+
+  // 사용자 클릭 시 프로필 페이지로 이동
+  const handleUserClick = (userId: number) => {
+    navigate(`/user/profile/${userId}`);
+  };
 
   // 팔로잉 취소 처리
   const handleUnfollowUser = async (userId: number) => {
@@ -244,19 +243,24 @@ const Following: React.FC = () => {
                 key={user.userId}
                 className="flex items-center p-4 border-b bg-white"
               >
-                <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
-                  <img
-                    src={user.profileImage || "/default-profile.jpg"}
-                    alt={`${user.nickName}의 프로필`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/default-profile.jpg";
-                    }}
-                  />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium">{user.nickName}</p>
+                <div
+                  className="flex-1 flex items-center cursor-pointer"
+                  onClick={() => handleUserClick(user.userId)}
+                >
+                  <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
+                    <img
+                      src={user.profileImage || "/default-profile.jpg"}
+                      alt={`${user.nickName}의 프로필`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/default-profile.jpg";
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <p className="font-medium">{user.nickName}</p>
+                  </div>
                 </div>
                 {user.isFollowing ? (
                   <button
