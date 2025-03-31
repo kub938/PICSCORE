@@ -77,7 +77,7 @@ public class PhotoService {
         // mySQL에 저장
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저 없음; " + userId));
-        Photo photo = new Photo(user, imageName, score,  isPublic, photoType, analysisChart, analysisText);
+        Photo photo = new Photo(user, permanImageUrl, score,  isPublic, photoType, analysisChart, analysisText);
         photoRepository.save(photo);
         SavePhotoResponse response = new SavePhotoResponse(photo.getId());
         // 해시태그 저장은 HashtagService에 위임
