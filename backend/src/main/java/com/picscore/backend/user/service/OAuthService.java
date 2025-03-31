@@ -32,24 +32,24 @@ public class OAuthService {
 
         // 쿠키에서 리프레시 토큰 추출
         String refresh = null;
-//        Cookie[] cookies = request.getCookies();
-//        if (cookies != null) {
-//            for (Cookie cookie : cookies) {
-//                if ("refresh".equals(cookie.getName())) {
-//                    refresh = cookie.getValue();
-//                }
-//            }
-//        }
-        String cookieHeader = request.getHeader("Cookie");
-        if (cookieHeader != null) {
-            String[] cookies = cookieHeader.split(";");
-            for (String cookie : cookies) {
-                if (cookie.trim().startsWith("refresh=")) {
-                    refresh = cookie.substring(cookie.indexOf('=') + 1);
-                    break;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refresh".equals(cookie.getName())) {
+                    refresh = cookie.getValue();
                 }
             }
         }
+//        String cookieHeader = request.getHeader("Cookie");
+//        if (cookieHeader != null) {
+//            String[] cookies = cookieHeader.split(";");
+//            for (String cookie : cookies) {
+//                if (cookie.trim().startsWith("refresh=")) {
+//                    refresh = cookie.substring(cookie.indexOf('=') + 1);
+//                    break;
+//                }
+//            }
+//        }
 
         if (refresh == null) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "RefreshToken 쿠키 없음");
