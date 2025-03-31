@@ -35,9 +35,11 @@ public class OpenAiImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
-    public ResponseEntity<BaseResponse<Map<String,Object>>> analyzeImage(String originalImageUrl) throws IOException {
+    public ResponseEntity<BaseResponse<Map<String,Object>>> analyzeImage(String originalImageUrl, int retryCount) throws IOException {
+        final int maxRetry = 2; // 최대 2번 재시도
+
         // ✅ 1. 원본 이미지 다운로드 후 리사이징
-        byte[] resizedImage = resizeImage(originalImageUrl, 500, 500); // 500X500 >> 250X250 >> 200X200
+        byte[] resizedImage = resizeImage(originalImageUrl, 500, 500);
 
         // ✅ 2. 리사이징된 이미지를 S3에 업로드하고 새 URL 반환
         String resizedImageUrl = uploadToS3(resizedImage);
@@ -48,12 +50,11 @@ public class OpenAiImageService {
                 "messages", List.of(
                         Map.of("role", "system", "content", "당신은 30년 경력의 사진작가이며 NIMA(Neural Image Assessment)모델을 학습하여 이미지를 분석하고 수치화 할 수 있습니다."),
                         Map.of("role", "user", "content", List.of(
-                                Map.of("type", "image_url", "image_url", Map.of("url", resizedImageUrl)), // ✅ 리사이징된 이미지 URL 사용
+                                Map.of("type", "image_url", "image_url", Map.of("url", resizedImageUrl)),
                                 Map.of("type", "text", "text", "출력을 반드시 한국어로 하세요. " +
                                         "1. 다음 여섯 가지 기준에 따라 이미지를 각각 100점 만점으로 평가하세요: " +
                                         "구도, 선명도, 노이즈, 노출, 화이트밸런스, 다이나믹 레인지. 각 기준의 점수를 '기준: 점수: 한 줄 피드백' 형식으로 표현하세요. " +
-                                        "2. 이미지와 관련된 주제를 '주제: 주제1, 주제2' 형식으로 출력하세요."
-)
+                                        "2. 이미지와 관련된 주제를 '주제: 주제1, 주제2' 형식으로 출력하세요.")
                         ))
                 ),
                 "max_tokens", 500
@@ -76,8 +77,9 @@ public class OpenAiImageService {
             );
 
             if (response.getStatusCode() == HttpStatus.OK) {
-//                System.out.printf("###분석 내용="+response.getBody());
-                return parseGPTResponse(response.getBody());
+                // ✅ 응답 파싱
+                ResponseEntity<BaseResponse<Map<String, Object>>> result = parseGPTResponse(response.getBody(), originalImageUrl, retryCount);
+                return result;
             } else {
                 throw new RuntimeException("OpenAI API 요청 실패: HTTP " + response.getStatusCode());
             }
@@ -86,6 +88,7 @@ public class OpenAiImageService {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(BaseResponse.error(e.getMessage()));
         }
     }
+
 
     public byte[] resizeImage(String imageUrl, int width, int height) throws IOException {
         // ✅ 안전한 이미지 다운로드
@@ -168,7 +171,7 @@ public class OpenAiImageService {
                 fileName);
     }
 
-    public ResponseEntity<BaseResponse<Map<String, Object>>> parseGPTResponse(String gptApiResponse) {
+    public ResponseEntity<BaseResponse<Map<String, Object>>> parseGPTResponse(String gptApiResponse, String originalImageUrl, int retryCount) throws IOException {
         try {
             // JSON 파싱
             ObjectMapper objectMapper = new ObjectMapper();
@@ -176,7 +179,8 @@ public class OpenAiImageService {
 
             // GPT 응답에서 "choices.message.content" 부분 추출
             String content = root.path("choices").get(0).path("message").path("content").asText();
-            System.out.printf("분석 결과!!!"+content);
+            System.out.println("분석 결과!!! " + content);
+
             // 점수를 저장할 Map
             Map<String, Integer> scores = new HashMap<>();
             Map<String, Object> response = new HashMap<>();
@@ -205,6 +209,13 @@ public class OpenAiImageService {
                 avgScore = Math.round((float) totalScore / count);
             }
 
+            // ✅ "score"가 0점이면 재요청 실행
+            final int maxRetry = 2; // 최대 2번 재시도
+            if (avgScore == 0 && retryCount < maxRetry) {
+                System.out.println("⚠️ 점수가 0점으로 나왔습니다. API 재요청을 수행합니다. (재시도 횟수: " + (retryCount + 1) + ")");
+                return analyzeImage(originalImageUrl, retryCount + 1); // 재요청
+            }
+
             // 2️⃣ 정규식을 사용해 theme(주제) 추출 -> 리스트로 변환
             Pattern themePattern = Pattern.compile("주제:\\s*(.+)");
             Matcher themeMatcher = themePattern.matcher(content);
@@ -222,6 +233,7 @@ public class OpenAiImageService {
             return ResponseEntity.badRequest().body(BaseResponse.error(e.getMessage()));
         }
     }
+
 
 
     /**
