@@ -1,0 +1,135 @@
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: rublin322/picscore-frontend:latest
+    env_file:
+      - .env.front
+    networks:
+      - picscore-network
+
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: rublin322/picscore-backend:latest
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - picscore-network
+  
+  proxy:
+    container_name: proxy
+    image: nginx:1.26-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-prod.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    networks:
+      - picscore-network
+
+  mysql:
+    container_name: mysql
+    image: mysql:8.4
+    restart: always
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - picscore-network
+
+  redis:
+    container_name: redis
+    image: redis:7.4-alpine
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - picscore-network
+  
+  prometheus:
+    image: prom/prometheus:v2.53.3
+    container_name: prometheus
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - picscore-network
+
+  grafana:
+    image: grafana/grafana:11.5.1
+    container_name: grafana
+    restart: always
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - picscore-network
+    
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: always
+    networks:
+      - picscore-network
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    container_name: cadvisor
+    restart: always
+    privileged: true
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/kmsg:/dev/kmsg:ro
+    networks:
+      - picscore-network
+
+volumes:
+  mysql-data:
+    name: mysql-data
+  prometheus-data:
+    name: prometheus-data
+  grafana-data:
+    name: grafana-data
+
+networks:
+  picscore-network:
+    name: picscore-network
+    driver: bridge

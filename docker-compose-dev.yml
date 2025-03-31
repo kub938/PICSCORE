@@ -4,7 +4,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    image: rublin322/picscore-frontend:latest
+    image: rublin322/picscore-frontend:develop
     env_file:
       - .env.front
     ports:
@@ -17,7 +17,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: rublin322/picscore-backend:latest
+    image: rublin322/picscore-backend:develop
     env_file:
       - .env
     ports:
@@ -43,7 +43,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-dev.conf:/etc/nginx/nginx.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
     networks:
       - picscore-network
@@ -69,8 +69,7 @@ services:
   redis:
     container_name: redis
     image: redis:7.4-alpine
-    # env_file:
-    #   - .env
+    restart: always
     ports:
       - "6379:6379"
     healthcheck:
