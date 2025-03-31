@@ -80,6 +80,8 @@ export const useDeletePhoto = (photoId: number) => {
 };
 
 export const useSearchPhotos = (inputText: string | undefined) => {
+  console.log(inputText);
+
   return useQuery({
     queryKey: ["search-photos", inputText],
     queryFn: async () => {
@@ -88,7 +90,7 @@ export const useSearchPhotos = (inputText: string | undefined) => {
       }
 
       const response = await boardApi.searchPhoto(inputText);
-      console.log(response);
+      console.log(response, "검색완료");
       return response.data.data;
     },
     enabled: !!inputText && inputText.trim() !== "",
