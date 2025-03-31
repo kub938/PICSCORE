@@ -97,7 +97,7 @@ public class PhotoService {
     @Transactional
     public ResponseEntity<BaseResponse<UploadPhotoResponse>> uploadFile(MultipartFile file) throws IOException {
         // UUID를 사용하여 고유한 파일명 생성
-        String fileName = UUID.randomUUID() + "." + getFileExtension(file.getOriginalFilename());
+        String fileName = UUID.randomUUID() + getFileExtension(file.getOriginalFilename());
 
         String tempFolder = "temp/";
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
