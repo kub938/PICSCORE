@@ -1,7 +1,21 @@
+// page/UserPage/components/ProfileHeader.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ProfileHeaderProps } from "../types";
-import { achievementData } from "../../Archieve/achievementData";
+import { useAuthStore } from "../../../store/authStore";
+import { useLogout } from "../../../hooks/useUser";
+
+interface ProfileHeaderProps {
+  profile: {
+    nickname: string;
+    statusMessage: string;
+    profileImage: string | null;
+    isMyProfile: boolean;
+    isFollowing: boolean;
+    displayBadgeId?: string;
+  };
+  onFollowClick: () => void;
+  onEditClick: () => void;
+}
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   profile,
@@ -9,32 +23,25 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onEditClick,
 }) => {
   const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
 
-  // 뱃지 아이콘 클릭 시 업적 페이지로 이동
-  const handleBadgeClick = () => {
-    // 선택 모드로 업적 페이지로 이동
-    navigate("/archieve", {
-      state: {
-        selectionMode: true,
-        currentBadgeId: profile.displayBadgeId,
+  // 로그아웃 처리
+  const logoutMutation = useLogout();
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        logout();
       },
     });
   };
 
-  // 선택된 뱃지 정보 가져오기
-  const getSelectedBadge = () => {
-    if (!profile.displayBadgeId) return null;
-
-    // 모든 뱃지 중에서 선택된 뱃지 ID와 일치하는 뱃지 찾기
-    const allBadges =
-      achievementData.find((cat) => cat.id === "all")?.badges || [];
-    return allBadges.find((badge) => badge.id === profile.displayBadgeId);
+  // 업적 페이지로 이동
+  const handleAchievementClick = () => {
+    navigate("/archieve");
   };
 
-  const selectedBadge = getSelectedBadge();
-
   return (
-    <div className="bg-green-500 p-4 text-white">
+    <div className="bg-pic-primary p-4 text-white">
       <div className="flex items-center">
         <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mr-4">
           {profile.profileImage ? (
@@ -62,41 +69,44 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         </div>
 
         <div className="flex-1">
-          <h2 className="text-xl font-bold">{profile.nickname}</h2>
+          <div className="flex items-center">
+            <h2 className="text-xl font-bold">{profile.nickname}</h2>
+
+            {profile.isMyProfile && (
+              <button
+                onClick={handleLogout}
+                className="ml-2 px-2 py-1 bg-white/20 rounded-md text-xs text-white hover:bg-white/30 transition"
+              >
+                로그아웃
+              </button>
+            )}
+          </div>
           <p className="text-sm text-white/80">{profile.statusMessage}</p>
         </div>
 
+        {/* 업적 버튼 */}
         {profile.isMyProfile && (
-          <div className="relative">
-            <div
-              className="bg-white text-green-500 rounded p-1 absolute top-0 right-0 cursor-pointer"
-              onClick={handleBadgeClick}
+          <button
+            onClick={handleAchievementClick}
+            className="bg-white text-pic-primary px-2 py-1 rounded-md text-xs font-medium hover:bg-white/90 transition flex items-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-1"
             >
-              {selectedBadge ? (
-                <img
-                  src={selectedBadge.image}
-                  alt={selectedBadge.name}
-                  className="w-6 h-6 object-contain"
-                />
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-              )}
-            </div>
-          </div>
+              <circle cx="12" cy="8" r="7"></circle>
+              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+            </svg>
+            업적
+          </button>
         )}
       </div>
 
@@ -112,7 +122,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           onClick={onFollowClick}
           className={`mt-4 rounded-full px-4 py-1 text-sm font-medium ${
             profile.isFollowing
-              ? "bg-white text-green-500"
+              ? "bg-white text-pic-primary"
               : "border border-white text-white"
           }`}
         >

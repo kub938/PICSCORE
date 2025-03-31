@@ -1,11 +1,18 @@
 import React from "react";
 import { PhotoGridProps, PhotoItem } from "../types";
+import { useNavigate } from "react-router-dom";
 
 const PhotoGrid: React.FC<PhotoGridProps> = ({
   photos,
   activeTab,
   isMyProfile,
 }) => {
+  const navigate = useNavigate();
+
+  const handlePhotoClick = (photoId: string) => {
+    navigate(`/photo/${parseInt(photoId)}`);
+  };
+  
   if (photos.length === 0) {
     return (
       <div className="p-8 text-center text-gray-500">
@@ -21,7 +28,11 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({
   return (
     <div className="grid grid-cols-3 gap-1 p-1">
       {photos.map((photo) => (
-        <div key={photo.id} className="aspect-square relative">
+        <div 
+          key={photo.id} 
+          className="aspect-square relative cursor-pointer" 
+          onClick={() => handlePhotoClick(photo.id)}
+        >
           <img
             src={photo.imageUrl}
             alt="사진"
