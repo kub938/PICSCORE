@@ -6,12 +6,14 @@ interface PreparationStepProps {
 
 const PreparationStep: React.FC<PreparationStepProps> = ({ countdown }) => {
   return (
-    <div className="flex flex-col items-center justify-center flex-1 p-4 text-center">
-      <h2 className="text-2xl font-bold mb-6">준비하세요!</h2>
-      <p className="text-gray-600 mb-8">곧 주제가 공개됩니다</p>
+    <div className="flex flex-col items-center justify-center flex-1 p-6 text-center bg-gradient-to-b from-green-50 via-white to-white">
+      <h2 className="text-3xl font-extrabold text-gray-800 mb-6">
+        준비하세요!
+      </h2>
+      <p className="text-lg text-gray-500 mb-8">곧 주제가 공개됩니다</p>
 
-      <div className="flex items-center justify-center w-32 h-32 rounded-full bg-green-100 mb-16 shadow-md">
-        <span className="text-green-500 text-8xl font-bold">{countdown}</span>
+      <div className="flex items-center justify-center w-40 h-40 rounded-full bg-gradient-to-r bg-pic-primary  mb-12 shadow-lg">
+        <span className="text-white text-7xl font-semibold">{countdown}</span>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-4 w-full border border-gray-200">

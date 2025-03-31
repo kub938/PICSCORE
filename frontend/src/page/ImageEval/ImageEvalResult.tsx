@@ -11,14 +11,20 @@ import { useState } from "react";
 import ImageEvalDetail from "./ImageEvalDetail";
 import { useAuthStore } from "../../store";
 import Modal from "../../components/Modal";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ImageEvalResponse } from "../../types/evalTypes";
+import { useUploadImage } from "../../hooks/useEvalImage";
 
 function ImageEvalResult() {
-  const score = 84;
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const imageUploadMutation = useUploadImage();
+  const location = useLocation();
+
+  const evalData = location.state?.evalData;
+  const { analysisChart, analysisText, hashTag, score } = evalData;
 
   const openModal = () => {
     if (isLoggedIn) {
@@ -37,6 +43,16 @@ function ImageEvalResult() {
 
   const closeDetail = () => {
     setIsDetailOpen(false);
+  };
+
+  const handleImagePost = (evalData: ImageEvalResponse) => {
+    if (evalData) {
+      imageUploadMutation.mutate(evalData, {
+        onSuccess: (data: any) => {
+          navigate(`/board`);
+        },
+      });
+    }
   };
 
   return (
@@ -67,6 +83,8 @@ function ImageEvalResult() {
         isModalOpen={isDetailOpen}
         closeDetail={closeDetail}
         score={score}
+        analysisScore={analysisChart}
+        analysisFeedback={analysisText}
       />
 
       <img src={processResult} alt="결과" className="mb-5 mt-5 " />
@@ -91,7 +109,12 @@ function ImageEvalResult() {
           <MagnifyingGlassIcon width={15} />
           <div className="ml-2">자세히</div>
         </Button>
-        <Button color="green" width={30} height={10}>
+        <Button
+          color="green"
+          width={30}
+          height={10}
+          onClick={() => handleImagePost(evalData)}
+        >
           <ArrowUpTrayIcon width={15} />
           <div className="ml-2">업로드</div>
         </Button>

@@ -1,20 +1,34 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FollowerStatsProps } from "../types";
 
 const FollowerStats: React.FC<FollowerStatsProps> = ({
   followerCount,
   followingCount,
+  userId = null, // 추가: 다른 사용자의 ID (null일 경우 내 프로필)
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // 클릭 핸들러 정의
+  // 클릭 핸들러 정의 - 내 프로필과 다른 사용자 프로필 구분
   const handleFollowerClick = () => {
-    navigate("/follower"); // "me"를 현재 사용자 ID로 대체 가능
+    if (userId) {
+      // 다른 사용자의 팔로워 페이지로 이동
+      navigate(`/user/follower/${userId}`);
+    } else {
+      // 내 팔로워 페이지로 이동
+      navigate("/follower");
+    }
   };
 
   const handleFollowingClick = () => {
-    navigate("/following"); // "me"를 현재 사용자 ID로 대체 가능
+    if (userId) {
+      // 다른 사용자의 팔로잉 페이지로 이동
+      navigate(`/user/following/${userId}`);
+    } else {
+      // 내 팔로잉 페이지로 이동
+      navigate("/following");
+    }
   };
 
   return (

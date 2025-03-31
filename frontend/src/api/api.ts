@@ -1,29 +1,49 @@
 import axios from "axios";
 import { useAuthStore } from "../store";
 
-const baseURL = "https://j12b104.p.ssafy.io";
+const baseURL = import.meta.env.VITE_BASE_URL;
 
-export const testApi = axios.create({
+export const evalTestApi = axios.create({
   baseURL,
   headers: {
-    "Content-Type": "application/json",
+    "Content-Type": "multipart/form-data",
   },
+  withCredentials: true,
 });
 
-// 요청 인터셉터를 사용하여 매 요청마다 최신 토큰 사용
-testApi.interceptors.request.use((config) => {
-  // 요청 시점에 스토어에서 최신 토큰 가져오기
-  const accessToken = useAuthStore.getState().accessToken;
+// evalTestApi.interceptors.request.use((config) => {
+//   // 요청 시점에 스토어에서 최신 토큰 가져오기
+//   const accessToken = useAuthStore.getState().accessToken;
 
-  // 토큰이 있으면 요청 헤더에 추가
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
+//   // 토큰이 있으면 요청 헤더에 추가
+//   if (accessToken) {
+//     config.headers.Authorization = `Bearer ${accessToken}`;
+//   }
 
-  return config;
-});
+//   return config;
+// });
 
-export const api = axios.create({
+// export const testApi = axios.create({
+//   baseURL,
+//   headers: {
+//     "Content-Type": "application/json",
+//   },
+// });
+
+// // 요청 인터셉터를 사용하여 매 요청마다 최신 토큰 사용
+// testApi.interceptors.request.use((config) => {
+//   // 요청 시점에 스토어에서 최신 토큰 가져오기
+//   const accessToken = useAuthStore.getState().accessToken;
+
+//   // 토큰이 있으면 요청 헤더에 추가
+//   if (accessToken) {
+//     config.headers.Authorization = `Bearer ${accessToken}`;
+//   }
+
+//   return config;
+// });
+
+export const testApi = axios.create({
   baseURL,
   headers: {
     "Content-Type": "application/json",
@@ -31,7 +51,9 @@ export const api = axios.create({
   withCredentials: true,
 });
 
-api.interceptors.response.use(
+// 치킨받기 API - 토큰 인증 없이 사용 가능한 공개 API
+
+testApi.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
