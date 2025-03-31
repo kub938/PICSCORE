@@ -38,7 +38,11 @@ pipeline {
             parallel {
                 stage('Develop Branch - EC2 Deployment') {
                     when {
-                        branch 'develop'
+                        anyOf {
+                            branch 'develop'
+                            branch 'frontend'
+                            branch 'backend'
+                        }
                     }
                     stages {
                         stage('Build Docker Images - Dev') {
@@ -63,9 +67,11 @@ pipeline {
                             steps {
                                 sshagent(credentials: ['ec2-ssh-key']) {
                                     sh "scp -o StrictHostKeyChecking=no .env ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/.env"
+
                                     sh "scp -o StrictHostKeyChecking=no docker-compose-dev.yml ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/docker-compose.yml"
                                     sh "scp -o StrictHostKeyChecking=no ./nginx-dev.conf ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/nginx-dev.conf"
                                     sh "scp -o StrictHostKeyChecking=no prometheus.yml ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/prometheus.yml"
+
                                     sh """
                                     ssh -o StrictHostKeyChecking=no ${EC2_DEPLOY_HOST} '
                                         cd ${EC2_DEPLOY_PATH} &&
@@ -88,7 +94,7 @@ pipeline {
 
                 stage('Master Branch - DockerHub & GCP Deployment') {
                     when {
-                        branch 'infra/create-new-server'
+                        branch 'master'
                     }
                     stages {
                         stage('Build Docker Images - Prod') {
@@ -113,9 +119,11 @@ pipeline {
                             steps {
                                 sshagent(credentials: ['gcp-ssh-key']) {
                                     sh "scp -o StrictHostKeyChecking=no .env ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env"
+
                                     sh "scp -o StrictHostKeyChecking=no docker-compose-prod.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
                                     sh "scp -o StrictHostKeyChecking=no ./nginx-prod.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/nginx-prod.conf"
                                     sh "scp -o StrictHostKeyChecking=no prometheus.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/prometheus.yml"
+
                                     sh """
                                     ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
                                         cd ${GCP_DEPLOY_PATH} &&
@@ -142,18 +150,18 @@ pipeline {
     post {
         success {
             script {
-                if (env.BRANCH_NAME == 'develop') {
+                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'backend') {
                     echo '개발 환경(EC2) 배포 성공'
-                } else if (env.BRANCH_NAME == 'infra/create-new-server') {
+                } else if (env.BRANCH_NAME == 'master') {
                     echo '운영 환경(GCP) 배포 성공'
                 }
             }
         }
         failure {
             script {
-                if (env.BRANCH_NAME == 'develop') {
+                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'backend') {
                     echo '개발 환경(EC2) 배포 실패'
-                } else if (env.BRANCH_NAME == 'infra/create-new-server') {
+                } else if (env.BRANCH_NAME == 'master') {
                     echo '운영 환경(GCP) 배포 실패'
                 }
             }
