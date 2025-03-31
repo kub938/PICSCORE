@@ -52,7 +52,7 @@ export const useAuthStore = create<TestUserInfoState>()(
       isLoggedIn: false,
       userId: 0,
       login: (accessToken: string) => {
-        set({ isLoggedIn: true, accessToken: accessToken });
+        set({ isLoggedIn: true });
       },
       logout: () => {
         set({ isLoggedIn: false, accessToken: "" });
