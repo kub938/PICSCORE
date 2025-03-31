@@ -1,4 +1,4 @@
-import { api, testApi } from "../api/api";
+import { testApi } from "../api/api";
 import { useAuthStore } from "../store/authStore";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
