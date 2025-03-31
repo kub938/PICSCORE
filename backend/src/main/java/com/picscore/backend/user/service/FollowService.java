@@ -48,6 +48,11 @@ public class FollowService {
             throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 팔로잉 ID입니다.");
         }
 
+        // 팔로워와 팔로잉 ID가 같은 경우 예외 처리
+        if (followerId.equals(followingId)) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "자신을 팔로우할 수 없습니다.");
+        }
+
         User follower = userRepository.findById(followerId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "팔로워 사용자를 찾을 수 없습니다. 사용자 ID: " + followerId));
 
