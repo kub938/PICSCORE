@@ -171,11 +171,14 @@ function PhotoPost() {
             {nickName}
           </div>
         </div>
-        {/* {isMyPhoto && ( */}
-        <div className="w-2/10 flex justify-center " onClick={openOptionModal}>
-          <EllipsisHorizontalIcon className="cursor-pointer" width={30} />
-        </div>
-        {/* )} */}
+        {isMyPhoto && (
+          <div
+            className="w-2/10 flex justify-center "
+            onClick={openOptionModal}
+          >
+            <EllipsisHorizontalIcon className="cursor-pointer" width={30} />
+          </div>
+        )}
       </div>
       <div className=" h-110">
         <img className="w-full h-full" src={imageUrl} alt="" />
