@@ -8,7 +8,7 @@ pipeline {
         BACKEND_IMAGE_PROD = "rublin322/picscore-backend:latest"
         EC2_DEPLOY_HOST = "ubuntu@j12b104.p.ssafy.io"
         EC2_DEPLOY_PATH = "/home/ubuntu/picscore"
-        GCP_DEPLOY_HOST = "rublin322@picscore-prod"
+        GCP_DEPLOY_HOST = "rublin322@picscore.net"
         GCP_DEPLOY_PATH = "/home/rublin322/picscore"
     }
 
@@ -146,7 +146,7 @@ pipeline {
             script {
                 if (env.BRANCH_NAME == 'develop') {
                     echo '개발 환경(EC2) 배포 성공'
-                } else if (env.BRANCH_NAME == 'master') {
+                } else if (env.BRANCH_NAME == 'infra/create-new-server') {
                     echo '운영 환경(GCP) 배포 성공'
                 }
             }
@@ -155,7 +155,7 @@ pipeline {
             script {
                 if (env.BRANCH_NAME == 'develop') {
                     echo '개발 환경(EC2) 배포 실패'
-                } else if (env.BRANCH_NAME == 'master') {
+                } else if (env.BRANCH_NAME == 'infra/create-new-server') {
                     echo '운영 환경(GCP) 배포 실패'
                 }
             }
