@@ -32,20 +32,19 @@ import Loading from "../components/Loading";
 
 const HomeRouter = () => {
   const [params] = useSearchParams();
-  const accessToken = params.get("access");
   const loginSuccess = params.get("loginSuccess");
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const login = useAuthStore((state) => state.login);
 
   // useEffect를 사용하여 렌더링 후에 상태 업데이트
   useEffect(() => {
-    if (loginSuccess && accessToken) {
-      login(accessToken);
+    if (loginSuccess) {
+      login();
       console.log(localStorage.getItem("auth")); // localStorage에서 확인 (accessToken이 아님)
     }
-  }, [loginSuccess, accessToken, login]);
+  }, [loginSuccess, login]);
 
-  if (isLoggedIn || (loginSuccess && accessToken)) {
+  if (isLoggedIn || loginSuccess) {
     return <Home />;
   }
   // 그 외에는 Welcome으로
