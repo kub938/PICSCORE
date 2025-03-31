@@ -68,4 +68,7 @@ export const boardApi = {
       },
     });
   },
+  likes: (photoId: number) => {
+    return testApi.post(`/api/v1/photo/like/${photoId}`);
+  },
 };

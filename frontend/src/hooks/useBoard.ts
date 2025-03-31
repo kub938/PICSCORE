@@ -12,6 +12,7 @@ interface PhotoResponse {
   analysisChart: AnalysisScoreType;
   analysisText: AnalysisFeedbackType;
   createdAt: Date;
+  isLike: boolean;
   hashTag: [];
   imageUrl: string;
   likeCnt: number;
@@ -91,5 +92,33 @@ export const useSearchPhotos = (inputText: string | undefined) => {
       return response.data.data;
     },
     enabled: !!inputText && inputText.trim() !== "",
+  });
+};
+
+export const useToggleLike = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (photoId: number) => {
+      const response = await boardApi.likes(photoId);
+      return response;
+    },
+    onSuccess: (data, photoId) => {
+      queryClient.setQueryData(
+        ["photo", photoId],
+        (oldData: PhotoResponse | undefined) => {
+          if (!oldData) return oldData;
+
+          return {
+            ...oldData,
+            isLike: !oldData.isLike,
+            likeCnt: oldData.isLike ? oldData.likeCnt - 1 : oldData.likeCnt + 1,
+          };
+        }
+      );
+    },
+    onError: (error) => {
+      console.log("좋아요 토글 실패", error);
+    },
   });
 };
