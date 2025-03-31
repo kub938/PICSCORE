@@ -1,5 +1,7 @@
-// page/Timeattack/TimeAttackResult.tsx
-import React, { useEffect, useState } from "react";
+// TimeAttackResult.tsx 파일에 적용할 전체적인 수정사항
+
+import { achievementApi } from "../../api/achievementApi";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTimeAttackStore } from "../../store/timeAttackStore";
 import { useAchievementCheck } from "../../hooks/useAchievement";
@@ -12,6 +14,8 @@ import SuccessResult from "./components/SuccessResult";
 import { LocationState } from "../../types";
 import { TimeAttackResultData } from "../../types";
 import { timeAttackApi } from "../../api/timeAttackApi";
+import ContentNavBar from "../../components/NavBar/ContentNavBar";
+import BottomBar from "../../components/BottomBar/BottomBar";
 
 // 애니메이션 모달 컴포넌트
 interface AnimationModalProps {
@@ -125,6 +129,13 @@ const TimeAttackResult: React.FC = () => {
   >("ranking");
   const [isSaving, setIsSaving] = useState(false);
 
+  // 업적 관련 상태
+  const [achievementMessage, setAchievementMessage] = useState<string | null>(
+    null
+  );
+  const [showAchievementModal, setShowAchievementModal] =
+    useState<boolean>(false);
+
   // 컴포넌트 마운트 시 데이터 설정
   useEffect(() => {
     console.log("분석 결과 데이터:", location.state?.result);
@@ -138,6 +149,15 @@ const TimeAttackResult: React.FC = () => {
       if (location.state.result?.message?.includes("일치 항목 없음")) {
         console.log("일치 항목 없음 감지됨 (location state)");
         setNoMatch(true);
+      }
+
+      // 실패 상태 확인
+      if (location.state.result.success === false) {
+        console.log("타임어택 실패 감지됨");
+        // 이미 noMatch가 true면 두번째 확인은 건너뛼
+        if (!noMatch) {
+          setNoMatch(true);
+        }
       }
     } else if (result) {
       // Zustand 상태에서 결과 가져오기
@@ -168,27 +188,53 @@ const TimeAttackResult: React.FC = () => {
     setIsLoading(false);
   }, [location, result]);
 
-  // 다시 도전하기 핸들러
+  // 다시 도전하기 핸들러 - 사용하지 않음 (SuccessResult에서 직접 처리)
   const handleTryAgain = () => {
-    setModalDestination("timeattack");
-    setShowModal(true);
+    // 이전: 모달을 통해 경험치 표시 후 이동
+    // setModalDestination("timeattack");
+    // setShowModal(true);
+    // 수정: 사용하지 않음 (SuccessResult에서 직접 navigate 처리)
   };
 
-  // 랭킹 보기 핸들러
-  const handleViewRanking = async () => {
-    setIsSaving(true);
-
+  // 타임어택 결과를 저장하고 업적을 확인하는 함수
+  const saveResultAndCheckAchievement = async () => {
     try {
+      setIsSaving(true);
+
       if (!localResult) return;
 
-      // 타임어택 결과 저장 API 호출
+      // 1. 타임어택 결과 저장 API 호출
       await timeAttackApi.saveTimeAttackResult({
         imageName: localResult.imageName || `timeattack_${Date.now()}.jpg`,
         topic: localResult.topic || "",
         score: localResult.score || 0,
       });
 
-      // 랭킹 데이터 조회도 필요하다면 여기서 수행
+      // 2. 업적 API 호출 (점수가 90점 이상인 경우만)
+      if (localResult.score && localResult.score >= 90) {
+        try {
+          const achievementResponse =
+            await achievementApi.submitTimeAttackScore(localResult.score);
+
+          console.log("업적 API 응답:", achievementResponse);
+
+          // 새로 달성한 경우에만 메시지 표시 (API 응답 메시지 확인)
+          // "타임 어택 점수 뱃지 달성" - 새로 달성한 경우
+          // "타임 어택 점수 뱃지 이미 달성" - 이미 달성한 경우
+          if (
+            achievementResponse.message &&
+            achievementResponse.message.includes("달성") &&
+            !achievementResponse.message.includes("이미")
+          ) {
+            setAchievementMessage(
+              "🎉 축하합니다! '첫 타임어택' 업적을 달성했습니다!"
+            );
+            setShowAchievementModal(true);
+          }
+        } catch (error) {
+          console.error("업적 확인 중 오류 발생:", error);
+        }
+      }
 
       // 애니메이션 모달 표시 (저장 성공 후)
       setModalDestination("ranking");
@@ -201,29 +247,44 @@ const TimeAttackResult: React.FC = () => {
     }
   };
 
+  // 랭킹 보기 핸들러
+  const handleViewRanking = async () => {
+    await saveResultAndCheckAchievement();
+  };
+
   // 모달 닫기 핸들러
   const handleCloseModal = () => {
     setShowModal(false);
   };
 
+  // 업적 알림 모달 컴포넌트
+  const AchievementModal = () => (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+      <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 text-center max-w-sm mx-auto animate-fadeIn">
+        <div className="mb-4 flex justify-center">
+          <img
+            src="/path/to/badge7.png"
+            alt="첫 타임어택 업적"
+            className="w-24 h-24 object-contain"
+          />
+        </div>
+        <h2 className="text-2xl font-bold mb-4 text-white">업적 달성!</h2>
+        <p className="text-xl text-yellow-300 mb-6">{achievementMessage}</p>
+        <button
+          onClick={() => setShowAchievementModal(false)}
+          className="mt-4 bg-pic-primary text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-pic-primary/90 transition"
+        >
+          확인
+        </button>
+      </div>
+    </div>
+  );
+
   // 로딩 중이면 로딩 화면 표시
   if (isLoading) {
-    return <LoadingState />;
-  }
-
-  // 일치 항목 없음이면 실패 화면 표시
-  if (noMatch) {
     return (
       <Container>
-        <FailureResult
-          message={`주제 "${
-            localResult?.translatedTopic || localResult?.topic || ""
-          }"에 맞는 항목을 찾지 못했습니다.`}
-          topic={localResult?.topic}
-          translatedTopic={localResult?.translatedTopic}
-          image={localResult?.image} // 이미지 전달
-          onTryAgain={handleTryAgain}
-        />
+        <LoadingState />
       </Container>
     );
   }
@@ -231,27 +292,46 @@ const TimeAttackResult: React.FC = () => {
   // 결과 화면
   return (
     <Container>
-      <main className="flex-1 p-4">
-        {localResult?.score !== undefined &&
-          localResult?.topicAccuracy !== undefined &&
-          localResult?.analysisData && (
-            <SuccessResult
-              score={localResult.score}
-              topicAccuracy={localResult.topicAccuracy}
-              analysisData={localResult.analysisData}
-              image={localResult.image || null}
-              topic={localResult.topic || ""}
-              translatedTopic={localResult.translatedTopic}
-              imageName={
-                localResult.imageName || `timeattack_${Date.now()}.jpg`
-              }
-              ranking={currentRanking || localResult.ranking || 0}
-              onTryAgain={handleTryAgain}
-              onViewRanking={handleViewRanking}
-              isSaving={isSaving}
-            />
-          )}
-      </main>
+      {/* 일치 항목 없거나 실패했을 때는 실패 화면 표시 */}
+      {noMatch || (localResult && localResult.success === false) ? (
+        <FailureResult
+          message={
+            localResult?.message ||
+            `주제 "${
+              localResult?.translatedTopic || localResult?.topic || ""
+            }"에 맞는 항목을 찾지 못했습니다.`
+          }
+          topic={localResult?.topic}
+          translatedTopic={localResult?.translatedTopic}
+          image={localResult?.image} // 이미지 전달
+        />
+      ) : (
+        <>
+          <ContentNavBar content="타임어택 결과" />
+          <main className="flex-1 p-3">
+            {localResult?.score !== undefined &&
+              localResult?.topicAccuracy !== undefined &&
+              localResult?.analysisData && (
+                <SuccessResult
+                  score={localResult.score}
+                  topicAccuracy={localResult.topicAccuracy}
+                  analysisData={localResult.analysisData}
+                  image={localResult.image || null}
+                  topic={localResult.topic || ""}
+                  translatedTopic={localResult.translatedTopic}
+                  imageName={
+                    localResult.imageName || `timeattack_${Date.now()}.jpg`
+                  }
+                  ranking={currentRanking || localResult.ranking || 0}
+                  onTryAgain={handleTryAgain}
+                  onViewRanking={handleViewRanking}
+                  isSaving={isSaving}
+                />
+              )}
+          </main>
+          <BottomBar />
+        </>
+      )}
 
       {/* 애니메이션 모달 */}
       <AnimationModal
@@ -261,6 +341,9 @@ const TimeAttackResult: React.FC = () => {
         xpGained={Math.floor((localResult?.score || 0) * 10)} // XP 계산 로직: 점수 * 10
         destination={modalDestination}
       />
+
+      {/* 업적 알림 모달 */}
+      {showAchievementModal && <AchievementModal />}
     </Container>
   );
 };

@@ -2,6 +2,7 @@ package com.picscore.backend.photo.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -9,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
+@NoArgsConstructor
 @Table(name = "hashtag")
 public class Hashtag {
     @Id
@@ -19,7 +20,8 @@ public class Hashtag {
 
     @Column(name = "name", nullable = false)
     private String name;
-//    관계된 컬렉션 없이 한번 해보자
-//    @OneToMany(mappedBy = "hashtag")
-//    private List<PhotoHashtag> photoHashtags = new ArrayList<>();
+
+    public Hashtag(String hashtagName) {
+        this.name = hashtagName;
+    }
 }

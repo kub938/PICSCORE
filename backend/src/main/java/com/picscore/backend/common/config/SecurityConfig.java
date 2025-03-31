@@ -1,5 +1,6 @@
 package com.picscore.backend.common.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.common.handler.CustomSuccessHandler;
 import com.picscore.backend.common.jwt.CustomLogoutFilter;
@@ -35,6 +36,7 @@ public class SecurityConfig {
     private final RedisUtil redisUtil;
     private final UserRepository userRepository;
     private final OAuthService oAuthService;
+    private final ObjectMapper objectMapper;
 
     /**
      * Spring Security 필터 체인을 구성합니다.
@@ -86,7 +88,7 @@ public class SecurityConfig {
 
         // JWT 필터 추가
         http
-                .addFilterAfter(new JWTFilter(jwtUtil, oAuthService), OAuth2LoginAuthenticationFilter.class);
+                .addFilterAfter(new JWTFilter(jwtUtil, oAuthService, objectMapper), OAuth2LoginAuthenticationFilter.class);
 
         http
                 .addFilterBefore(new CustomLogoutFilter(jwtUtil, redisUtil, userRepository), LogoutFilter.class);

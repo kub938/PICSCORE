@@ -1,6 +1,5 @@
 import { api, testApi } from "./api";
 import { useAuthStore } from "../store/authStore";
-import axios from "axios";
 
 // 응답 인터페이스
 interface BaseResponse<T> {
@@ -22,11 +21,28 @@ export interface FollowingUser {
   userId: number;
   profileImage: string;
   nickName: string;
+  isFollowing: boolean; // 이 필드가 있는지 확인 필요
 }
 
-// 팔로우 토글 요청 인터페이스
-interface ToggleFollowRequest {
-  followingId: number;
+// 사용자 프로필 정보 인터페이스
+export interface UserProfile {
+  userId: number;
+  nickName: string;
+  profileImage: string;
+  message: string;
+  level: number;
+  experience: number;
+  followerCnt: number;
+  followingCnt: number;
+  isFollowing: boolean;
+  badgeList: ProfileBadge[];
+}
+
+// 배지 정보 인터페이스
+interface ProfileBadge {
+  badgeId: number;
+  badgeName: string;
+  badgeImage: string;
 }
 
 export const friendApi = {
@@ -74,6 +90,19 @@ export const friendApi = {
     const accessToken = useAuthStore.getState().accessToken;
     return testApi.get<BaseResponse<FollowingUser[]>>(
       `/api/v1/user/following/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+  },
+
+  // 특정 사용자의 프로필 정보 조회
+  getUserProfile: (userId: number) => {
+    const accessToken = useAuthStore.getState().accessToken;
+    return testApi.get<BaseResponse<UserProfile>>(
+      `/api/v1/user/profile/${userId}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

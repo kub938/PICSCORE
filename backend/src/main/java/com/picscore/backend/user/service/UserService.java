@@ -4,8 +4,10 @@ import com.picscore.backend.badge.model.dto.ProfileBadgeDto;
 import com.picscore.backend.badge.model.entity.Badge;
 import com.picscore.backend.badge.model.entity.UserBadge;
 import com.picscore.backend.badge.repository.UserBadgeRepository;
-import com.picscore.backend.common.model.response.BaseResponse;
+import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.common.utill.RedisUtil;
+import com.picscore.backend.photo.service.PhotoService;
+import com.picscore.backend.timeattack.model.entity.TimeAttack;
 import com.picscore.backend.timeattack.model.response.GetMyStaticResponse;
 import com.picscore.backend.timeattack.model.response.GetUserStaticResponse;
 import com.picscore.backend.timeattack.repository.TimeAttackRepository;
@@ -23,14 +25,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -45,18 +45,23 @@ public class UserService {
     private final FollowRepository followRepository;
     private final UserBadgeRepository userBadgeRepository;
     private final TimeAttackRepository timeAttackRepository;
+
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
+
+    private final PhotoService photoService;
 
 
     /**
      * 현재 로그인한 사용자의 정보를 가져오는 메서드
      *
      * @param request HTTP 요청 객체 (쿠키에서 AccessToken 추출)
-     * @return ResponseEntity<BaseResponse<LoginInfoResponse>>
+     * @return LoginInfoResponse
      *         - 로그인 정보를 포함하는 응답 객체
      */
-    public ResponseEntity<BaseResponse<LoginInfoResponse>> LoginInfo(HttpServletRequest request, HttpServletResponse responses) {
+    public LoginInfoResponse LoginInfo(
+            HttpServletRequest request) {
+
 //        // 쿠키에서 AccessToken 찾기
 //        Optional<Cookie> accessTokenCookie = Arrays.stream(request.getCookies())
 //                .filter(cookie -> "access".equals(cookie.getName()))
@@ -75,8 +80,7 @@ public class UserService {
 
         // Authorization 헤더가 없거나 'Bearer '로 시작하지 않는 경우
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("유효한 Authorization 헤더 없음"));
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효한 Authorization 헤더 없음");
         }
 
         // 'Bearer ' 접두사 제거하여 실제 토큰 추출
@@ -90,23 +94,20 @@ public class UserService {
 
         // 유효하지 않은 토큰인 경우
         if (nickName == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(BaseResponse.error("유효하지 않은 토큰"));
+            throw new CustomException(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰");
         }
 
         // 닉네임으로 사용자 조회
         User user = userRepository.findByNickName(nickName);
         // 사용자를 찾을 수 없는 경우
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(BaseResponse.error("사용자를 찾을 수 없음"));
+            throw new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음");
         }
 
         // 유저 정보 + 토큰 반환
-        LoginInfoResponse response = new LoginInfoResponse(
+        return new LoginInfoResponse(
                 user.getId(), user.getNickName(), user.getMessage(),
                 user.getLevel(), user.getExperience());
-        return ResponseEntity.ok(BaseResponse.success("로그인 성공", response));
     }
 
 
@@ -116,7 +117,8 @@ public class UserService {
      * @param searchText 검색할 닉네임 텍스트
      * @return ResponseEntity<BaseResponse<List<SearchUsersResponse>>> 검색된 사용자 목록을 포함한 응답
      */
-    public ResponseEntity<BaseResponse<List<SearchUsersResponse>>> searchUser(String searchText) {
+    public List<SearchUsersResponse> searchUser(
+            String searchText) {
 
         // 1. 주어진 검색어로 시작하는 닉네임을 가진 사용자들을 데이터베이스에서 조회
         List<User> userList = userRepository.findByNickNameContaining(searchText);
@@ -135,7 +137,7 @@ public class UserService {
                         .collect(Collectors.toList()); // 변환된 객체들을 리스트로 수집
 
         // 3. 성공 응답 생성 및 반환
-        return ResponseEntity.ok(BaseResponse.success("친구 검색 성공", response));
+        return response;
     }
 
 
@@ -146,10 +148,11 @@ public class UserService {
      * @return ResponseEntity<BaseResponse<GetMyProfileResponse>> 사용자 프로필 정보 응답
      * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
      */
-    public ResponseEntity<BaseResponse<GetMyProfileResponse>> getMyProfile(Long userId) {
+    public GetMyProfileResponse getMyProfile(
+            Long userId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
 
         int followerCnt = followRepository.countByFollowingId(userId);
         int followingCnt = followRepository.countByFollowerId(userId);
@@ -173,7 +176,7 @@ public class UserService {
                 followerCnt, followingCnt, profileBadgeList
         );
 
-        return ResponseEntity.ok(BaseResponse.success("내 프로필 조회 성공", response));
+        return response;
     }
 
 
@@ -185,12 +188,16 @@ public class UserService {
      * @return ResponseEntity<BaseResponse<GetUserProfileResponse>> 사용자 프로필 정보 응답
      * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
      */
-    public ResponseEntity<BaseResponse<GetUserProfileResponse>> getUserProfile(
+    public GetUserProfileResponse getUserProfile(
             Long myId, Long userId
     ) {
 
+        if (userId == null || userId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다.");
+        }
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
 
         int followerCnt = followRepository.countByFollowingId(userId);
         int followingCnt = followRepository.countByFollowerId(userId);
@@ -216,7 +223,7 @@ public class UserService {
                 followerCnt, followingCnt, isFollowing, profileBadgeList
         );
 
-        return ResponseEntity.ok(BaseResponse.success("유저 프로필 조회 성공", response));
+        return response;
     }
 
 
@@ -230,17 +237,34 @@ public class UserService {
      * @throws IllegalArgumentException 사용자를 찾을 수 없는 경우 발생
      */
     @Transactional
-    public ResponseEntity<BaseResponse<Void>> updateMyProfile(
+    public void updateMyProfile(
             Long userId, UpdateMyProfileRequest request, HttpServletResponse response
-    ) {
+    ) throws IOException {
+
+        if (request.getNickName() == null || request.getNickName().trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "닉네임은 필수 입력값입니다.");
+        }
+
+        if (request.getMessage() == null || request.getMessage().trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "상태 메시지는 필수 입력값입니다.");
+        }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
 
         User existingUser = userRepository.findByNickName(request.getNickName());
 
         if (existingUser != null && !existingUser.getId().equals(userId)) {
-            return ResponseEntity.ok(BaseResponse.error("닉네임 중복"));
+            throw new CustomException(HttpStatus.CONFLICT, "닉네임이 이미 사용 중입니다.");
+        }
+
+        String existingProfileImageUrl = userRepository.findProfileImageByUserId(userId);
+        String profileImageUrl = existingProfileImageUrl; // 기본적으로 기존 이미지 유지
+
+        // 새 프로필 이미지가 들어왔을 때만 업데이트
+        if (request.getProfileImageFile() != null && !request.getProfileImageFile().isEmpty()) {
+            photoService.deleteProfileFile(existingProfileImageUrl); // 기존 이미지 삭제
+            profileImageUrl = photoService.uploadProfileFile(request.getProfileImageFile());
         }
 
         String userKey = "refresh:" + userId;
@@ -256,9 +280,8 @@ public class UserService {
         response.addCookie(createCookie("access", newAccess));
         response.addCookie(createCookie("refresh", newRefresh));
 
-        user.updateProfile(request.getNickName(), request.getProfileImage(), request.getMessage());
+        user.updateProfile(request.getNickName(), profileImageUrl, request.getMessage());
         userRepository.save(user);
-        return ResponseEntity.ok(BaseResponse.error("프로필 수정 완료"));
     }
 
 
@@ -268,17 +291,26 @@ public class UserService {
      * @param userId 조회할 사용자의 ID
      * @return ResponseEntity<BaseResponse<GetMyStaticResponse>> 사용자 통계 정보 응답
      */
-    public ResponseEntity<BaseResponse<GetMyStaticResponse>> getMyStatic(Long userId) {
-        Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
+    public GetMyStaticResponse getMyStatic(
+            Long userId) {
 
+        Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
         float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
-        int minRank = stats.get("minRank") != null ? ((Number) stats.get("minRank")).intValue() : 0;
+
+        List<TimeAttack> timeAttackList = timeAttackRepository.findHighestScoresAllUser();
+        int rank = 0;
+        for (int i = 0; i < timeAttackList.size(); i++) {
+            if (timeAttackList.get(i).getUser().getId().equals(userId)) {
+                rank = i + 1; // 등수는 1부터 시작
+                break;
+            }
+        }
 
         GetMyStaticResponse response = new GetMyStaticResponse(
-                avgScore, minRank
+                avgScore, rank
         );
 
-        return ResponseEntity.ok(BaseResponse.success("나의 통계 조회 성공", response));
+        return response;
     }
 
 
@@ -288,17 +320,30 @@ public class UserService {
      * @param userId 조회할 사용자의 ID
      * @return ResponseEntity<BaseResponse<GetUserStaticResponse>> 사용자 통계 정보 응답
      */
-    public ResponseEntity<BaseResponse<GetUserStaticResponse>> getUserStatic(Long userId) {
-        Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
+    public GetUserStaticResponse getUserStatic(
+            Long userId) {
 
+        if (userId == null || userId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다.");
+        }
+
+        Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
         float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
-        int minRank = stats.get("minRank") != null ? ((Number) stats.get("minRank")).intValue() : 0;
+
+        List<TimeAttack> timeAttackList = timeAttackRepository.findHighestScoresAllUser();
+        int rank = 0;
+        for (int i = 0; i < timeAttackList.size(); i++) {
+            if (timeAttackList.get(i).getUser().getId().equals(userId)) {
+                rank = i + 1; // 등수는 1부터 시작
+                break;
+            }
+        }
 
         GetUserStaticResponse response = new GetUserStaticResponse(
-                avgScore, minRank
+                avgScore, rank
         );
 
-        return ResponseEntity.ok(BaseResponse.success("유저의 통계 조회 성공", response));
+        return response;
     }
 
 
@@ -318,5 +363,4 @@ public class UserService {
 
         return cookie;
     }
-
 }

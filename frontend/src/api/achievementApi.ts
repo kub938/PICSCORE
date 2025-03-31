@@ -2,6 +2,13 @@
 import { api, testApi } from "./api";
 import { useAuthStore } from "../store/authStore";
 
+// 기본 응답 인터페이스
+interface BaseResponse<T> {
+  timeStamp: string;
+  message: string;
+  data: T;
+}
+
 // 업적 달성 체크 및 완료 API
 export const achievementApi = {
   // 특정 업적 완료 처리
@@ -118,9 +125,7 @@ export const achievementApi = {
 
       // 현재 달성한 업적 조회
       const badgeResponse = await testApi.get("/api/v1/badge", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: {},
       });
 
       const badgeData = badgeResponse.data.data;
@@ -137,6 +142,32 @@ export const achievementApi = {
     } catch (error) {
       console.error("업적 달성 체크 중 오류 발생:", error);
       return false;
+    }
+  },
+
+  /**
+   * 타임어택 점수를 제출하고 업적 달성 여부를 확인하는 함수
+   * @param score 타임어택 점수
+   * @returns 업적 달성 여부 응답
+   */
+  submitTimeAttackScore: async (score: number) => {
+    try {
+      const accessToken = useAuthStore.getState().accessToken;
+
+      const response = await testApi.post(
+        "/api/v1/badge/time-attack/score",
+        { score },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error("타임어택 점수 제출 오류:", error);
+      throw error;
     }
   },
 };
