@@ -2,19 +2,30 @@ import processEval from "../../assets/ImageEval/process-upload.svg";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
 import { CameraIcon } from "@heroicons/react/24/outline";
 import Button from "../../components/Button";
-import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../api/api";
 import { boardApi } from "../../api/boardApi";
+import { evalApi } from "../../api/evalApi";
+import {
+  useEvalImage,
+  usePostTempImage,
+  useUploadImage,
+} from "../../hooks/useEvalImage";
+import Loading from "../../components/Loading";
 
 function ImageUpload() {
   const [modalState, setModalState] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null); // 원본 파일 (서버 전송용)
+  const [imageFile, setImageFile] = useState<File>(); // 원본 파일 (서버 전송용)
   const [imagePreview, setImagePreview] = useState<string>(""); // 미리보기용 URL
+  const [tempImage, setTempImage] = useState("");
+  // const [imageEvalData, setImageEvalData] = useState<ImageEvalResult>();
   const cameraRef = useRef<HTMLInputElement>(null);
-
+  const tempImageMutation = usePostTempImage();
+  const imageEval = useEvalImage(tempImage);
+  const navigate = useNavigate();
   const modalOpen = () => {
     setModalState(true);
   };
@@ -43,12 +54,9 @@ function ImageUpload() {
 
   const getImageFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
-
     const imageFile = event.target.files[0];
-
     if (imageFile) {
       setImageFile(imageFile);
-
       const reader = new FileReader();
       reader.onload = (e) => {
         console.log("FileReader onload 후 반환 값", e);
@@ -61,11 +69,42 @@ function ImageUpload() {
     }
   };
 
+  // 분석 시작
+  //이미지 임시저장 하고 -> 분석 하고 -> result page로 넘긴다음 그 데이터 써서 업로드
+  // 1. 이미지 임시 저장
+  const handleTempImagePost = () => {
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("file", imageFile);
+
+      tempImageMutation.mutate(formData, {
+        onSuccess: (data) => {
+          console.log("이미지 임시저장 성공", data);
+          // setTempImage(data); //임시저장 성공후 set 하면 바로 분석 시작 분석 시작 후
+        },
+        onError: (error) => {
+          console.log("이미지 임시저장 오류 ", error);
+        },
+      });
+    }
+  };
+
+  // 2. 이미지 분석
+  useEffect(() => {
+    if (imageEval.data) {
+      console.log("이미지 분석 완료: ImageEval.data");
+      navigate("/image-result", { state: { evalData: imageEval.data } });
+    }
+  }, [imageEval.data]);
+
+  // 3. 이미지 영구 저장 , response에 photo id 추가 요청
+
   return (
     <div
       className="flex flex-col w-full items-center justify-center"
       onClick={modalClose}
     >
+      {tempImageMutation.isPending && <Loading />}
       {/* 사진 촬영 / 업로드 모달창 */}
       {modalState && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -137,16 +176,15 @@ function ImageUpload() {
           </>
         )}
       </div>
-      <Link to="/image-result">
-        <Button
-          color={imageFile ? "green" : "gray"}
-          width={32}
-          height={12}
-          textSize="lg"
-        >
-          확인
-        </Button>
-      </Link>
+      <Button
+        color={imageFile ? "green" : "gray"}
+        width={32}
+        height={12}
+        textSize="lg"
+        onClick={handleTempImagePost}
+      >
+        확인
+      </Button>
     </div>
   );
 }
