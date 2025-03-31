@@ -133,7 +133,7 @@ function ImageEvalDetail({
               </div>
               <div className="bg-white rounded m-3 p-7 ">
                 <div className="font-bold mb-2 text-xl">요소 분석</div>
-                <Chart analysisScore={analysisScore} />
+                {/* <Chart analysisScore={analysisScore} /> */}
               </div>
             </div>
           </div>
