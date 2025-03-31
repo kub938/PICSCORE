@@ -45,7 +45,7 @@ pipeline {
                 }
                 withCredentials([file(credentialsId: 'env-front-prod-content', variable: 'ENV_FRONT_PROD_PATH')]) {
                     script {
-                        def envpfrontprodContent = readFile(ENV_FRONT_PROD_PATH)
+                        def envfrontprodContent = readFile(ENV_FRONT_PROD_PATH)
                         writeFile file: '.env.front.prod', text: envfrontprodContent
                     }
                 }
