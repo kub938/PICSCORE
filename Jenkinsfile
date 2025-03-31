@@ -112,6 +112,7 @@ pipeline {
                         stage('Deploy to GCP') {
                             steps {
                                 sshagent(credentials: ['gcp-ssh-key']) {
+                                    sh 'ssh-keygen -R picscore.net || true'   // 이전 키 제거
                                     sh "scp -o StrictHostKeyChecking=no .env ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env"
                                     sh "scp -o StrictHostKeyChecking=no docker-compose-prod.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
                                     sh "scp -o StrictHostKeyChecking=no ./nginx-prod.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/nginx-prod.conf"
