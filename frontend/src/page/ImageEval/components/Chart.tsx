@@ -1,4 +1,5 @@
 import React from "react";
+import { AnalysisScoreType } from "../../../types/evalTypes";
 
 // 차트 데이터 타입 정의
 interface ImageEvalData {
@@ -25,16 +26,9 @@ interface LabelPoint extends Point {
   angle: number;
 }
 
-const RadarChart: React.FC<RadarChartProps> = ({
-  data = {
-    구도: 85,
-    조명: 78,
-    색상: 92,
-    선명도: 83,
-    기술: 88,
-  },
-}) => {
+function Chart({ analysisScore }: { analysisScore: AnalysisScoreType }) {
   // 차트의 설정값
+  const data = analysisScore;
   const centerX: number = 150;
   const centerY: number = 150;
   const maxRadius: number = 120;
@@ -227,6 +221,6 @@ const RadarChart: React.FC<RadarChartProps> = ({
       </svg>
     </div>
   );
-};
+}
 
-export default RadarChart;
+export default Chart;

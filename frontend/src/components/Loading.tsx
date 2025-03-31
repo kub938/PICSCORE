@@ -1,34 +1,32 @@
 import { useEffect, useState } from "react";
 
 function Loading() {
-  const [dotCount, setDotCount] = useState(0);
+  const [opacity, setOpacity] = useState(1);
 
-  // 로딩 점(...) 애니메이션을 위한 effect
+  // 페이드 인/아웃 애니메이션을 위한 effect
   useEffect(() => {
     const interval = setInterval(() => {
-      setDotCount((prev) => (prev + 1) % 4);
-    }, 500);
+      setOpacity((prev) => (prev === 1 ? 0.3 : 1));
+    }, 800);
 
     return () => clearInterval(interval);
   }, []);
 
-  // 점의 개수에 따른 텍스트
-  const loadingText = `분석중${"".padEnd(dotCount, ".")}`;
-
   // PICSCORE 각 글자를 개별적으로 배치하기 위한 상수
   const letters = ["P", "I", "C", "S", "C", "O", "R", "E"];
-  const radius = 20;
-  const size = 20;
+  const radius = 100; // 원의 반지름
+  const containerSize = 250; // 컨테이너 크기
+
   return (
-    <div className="flex items-center justify-center w-full h-full">
+    <div className="fixed h-screen min-w-md bg-white/80 flex flex-col justify-center items-center">
       <div
-        className="relative flex items-center justify-center rounded-full"
+        className="relative flex items-center justify-center"
         style={{
-          width: `${size}px`,
-          height: `${size}px`,
+          width: `${containerSize}px`,
+          height: `${containerSize}px`,
         }}
       >
-        {/* 회전하는 원 */}
+        {/* 회전하는 원 - 전체가 한 번에 회전합니다 */}
         <div
           className="absolute w-full h-full animate-spin"
           style={{
@@ -45,14 +43,13 @@ function Loading() {
             return (
               <div
                 key={index}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 font-bold"
+                className="absolute font-bold text-2xl"
                 style={{
                   left: `calc(50% + ${x}px)`,
                   top: `calc(50% + ${y}px)`,
-                  fontSize: "20px",
                   color: index < 3 ? "#8BC34A" : "#000",
-                  // 글자 자체는 회전하지 않도록 반대 방향으로 회전 보정
-                  transform: "translate(-50%, -50%) rotate(0deg)",
+                  // 글자 자체는 회전하지 않도록 수정했습니다
+                  transform: "translate(-50%, -50%)",
                 }}
               >
                 {letter}
@@ -61,11 +58,15 @@ function Loading() {
           })}
         </div>
 
-        {/* 가운데 텍스트 - 애니메이션 적용 */}
-        <div className="absolute flex items-center justify-center text-center">
-          <span className="text-lg font-semibold text-gray-800 min-w-20 text-center">
-            {loadingText}
-          </span>
+        {/* 페이드 인/아웃되는 "분석중" 텍스트 */}
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{
+            transition: "opacity 0.8s ease-in-out",
+            opacity: opacity,
+          }}
+        >
+          <span className="text-xl font-semibold text-gray-800">분석중</span>
         </div>
       </div>
     </div>
