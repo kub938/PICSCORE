@@ -85,7 +85,6 @@ function ImageEvalResult() {
         score={score}
         analysisScore={analysisChart}
         analysisFeedback={analysisText}
-        hashTag={hashTag}
       />
 
       <img src={processResult} alt="결과" className="mb-5 mt-5 " />

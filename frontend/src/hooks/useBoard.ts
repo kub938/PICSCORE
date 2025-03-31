@@ -6,10 +6,11 @@ import {
 } from "@tanstack/react-query";
 import { boardApi, Photo } from "../api/boardApi";
 import { testApi } from "../api/api";
+import { AnalysisFeedbackType, AnalysisScoreType } from "../types/evalTypes";
 
 interface PhotoResponse {
-  analysisChart: [];
-  analysisText: [];
+  analysisChart: AnalysisScoreType;
+  analysisText: AnalysisFeedbackType;
   createdAt: Date;
   hashTag: [];
   imageUrl: string;
