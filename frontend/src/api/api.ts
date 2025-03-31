@@ -31,6 +31,14 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+// 치킨받기 API - 토큰 인증 없이 사용 가능한 공개 API
+export const chickenApi = axios.create({
+  baseURL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
