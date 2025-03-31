@@ -1,6 +1,7 @@
 // page/Timeattack/components/SuccessResult.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import SaveWarning from "./SaveWarning";
 
 interface AnalysisData {
   composition: number;
@@ -40,11 +41,13 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
   const navigate = useNavigate();
 
   const handleTryAgain = () => {
-    if (onTryAgain) {
-      onTryAgain();
-    } else {
-      navigate("/time-attack");
-    }
+    // 경험치 반환 없이 바로 타임어택 페이지로 이동
+    navigate("/time-attack");
+  };
+
+  const handleGoHome = () => {
+    // 홈으로 이동
+    navigate("/");
   };
 
   const handleViewRanking = () => {
@@ -92,7 +95,7 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3 pt-4">
       {/* 메인 결과 카드 */}
       <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
         <div className="flex items-center justify-center mb-3">
@@ -149,6 +152,9 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
           </div>
         </div>
 
+        {/* 저장 경고 메시지 */}
+        <SaveWarning />
+
         {/* 버튼 영역 */}
         <div className="space-y-3">
           <button
@@ -185,13 +191,24 @@ const SuccessResult: React.FC<SuccessResultProps> = ({
             )}
           </button>
 
-          <button
-            onClick={handleTryAgain}
-            className="w-full border border-pic-primary text-pic-primary bg-white py-3.5 rounded-lg font-bold hover:bg-gray-50 transition-colors duration-200"
-            disabled={isSaving}
-          >
-            다시 도전하기
-          </button>
+          {/* 버튼 두 개를 나란히 배치 */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handleTryAgain}
+              className="border border-pic-primary text-pic-primary bg-white py-3 rounded-lg font-bold hover:bg-gray-50 transition-colors duration-200"
+              disabled={isSaving}
+            >
+              다시 도전하기
+            </button>
+
+            <button
+              onClick={handleGoHome}
+              className="border border-gray-300 text-gray-700 bg-white py-3 rounded-lg font-bold hover:bg-gray-50 transition-colors duration-200"
+              disabled={isSaving}
+            >
+              홈으로 돌아가기
+            </button>
+          </div>
         </div>
       </div>
     </div>

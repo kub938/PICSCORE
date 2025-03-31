@@ -73,7 +73,7 @@ const FailureResult: React.FC<FailureResultProps> = ({
         {topic && (
           <div className="bg-gray-100 p-4 rounded-lg mb-6">
             <p className="text-gray-800">
-              오늘의 주제: <span className="font-bold">{translatedTopic}</span>
+              주제: <span className="font-bold">{translatedTopic}</span>
             </p>
           </div>
         )}
@@ -95,8 +95,8 @@ const FailureResult: React.FC<FailureResultProps> = ({
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-4 w-full max-w-sm border border-gray-200">
-        <h3 className="font-bold mb-2">타임어택 팁!</h3>
-        <ul className="space-y-2 text-gray-600">
+        <h3 className="font-bold mb-2 text-gray-700">타임어택 팁!</h3>
+        <ul className="space-y-2 text-sm text-gray-600">
           <li className="flex items-start">
             <span className="text-green-500 mr-2">•</span>
             <span>게임 시작 전 주변을 미리 살펴보세요.</span>
