@@ -27,7 +27,7 @@ import Follower from "../page/UserPage/Follower";
 import UserFollowing from "../page/UserPage/UserFollowing";
 import UserFollower from "../page/UserPage/UserFollower";
 import PhotoPost from "../page/Board/PhotoPost";
-import SearchResult from "../page/Board/SearchResult";
+// import SearchResult from "../page/Board/SearchResult";
 import Loading from "../components/Loading";
 
 const HomeRouter = () => {
@@ -122,10 +122,10 @@ const router = createBrowserRouter([
             path: "/board",
             element: <Board />,
           },
-          {
-            path: "/search/:string",
-            element: <SearchResult />,
-          },
+          // {
+          //   path: "/search/:string",
+          //   element: <SearchResult />,
+          // },
           {
             path: "/photo/:number",
             element: <PhotoPost />,
