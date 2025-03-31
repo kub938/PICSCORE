@@ -14,6 +14,7 @@ import {
   useUploadImage,
 } from "../../hooks/useEvalImage";
 import Loading from "../../components/Loading";
+import { ImageEvalResponse } from "../../types/evalTypes";
 
 function ImageUpload() {
   const [modalState, setModalState] = useState(false);
@@ -21,7 +22,8 @@ function ImageUpload() {
   const [imageFile, setImageFile] = useState<File>(); // 원본 파일 (서버 전송용)
   const [imagePreview, setImagePreview] = useState<string>(""); // 미리보기용 URL
   const [tempImage, setTempImage] = useState("");
-  // const [imageEvalData, setImageEvalData] = useState<ImageEvalResult>();
+  const [tempImageName, setTempImageName] = useState("");
+  // const [imageEvalData, setImageEvalData] = useState<ImageEvalResponse>();
   const cameraRef = useRef<HTMLInputElement>(null);
   const tempImageMutation = usePostTempImage();
   const imageEval = useEvalImage(tempImage);
@@ -76,11 +78,11 @@ function ImageUpload() {
     if (imageFile) {
       const formData = new FormData();
       formData.append("file", imageFile);
-
       tempImageMutation.mutate(formData, {
         onSuccess: (data) => {
-          console.log("이미지 임시저장 성공", data);
-          // setTempImage(data); //임시저장 성공후 set 하면 바로 분석 시작 분석 시작 후
+          console.log("이미지 임시저장 성공", data?.data.data);
+          setTempImageName(data?.data.data.imageName);
+          setTempImage(data?.data.data.imageUrl); //임시저장 성공후 set 하면 바로 분석 시작 분석 시작 후
         },
         onError: (error) => {
           console.log("이미지 임시저장 오류 ", error);
@@ -91,9 +93,17 @@ function ImageUpload() {
 
   // 2. 이미지 분석
   useEffect(() => {
-    if (imageEval.data) {
-      console.log("이미지 분석 완료: ImageEval.data");
-      navigate("/image-result", { state: { evalData: imageEval.data } });
+    if (imageEval.data && imageFile) {
+      const updatedEvalData = {
+        ...imageEval.data,
+        imageName: tempImageName,
+        isPublic: true,
+        photoType: "article",
+        hashTag: imageEval.data.hashTag, // hashtag에서 hashTags로 키 이름 변경
+      };
+
+      console.log("이미지 분석 완료:", updatedEvalData);
+      navigate("/image-result", { state: { evalData: updatedEvalData } });
     }
   }, [imageEval.data]);
 
@@ -104,6 +114,7 @@ function ImageUpload() {
       className="flex flex-col w-full items-center justify-center"
       onClick={modalClose}
     >
+      {imageEval.isLoading && <Loading />}
       {tempImageMutation.isPending && <Loading />}
       {/* 사진 촬영 / 업로드 모달창 */}
       {modalState && (
