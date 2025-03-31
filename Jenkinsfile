@@ -37,6 +37,18 @@ pipeline {
                         writeFile file: '.env.prod', text: envprodContent
                     }
                 }
+                withCredentials([file(credentialsId: 'env-front-dev-content', variable: 'ENV_FRONT_DEV_PATH')]) {
+                    script {
+                        def envfrontdevContent = readFile(ENV_FRONT_DEV_PATH)
+                        writeFile file: '.env.front.dev', text: envfrontdevContent
+                    }
+                }
+                withCredentials([file(credentialsId: 'env-front-prod-content', variable: 'ENV_FRONT_PROD_PATH')]) {
+                    script {
+                        def envpfrontrodContent = readFile(ENV_FRONT_PROD_PATH)
+                        writeFile file: '.env.front.prod', text: envfrontprodContent
+                    }
+                }
             }
         }
 
@@ -73,6 +85,7 @@ pipeline {
                             steps {
                                 sshagent(credentials: ['ec2-ssh-key']) {
                                     sh "scp -o StrictHostKeyChecking=no .env.dev ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/.env"
+                                    sh "scp -o StrictHostKeyChecking=no .env.front.dev ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/.env.front"
 
                                     sh "scp -o StrictHostKeyChecking=no docker-compose-dev.yml ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/docker-compose.yml"
                                     sh "scp -o StrictHostKeyChecking=no ./nginx-dev.conf ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/nginx-dev.conf"
@@ -125,6 +138,7 @@ pipeline {
                             steps {
                                 sshagent(credentials: ['gcp-ssh-key']) {
                                     sh "scp -o StrictHostKeyChecking=no .env.prod ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env"
+                                    sh "scp -o StrictHostKeyChecking=no .env.front.prod ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env.front"
 
                                     sh "scp -o StrictHostKeyChecking=no docker-compose-prod.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
                                     sh "scp -o StrictHostKeyChecking=no ./nginx-prod.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/nginx-prod.conf"
