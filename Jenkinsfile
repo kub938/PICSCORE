@@ -63,8 +63,8 @@ pipeline {
                             steps {
                                 sshagent(credentials: ['ec2-ssh-key']) {
                                     sh "scp -o StrictHostKeyChecking=no .env ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/.env"
-                                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/docker-compose.yml"
-                                    sh "scp -o StrictHostKeyChecking=no ./nginx.conf ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/nginx.conf"
+                                    sh "scp -o StrictHostKeyChecking=no docker-compose-dev.yml ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/docker-compose.yml"
+                                    sh "scp -o StrictHostKeyChecking=no ./nginx-dev.conf ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/nginx-dev.conf"
                                     sh "scp -o StrictHostKeyChecking=no prometheus.yml ${EC2_DEPLOY_HOST}:${EC2_DEPLOY_PATH}/prometheus.yml"
                                     sh """
                                     ssh -o StrictHostKeyChecking=no ${EC2_DEPLOY_HOST} '
@@ -113,8 +113,8 @@ pipeline {
                             steps {
                                 sshagent(credentials: ['gcp-ssh-key']) {
                                     sh "scp -o StrictHostKeyChecking=no .env ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env"
-                                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
-                                    sh "scp -o StrictHostKeyChecking=no ./nginx.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/nginx.conf"
+                                    sh "scp -o StrictHostKeyChecking=no docker-compose-prod.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
+                                    sh "scp -o StrictHostKeyChecking=no ./nginx-prod.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/nginx-prod.conf"
                                     sh "scp -o StrictHostKeyChecking=no prometheus.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/prometheus.yml"
                                     sh """
                                     ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
