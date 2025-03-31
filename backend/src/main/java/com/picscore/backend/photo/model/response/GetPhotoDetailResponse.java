@@ -2,9 +2,12 @@ package com.picscore.backend.photo.model.response;
 
 import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.user.model.entity.User;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public class GetPhotoDetailResponse {
     // User 정보
@@ -16,15 +19,18 @@ public class GetPhotoDetailResponse {
     public Long photoId;
     public String imageUrl;
     public Float score;
-    public String analysisChart; // JSON 형태로 저장된 데이터
-    public String analysisText;  // JSON 형태로 저장된 데이터
+    public Map<String, Integer> analysisChart; // JSON 형태로 저장된 데이터
+    public Map<String, String> analysisText;  // JSON 형태로 저장된 데이터
     public LocalDateTime createdAt;
 
     // 기타 정보
     public int likeCnt;          // 좋아요 수
+    public boolean isLike;
+    public boolean isPublic;
     public List<String> hashTag; // 해시태그 리스트
 
-    public GetPhotoDetailResponse(User user, Photo photo, int likeCnt, List<String> hashTag) {
+    public GetPhotoDetailResponse(
+            User user, Photo photo, int likeCnt, List<String> hashTag, boolean isLike) {
         // User 정보 설정
         this.userId = user.getId();
         this.nickName = user.getNickName();
@@ -40,6 +46,8 @@ public class GetPhotoDetailResponse {
 
         // 기타 정보 설정
         this.likeCnt = likeCnt;
+        this.isLike = isLike;
+        this.isPublic = photo.getIsPublic();
         this.hashTag = hashTag;
     }
 }

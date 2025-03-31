@@ -4,12 +4,14 @@ import com.picscore.backend.common.model.entity.BaseEntity;
 import com.picscore.backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "photo_like")
-@Getter @Setter
+@Getter
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class PhotoLike extends BaseEntity {
     @Id
@@ -24,5 +26,10 @@ public class PhotoLike extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public PhotoLike(Photo photo, User user) {
+        this.photo = photo;
+        this.user = user;
+    }
 
 }
