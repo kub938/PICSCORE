@@ -227,7 +227,7 @@ const TimeAttackResult: React.FC = () => {
             !achievementResponse.message.includes("이미")
           ) {
             setAchievementMessage(
-              "🎉 축하합니다! '첫 타임어택' 업적을 달성했습니다!"
+              "🎉 축하합니다! '첫 타임어택 90점' 업적을 달성했습니다!"
             );
             setShowAchievementModal(true);
           }
@@ -264,7 +264,7 @@ const TimeAttackResult: React.FC = () => {
         <div className="mb-4 flex justify-center">
           <img
             src="/path/to/badge7.png"
-            alt="첫 타임어택 업적"
+            alt="첫 타임어택 90점 업적"
             className="w-24 h-24 object-contain"
           />
         </div>

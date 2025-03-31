@@ -69,8 +69,8 @@ export const achievementData: BadgeCategory[] = [
       },
       {
         id: "first_timeattack",
-        name: "첫 타임어택",
-        description: "첫 번째 타임어택에 참여했습니다.",
+        name: "첫 타임어택 90점",
+        description: "타임어택에서 90점 이상을 달성했습니다.",
         image: badge7,
         achieved: true,
         achievedDate: "2024.03.02",
@@ -205,8 +205,8 @@ export const achievementData: BadgeCategory[] = [
     badges: [
       {
         id: "first_timeattack",
-        name: "첫 타임어택",
-        description: "첫 번째 타임어택에 참여했습니다.",
+        name: "타임어택 90점",
+        description: "타임어택에서 90점 이상을 달성했습니다.",
         image: badge7,
         achieved: true,
         achievedDate: "2024.03.02",

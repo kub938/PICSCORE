@@ -78,6 +78,11 @@ const UserFollowerPage: React.FC = () => {
     }
   }, [searchQuery, followers]);
 
+  // 사용자 프로필 클릭 핸들러
+  const handleUserClick = (userId: number) => {
+    navigate(`/user/profile/${userId}`);
+  };
+
   // 팔로우 토글 핸들러
   const handleToggleFollow = async (followerId: number) => {
     try {
@@ -210,36 +215,41 @@ const UserFollowerPage: React.FC = () => {
                 key={user.userId}
                 className="flex items-center p-4 border-b bg-white"
               >
-                <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center mr-3">
-                  {user.profileImage ? (
-                    <img
-                      src={user.profileImage}
-                      alt={`${user.nickName} 프로필`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = "/default-profile.jpg"; // 로드 실패 시 기본 이미지
-                      }}
-                    />
-                  ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="28"
-                      height="28"
-                      viewBox="0 0 24 24"
-                      fill="#AAAAAA"
-                      stroke="#AAAAAA"
-                      strokeWidth="0.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium">{user.nickName}</p>
+                <div
+                  className="flex-1 flex items-center cursor-pointer"
+                  onClick={() => handleUserClick(user.userId)}
+                >
+                  <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center mr-3">
+                    {user.profileImage ? (
+                      <img
+                        src={user.profileImage}
+                        alt={`${user.nickName} 프로필`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/default-profile.jpg"; // 로드 실패 시 기본 이미지
+                        }}
+                      />
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="28"
+                        height="28"
+                        viewBox="0 0 24 24"
+                        fill="#AAAAAA"
+                        stroke="#AAAAAA"
+                        strokeWidth="0.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium">{user.nickName}</p>
+                  </div>
                 </div>
                 <button
                   className={`px-4 py-1.5 rounded-md text-sm font-medium ${

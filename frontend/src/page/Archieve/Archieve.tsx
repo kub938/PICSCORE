@@ -24,7 +24,7 @@ const BADGE_NAME_MAPPING: Record<string, string> = {
   badge6: "콘텐츠 크리에이터",
 
   // 타임어택 관련 배지
-  badge7: "첫 타임어택",
+  badge7: "첫 타임어택 90점",
   badge8: "타임어택 중독자",
   badge10: "타임어택 챔피언",
 
@@ -40,7 +40,7 @@ const BADGE_DESCRIPTION_MAPPING: Record<string, string> = {
   badge4: "30회 이상의 사진 평가를 완료했습니다.",
   badge5: "첫 번째 게시글을 작성했습니다.",
   badge6: "20개 이상의 게시글을 작성했습니다.",
-  badge7: "첫 번째 타임어택에 참여했습니다.",
+  badge7: "타임어택에서 90점 이상을 달성했습니다.",
   badge8: "20회 이상의 타임어택에 참여했습니다.",
   badge9: "사진 평가에서 77점 이상을 달성했습니다.",
   badge10: "타임어택에서 1위를 달성했습니다.",
@@ -359,9 +359,7 @@ const AchievementPage: React.FC = () => {
 
                     {badge.achieved ? (
                       <span className="text-xs text-pic-primary mt-1">
-                        {badge.achievedDate
-                          ? `${badge.achievedDate} 달성`
-                          : "달성 완료"}
+                        {badge.achievedDate ? ` 달성` : "달성 완료"}
                       </span>
                     ) : (
                       <span className="text-xs text-gray-400 mt-1">미달성</span>

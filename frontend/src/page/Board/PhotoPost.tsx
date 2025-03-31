@@ -9,6 +9,7 @@ import {
   useGetPhoto,
   useToggleLike,
 } from "../../hooks/useBoard";
+import { useDeletePhoto, useGetPhoto, useTogglePhotoVisibility } from "../../hooks/useBoard";
 import { useNavigate, useParams } from "react-router-dom";
 import ErrorPage from "../Error/ErrorPage";
 import { useEffect, useState } from "react";
@@ -30,6 +31,7 @@ function PhotoPost() {
   const [showPhotoEvalModal, setPhotoEvalModal] = useState(false);
   const [showOptionModal, setShowOptionModal] = useState(false);
   const deletePhotoMutation = useDeletePhoto(photoId);
+  const toggleVisibilityMutation = useTogglePhotoVisibility(photoId);
   const myId = useAuthStore((state) => state.userId);
   const likeToggleMutation = useToggleLike();
 
@@ -81,6 +83,11 @@ function PhotoPost() {
     deletePhotoMutation.mutate();
     closeOptionModal();
     navigate(-1);
+  };
+
+  const handleToggleVisibility = () => {
+    toggleVisibilityMutation.mutate();
+    closeOptionModal();
   };
 
   const navigateProfile = (id: number) => {
@@ -153,7 +160,7 @@ function PhotoPost() {
           {
             label: "공개 / 비공개",
             textColor: "black",
-            onClick: () => {},
+            onClick: handleToggleVisibility,
           },
           {
             label: "삭제하기",

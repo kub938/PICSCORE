@@ -82,7 +82,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
         // 내 프로필 데이터 조회
         const profileResponse = await userApi.getMyProfile();
         const statsResponse = await userApi.getMyStatistics();
-        const photosResponse = await userApi.getMyPhotos(true);
+        const photosResponse = await userApi.getMyPhotos(activeTab !== "hidden");
 
         console.log("profileResponse", profileResponse);
         console.log("statsResponse", statsResponse);
@@ -116,10 +116,11 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
             id: photo.id.toString(),
             imageUrl: photo.imageUrl,
             score: photo.score,
-            isPrivate: !photo.isPublic,
+            isPrivate: activeTab === "hidden" // 비공개 탭이면 모든 사진은 비공개로 표시
           })
         );
 
+        console.log("photoItems", photoItems);
         setPhotos(photoItems);
       } else if (userId) {
         // 다른 사용자 프로필 데이터 조회
@@ -127,7 +128,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
         const statsResponse = await userApi.getUserStatistics(parseInt(userId));
         const photosResponse = await userApi.getUserPhotos(
           parseInt(userId),
-          true
+          true // 다른 유저의 경우 항상 공개 사진만 볼 수 있음
         );
 
         // 프로필 정보 처리
@@ -152,16 +153,17 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
           arenaRank: "N/A",
         });
 
-        // 사진 정보 처리
+        // 사진 정보 처리 - 다른 사용자의 경우 모두 공개 사진
         const photoItems: PhotoItem[] = photosResponse.data.data.map(
           (photo: any) => ({
             id: photo.id.toString(),
             imageUrl: photo.imageUrl,
             score: photo.score,
-            isPrivate: false,
+            isPrivate: false // 다른 사용자의 경우 모두 공개 사진
           })
         );
 
+        console.log("other user photoItems", photoItems);
         setPhotos(photoItems);
       }
     } catch (error) {
@@ -239,6 +241,34 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pic-primary"></div>
+          </div>
+        ) : activeTab === "contest" ? (
+          // 컨테스트 탭일 경우 "준비중입니다" 메시지 표시
+          <div className="p-8 text-center my-4">
+            <div className="mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mx-auto text-gray-400"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              컨테스트 게시판 준비 중
+            </h3>
+            <p className="text-gray-500">
+              현재 컨테스트 기능을 준비 중입니다.<br />곧 서비스를 이용하실 수 있습니다.
+            </p>
           </div>
         ) : (
           <PhotoGrid
