@@ -189,9 +189,13 @@ function PhotoPost() {
         )}
       </div>
       <div className=" h-110">
-        <img className="w-full h-full" src={imageUrl} alt="" />
+        <img
+          className="w-full h-full  border-b-1 border-gray-300"
+          src={imageUrl}
+          alt=""
+        />
       </div>
-      <div className=" h-50 mx-3">
+      <div className=" h-50 mx-3 my-1.5 ">
         <div className="flex items-center justify-between">
           <div className="flex">
             {isLike ? (
@@ -217,20 +221,29 @@ function PhotoPost() {
             <span className="ml-0.5"> {score}</span>
           </div>
         </div>
-        <div className="inline-block">
-          이 사진을 {likeCnt}
-          <span className="p-0.5">명이 좋아합니다</span>
-        </div>
-        <div>
-          {hashTag.map((tag, index) => {
-            return <span key={index}>{tag}</span>;
-          })}
+        <div className="flex justify-between items-center">
+          <div className="inline-block mb-1 font-semibold text-sm">
+            좋아요 {likeCnt}
+            <span className="px-0.5">개</span>
+          </div>
+          <div>
+            {hashTag.map((tag, index) => {
+              return (
+                <span
+                  className="bg-pic-primary py-0.5 px-2  text-sm rounded-xl border text-white"
+                  key={index}
+                >
+                  #{tag}
+                </span>
+              );
+            })}
+          </div>
         </div>
         <div
           onClick={openPhotoEval}
           className="cursor-pointer inline-block text-gray-500"
         >
-          자세히 보기
+          ... 자세히 보기
         </div>
       </div>
     </div>
