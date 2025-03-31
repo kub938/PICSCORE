@@ -24,9 +24,7 @@ function SearchBar() {
   };
 
   const [inputText, setInputText] = useState("");
-  const [searchKeyWord, setSearchKeyWord] = useState("");
   const [searchNickname, setSearchNickname] = useState("");
-  const searchResult = useSearchPhotos(searchKeyWord);
   const searchFriends = useSearchFriends(searchNickname);
   const [active, setActive] = useState(false);
   const navigate = useNavigate();
@@ -39,7 +37,7 @@ function SearchBar() {
     e.preventDefault();
 
     if (inputText && inputText.trim() !== "") {
-      setSearchKeyWord(inputText);
+      navigate(`/search/${inputText}`);
     }
   };
 
@@ -57,7 +55,7 @@ function SearchBar() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchNickname(inputText);
-    }, 500);
+    }, 300);
     return () => clearTimeout(timer);
   }, [inputText]);
   // useEffect(() => {
