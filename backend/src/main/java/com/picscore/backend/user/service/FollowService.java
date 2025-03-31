@@ -1,6 +1,6 @@
 package com.picscore.backend.user.service;
 
-import com.picscore.backend.common.model.response.BaseResponse;
+import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.common.service.NotificationService;
 import com.picscore.backend.user.model.response.GetMyFollowingsResponse;
 import com.picscore.backend.user.model.response.GetUserFollowersResponse;
@@ -11,7 +11,7 @@ import com.picscore.backend.user.model.response.GetMyFollowersResponse;
 import com.picscore.backend.user.repository.FollowRepository;
 import com.picscore.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +25,7 @@ public class FollowService {
 
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
+
     private final NotificationService notificationService;
 
 
@@ -36,12 +37,22 @@ public class FollowService {
      * @return Boolean 팔로우 관계가 생성되면 true, 삭제되면 false
      */
     @Transactional
-    public Boolean toggleFollow(Long followerId, Long followingId) {
-        // 팔로워와 팔로잉 사용자 조회
+    public Boolean toggleFollow(
+            Long followerId, Long followingId) {
+
+        if (followerId == null || followerId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 팔로워 ID입니다.");
+        }
+
+        if (followingId == null || followingId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 팔로잉 ID입니다.");
+        }
+
         User follower = userRepository.findById(followerId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + followerId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "팔로워 사용자를 찾을 수 없습니다. 사용자 ID: " + followerId));
+
         User following = userRepository.findById(followingId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID; " + followingId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "팔로잉 사용자를 찾을 수 없습니다. 사용자 ID: " + followingId));
 
         // 기존 팔로우 관계 확인
         Optional<Follow> existingFollow = followRepository.findByFollowerIdAndFollowingId(followerId, followingId);
@@ -75,7 +86,9 @@ public class FollowService {
      * @param userId 현재 사용자의 ID
      * @return ResponseEntity<BaseResponse<GetMyFollowersResponse>> 팔로워 목록을 포함한 응답
      */
-    public ResponseEntity<BaseResponse<List<GetMyFollowersResponse>>> getMyFollowers(Long userId) {
+    public List<GetMyFollowersResponse> getMyFollowers(
+            Long userId) {
+
         // 현재 사용자가 팔로잉되어 있는 모든 팔로우 Entity 조회
         List<Follow> followList = followRepository.findByFollowingId(userId);
 
@@ -100,7 +113,7 @@ public class FollowService {
                         .collect(Collectors.toList());
 
         // 성공 응답 반환
-        return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", followers));
+        return followers;
     }
 
 
@@ -110,7 +123,8 @@ public class FollowService {
      * @param userId 현재 사용자의 ID
      * @return ResponseEntity<BaseResponse<GetMyFollowersResponse>> 팔로잉 목록을 포함한 응답
      */
-    public ResponseEntity<BaseResponse<List<GetMyFollowingsResponse>>> getMyFollowings(Long userId) {
+    public List<GetMyFollowingsResponse> getMyFollowings(
+            Long userId) {
 
         // 현재 사용자가 팔로워되어 있는 모든 팔로우 Entity 조회
         List<Follow> followList = followRepository.findByFollowerId(userId);
@@ -131,8 +145,9 @@ public class FollowService {
                         .collect(Collectors.toList());;
 
         // 성공 응답 반환
-        return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", followings));
+        return followings;
     }
+
 
     /**
      * 특정 사용자의 팔로워 목록을 조회하는 메서드
@@ -141,7 +156,13 @@ public class FollowService {
      * @param userId 팔로워를 조회할 사용자의 ID
      * @return ResponseEntity<BaseResponse<List<GetUserFollowersResponse>>> 팔로워 목록을 포함한 응답
      */
-    public ResponseEntity<BaseResponse<List<GetUserFollowersResponse>>> getUserFollowers(Long myId, Long userId) {
+    public List<GetUserFollowersResponse> getUserFollowers(
+            Long myId, Long userId) {
+
+        if (userId == null || userId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다.");
+        }
+
         // 해당 사용자의 팔로워 목록 조회
         List<Follow> followList = followRepository.findByFollowingId(userId);
 
@@ -164,8 +185,9 @@ public class FollowService {
                         })
                         .collect(Collectors.toList());
 
-        return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", followers));
+        return followers;
     }
+
 
     /**
      * 특정 사용자의 팔로잉 목록을 조회하는 메서드
@@ -174,7 +196,13 @@ public class FollowService {
      * @param userId 팔로잉을 조회할 사용자의 ID
      * @return ResponseEntity<BaseResponse<List<GetUserFollowingsResponse>>> 팔로잉 목록을 포함한 응답
      */
-    public ResponseEntity<BaseResponse<List<GetUserFollowingsResponse>>> getUserFollowings(Long myId, Long userId) {
+    public List<GetUserFollowingsResponse> getUserFollowings(
+            Long myId, Long userId) {
+
+        if (userId == null || userId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다.");
+        }
+
         // 해당 사용자의 팔로잉 목록 조회
         List<Follow> followList = followRepository.findByFollowerId(userId);
 
@@ -197,8 +225,9 @@ public class FollowService {
                         })
                         .collect(Collectors.toList());
 
-        return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", followings));
+        return followings;
     }
+
 
     /**
      * 현재 사용자의 팔로워를 삭제하는 메서드
@@ -207,16 +236,23 @@ public class FollowService {
      * @param userId 삭제할 팔로워의 ID
      * @return ResponseEntity<BaseResponse<Void>> 삭제 결과를 포함한 응답
      */
-    public ResponseEntity<BaseResponse<Void>> deleteMyFollower(Long myId, Long userId) {
+    public void deleteMyFollower(
+            Long myId, Long userId) {
+
+        if (userId == null || userId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다.");
+        }
+
         // 팔로워 관계 조회
         Optional<Follow> follow = followRepository.findByFollowerIdAndFollowingId(userId, myId);
 
-        // 팔로워 관계가 존재하면 삭제
-        if (follow.isPresent()) {
-            followRepository.delete(follow.get());
+        // 팔로워 관계가 존재하지 않을 경우 에러 던짐
+        if (!follow.isPresent()) {
+            throw new CustomException(HttpStatus.NOT_FOUND, "팔로워 관계를 찾을 수 없음");
         }
 
-        return ResponseEntity.ok(BaseResponse.withMessage("팔로워 삭제 완료"));
+        // 팔로워 관계가 존재하면 삭제
+        followRepository.delete(follow.get());
     }
 
 }

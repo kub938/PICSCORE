@@ -1,18 +1,15 @@
 package com.picscore.backend.user.service;
 
-import com.picscore.backend.common.model.response.BaseResponse;
+import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.common.jwt.JWTUtil;
 import com.picscore.backend.user.model.entity.User;
-import com.picscore.backend.user.model.response.ReissueResponse;
 import com.picscore.backend.user.repository.UserRepository;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,6 +20,7 @@ public class OAuthService {
     private final RedisUtil redisUtil;
     private final UserRepository userRepository;
 
+
     /**
      * 리프레시 토큰을 검증하고 새로운 액세스 및 리프레시 토큰을 발급합니다.
      *
@@ -30,36 +28,41 @@ public class OAuthService {
      * @param response HTTP 응답 객체
      * @return ResponseEntity 객체로 결과 반환
      */
-    public ResponseEntity<BaseResponse<ReissueResponse>> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public String reissue(HttpServletRequest request, HttpServletResponse response) {
 
         // 쿠키에서 리프레시 토큰 추출
         String refresh = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("refresh".equals(cookie.getName())) {
-                    refresh = cookie.getValue();
+//        Cookie[] cookies = request.getCookies();
+//        if (cookies != null) {
+//            for (Cookie cookie : cookies) {
+//                if ("refresh".equals(cookie.getName())) {
+//                    refresh = cookie.getValue();
+//                }
+//            }
+//        }
+        String cookieHeader = request.getHeader("Cookie");
+        if (cookieHeader != null) {
+            String[] cookies = cookieHeader.split(";");
+            for (String cookie : cookies) {
+                if (cookie.trim().startsWith("refresh=")) {
+                    refresh = cookie.substring(cookie.indexOf('=') + 1);
+                    break;
                 }
             }
         }
 
         if (refresh == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("RefreshToken 쿠키 없음"));
+            throw new CustomException(HttpStatus.BAD_REQUEST, "RefreshToken 쿠키 없음");
         }
 
         // 리프레시 토큰 만료 여부 확인
-        try {
-            jwtUtil.isExpired(refresh);
-        } catch (ExpiredJwtException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("유효하지 않은 토큰"));
+        if (jwtUtil.isExpired(refresh)) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 토큰");
         }
 
         // 토큰 유형 확인
         if (!"refresh".equals(jwtUtil.getCategory(refresh))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("RefreshToken이 아님"));
+            throw new CustomException(HttpStatus.BAD_REQUEST, "RefreshToken이 아님");
         }
 
         // 닉네임 및 Redis 키 생성
@@ -69,16 +72,14 @@ public class OAuthService {
         // Redis에 저장된 리프레시 토큰 존재 여부 확인
         Boolean isExist = redisUtil.exists(userKey);
         if (!isExist) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("Redis에 존재하지 않음"));
+            throw new CustomException(HttpStatus.BAD_REQUEST, "Redis에 존재하지 않음");
         }
 
         // Redis에 저장된 리프레시 토큰 동일 여부 확인
         Object storedRefreshTokenObj = redisUtil.get(userKey);
         String storedRefreshToken = storedRefreshTokenObj.toString();
         if (!storedRefreshToken.equals(refresh)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.error("Redis의 값과 다름"));
+            throw new CustomException(HttpStatus.BAD_REQUEST, "Redis의 값과 다름");
         }
 
         // 새로운 액세스 및 리프레시 토큰 생성
@@ -92,27 +93,9 @@ public class OAuthService {
         response.addCookie(createCookie("access", newAccess));
         response.addCookie(createCookie("refresh", newRefresh));
 
-        ReissueResponse data = new ReissueResponse(newAccess);
-
-        return ResponseEntity.ok(BaseResponse.success("토큰 재발급 성공", data));
+        return newAccess;
     }
 
-    /**
-     * 쿠키를 생성합니다.
-     *
-     * @param key 쿠키 이름
-     * @param value 쿠키 값
-     * @return 생성된 Cookie 객체
-     */
-    private Cookie createCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 24); // 1일 유지
-        cookie.setSecure(true); // HTTPS에서만 전송 (배포 환경에서는 필수)
-        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
-        cookie.setPath("/"); // 모든 경로에서 접근 가능
-
-        return cookie;
-    }
 
     /**
      * 현재 로그인한 사용자의 ID를 닉네임을 통해 조회하는 메서드
@@ -147,6 +130,7 @@ public class OAuthService {
         return userId;
     }
 
+
     /**
      * 사용자 계정을 삭제하는 메서드
      *
@@ -154,10 +138,12 @@ public class OAuthService {
      * @param response HTTP 응답 객체 (쿠키 삭제에 사용)
      * @return ResponseEntity<BaseResponse<Void>> 삭제 결과를 포함한 응답
      */
-    public ResponseEntity<BaseResponse<Void>> deleteUser(Long userId, HttpServletResponse response) {
-        // 사용자 조회 및 삭제
+    public void deleteUser(
+            Long userId, HttpServletResponse response) {
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
+
         userRepository.delete(user);
 
         // Redis에서 Refresh Token 삭제
@@ -167,9 +153,26 @@ public class OAuthService {
         // 쿠키에서 Access Token과 Refresh Token 삭제
         deleteCookie(response, "access");
         deleteCookie(response, "refresh");
-
-        return ResponseEntity.ok(BaseResponse.withMessage("회원탈퇴 완료"));
     }
+
+
+    /**
+     * 쿠키를 생성합니다.
+     *
+     * @param key 쿠키 이름
+     * @param value 쿠키 값
+     * @return 생성된 Cookie 객체
+     */
+    private Cookie createCookie(String key, String value) {
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(60 * 60 * 24); // 1일 유지
+//        cookie.setSecure(true); // HTTPS에서만 전송 (배포 환경에서는 필수)
+        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
+        cookie.setPath("/"); // 모든 경로에서 접근 가능
+
+        return cookie;
+    }
+
 
     /**
      * 특정 이름의 쿠키를 삭제하는 헬퍼 메서드
@@ -183,7 +186,5 @@ public class OAuthService {
         cookie.setPath("/"); // 쿠키 경로를 루트로 설정 (애플리케이션 전체에 적용)
         response.addCookie(cookie); // 응답에 삭제할 쿠키 추가
     }
-
-
 }
 

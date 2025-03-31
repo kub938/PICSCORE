@@ -440,7 +440,7 @@ const RankingPage: React.FC = () => {
   const thirdPlace = topThreeUsers.find((user) => user.rank === 3);
 
   return (
-    <div className="flex flex-col w-full max-w-md min-h-screen bg-gray-50">
+    <div className="flex flex-col w-full max-w-md bg-gray-50">
       {/* TOP 3 섹션 - 로딩 중이 아닐 때만 표시 */}
       {!isLoading && topThreeUsers.length > 0 && (
         <div className="grid grid-cols-3 gap-2 p-4">
@@ -465,7 +465,7 @@ const RankingPage: React.FC = () => {
         <div className="bg-gray-100 p-2.5 grid grid-cols-3 font-medium rounded-t-lg text-gray-700 border-b border-gray-200">
           <div className="text-left pl-1">순위</div>
           <div className="text-left -ml-2">프로필</div>
-          <div className="text-right pr-">점수</div>
+          <div className="text-right pr-6">점수</div>
         </div>
 
         {/* 로딩 상태 */}
@@ -536,7 +536,7 @@ const RankingPage: React.FC = () => {
                     {user.nickName}
                   </span>
                 </div>
-                <div className="text-right pr-4 font-bold text-pic-primary">
+                <div className="text-right pr-8 font-bold text-pic-primary">
                   {typeof user.score === "number"
                     ? user.score.toFixed(1)
                     : user.score}
@@ -607,16 +607,6 @@ const RankingPage: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* 타임어택 버튼 */}
-      <footer className="p-4 mt-auto">
-        <Link
-          to="/time-attack"
-          className="block bg-pic-primary text-white py-3 rounded-lg text-center font-bold hover:bg-green-600 transition"
-        >
-          타임어택 도전하기
-        </Link>
-      </footer>
 
       {/* 랭킹 사진 모달 */}
       <RankingModal

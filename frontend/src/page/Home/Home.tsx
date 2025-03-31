@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import profileImage from "../../assets/profile.jpg";
 import contest from "../../assets/contest.png";
 import time from "../../assets/time.png";
@@ -8,7 +9,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useQuery } from "@tanstack/react-query";
 import HomeNavBar from "../../components/NavBar/HomeNavBar";
 import axios from "axios";
-import { useLogout } from "../../hooks/useUser";
+import { useLogout, useMyProfile } from "../../hooks/useUser";
 
 function Home() {
   /*
@@ -45,6 +46,42 @@ function Home() {
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
   const setUserId = useAuthStore((state) => state.setUserId);
+  
+  // 경험치 퍼센티지 계산 함수 - 백엔드 로직과 정확히 일치하도록 적용
+  const calcExpPercentage = (experience: number, currentLevel: number): number => {
+    // 각 레벨업에 필요한 임계값(다음 레벨업 기준) 계산
+    let level = 0;
+    let threshold = 1000;
+    let increment = 500;
+    
+    // 레벨과 레벨업에 필요한 임계값 계산 - 백엔드 코드와 동일
+    // 백엔드는 현재 경험치가 임계값보다 크거나 같을 때까지 레벨업
+    const expCopy = experience; // 원본 유지
+    
+    while (expCopy >= threshold) {
+      level++;
+      increment += 500;
+      threshold += increment;
+    }
+    
+    // 다음 레벨업에 필요한 경험치와 현재 경험치의 비율
+    const progress = (experience / threshold) * 100;
+    
+    console.log(`경험치: ${experience}, 레벨: ${level}`);
+    console.log(`다음 레벨업 임계값: ${threshold}`);
+    console.log(`진행률: ${progress.toFixed(2)}%`);
+    
+    return Math.min(Math.max(progress, 0), 100);
+  };
+  
+  // 마이페이지와 동일한 사용자 프로필 정보 API 사용
+  const { 
+    isLoading: profileLoading, 
+    isError: profileError, 
+    data: profileData 
+  } = useMyProfile();
+  
+  // 기존 유저 데이터 API 유지 (userId 설정 필요)
   const useUserData = () => {
     const accessToken = useAuthStore((state) => state.accessToken);
 
@@ -74,45 +111,58 @@ function Home() {
     });
   };
 
-  const { isLoading, isError, data } = useUserData();
-  if (isLoading) {
+  // 기존 useUserData는 유지 (userId 설정 등 필요)
+  const { isLoading: userDataLoading, isError: userDataError, data: userData } = useUserData();
+  
+  // 로딩 및 에러 처리 (프로필 API와 유저 데이터 API 모두 확인)
+  if (profileLoading || userDataLoading) {
     return <>로딩중 입니다</>;
   }
-  if (isError) {
+  if (profileError || userDataError) {
     return <>에러입니다</>;
   }
-  if (data) {
-    setUserId(data.data.userId);
+  
+  // userId 설정 유지
+  if (userData) {
+    setUserId(userData.data.userId);
   }
   return (
     <>
-      <div className="flex flex-col w-full items-center">
+      <div className="flex flex-col w-full items-center pt-16">
         <HomeNavBar />
 
         {/* 프로필 이미지 섹션 */}
         <Link
           to="/mypage"
-          className="flex flex-col items-center mb-10 border-2 border-gray-300 rounded-3xl shadow-lg p-5 bg-white w-[90%]"
+          className="flex flex-col items-center mb-10 mt-4 border-2 border-gray-300 rounded-3xl shadow-lg p-5 bg-white w-[90%]"
           cursor-pointer
         >
           <div className="flex flex-row items-center w-full px-15 gap-10">
             {/* 프로필 이미지 */}
             <div className="w-[100px] h-[100px] rounded-full overflow-hidden border-4 border-white">
               <img
-                src={profileImage}
+                src={profileData?.data?.profileImage || userData?.data?.profileImage || profileImage}
                 alt="프로필 이미지"
                 className="w-full h-full object-cover"
               />
             </div>
             {/* 이름 */}
-            <h2 className="font-bold text-gray-800 text-2xl">태열</h2>
+            <h2 className="font-bold text-gray-800 text-2xl">{profileData?.data?.nickName || userData?.data?.nickName || '사용자'}</h2>
           </div>
 
           {/* 레벨과 레벨 바 */}
           <div className="w-[200px] text-center flex items-center mt-4">
-            <span className="font-bold text-gray-800 mr-2">LV.30</span>
+            <span className="font-bold text-gray-800 mr-2">LV.{profileData?.data?.level || userData?.data?.level || 0}</span>
             <div className="bg-gray-200 h-2.5 rounded-full flex-1">
-              <div className="w-[30%] h-full bg-pic-primary rounded-full"></div>
+              <div 
+                className="h-full bg-pic-primary rounded-full"
+                style={{ 
+                  width: `${calcExpPercentage(
+                    profileData?.data?.experience || userData?.data?.experience || 0, 
+                    profileData?.data?.level || userData?.data?.level || 0
+                  )}%` 
+                }}
+              ></div>
             </div>
           </div>
         </Link>
