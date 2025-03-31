@@ -1,5 +1,5 @@
 // api/badgeApi.ts
-import { api, testApi } from "./api";
+import { testApi } from "./api";
 import { useAuthStore } from "../store/authStore";
 
 // Badge API response type definitions

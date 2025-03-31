@@ -1,5 +1,5 @@
 // api/achievementApi.ts
-import { api, testApi } from "./api";
+import { testApi } from "./api";
 import { useAuthStore } from "../store/authStore";
 
 // 기본 응답 인터페이스
