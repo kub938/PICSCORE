@@ -80,20 +80,16 @@ export const useDeletePhoto = (photoId: number) => {
 };
 
 export const useSearchPhotos = (inputText: string | undefined) => {
-  console.log(inputText);
-
   return useQuery({
     queryKey: ["search-photos", inputText],
     queryFn: async () => {
       if (!inputText || inputText.trim() === "") {
         return [];
       }
-
       const response = await boardApi.searchPhoto(inputText);
-      console.log(response, "검색완료");
       return response.data.data;
     },
-    enabled: !!inputText && inputText.trim() !== "",
+    enabled: !!inputText, // inputText가 존재할 때만 쿼리 실행
   });
 };
 
