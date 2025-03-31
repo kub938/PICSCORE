@@ -68,4 +68,7 @@ export const boardApi = {
       },
     });
   },
+  togglePhotoVisibility: (photoId: number) => {
+    return testApi.patch(`/api/v1/photo/${photoId}`);
+  },
 };

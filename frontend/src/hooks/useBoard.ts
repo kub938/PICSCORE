@@ -93,3 +93,24 @@ export const useSearchPhotos = (inputText: string | undefined) => {
     enabled: !!inputText && inputText.trim() !== "",
   });
 };
+
+export const useTogglePhotoVisibility = (photoId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ["photo-visibility", photoId],
+    mutationFn: async () => {
+      const response = await boardApi.togglePhotoVisibility(photoId);
+      return response.data;
+    },
+    onSuccess: () => {
+      console.log("사진 공개 설정 변경 성공");
+      // 관련 쿼리 무효화
+      queryClient.invalidateQueries({ queryKey: ["photo", photoId] });
+      queryClient.invalidateQueries({ queryKey: ["photos"] });
+    },
+    onError: (error) => {
+      console.error("사진 공개 설정 변경 실패", error);
+    },
+  });
+};

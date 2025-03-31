@@ -82,7 +82,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
         // 내 프로필 데이터 조회
         const profileResponse = await userApi.getMyProfile();
         const statsResponse = await userApi.getMyStatistics();
-        const photosResponse = await userApi.getMyPhotos(true);
+        const photosResponse = await userApi.getMyPhotos(activeTab !== "hidden");
 
         console.log("profileResponse", profileResponse);
         console.log("statsResponse", statsResponse);
@@ -116,7 +116,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
             id: photo.id.toString(),
             imageUrl: photo.imageUrl,
             score: photo.score,
-            isPrivate: photo.isPublic === false || photo.isPublic === "false", // isPublic이 false나 "false"인 경우에만 비공개로 처리
+            isPrivate: activeTab === "hidden" // 비공개 탭이면 모든 사진은 비공개로 표시
           })
         );
 
@@ -128,7 +128,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
         const statsResponse = await userApi.getUserStatistics(parseInt(userId));
         const photosResponse = await userApi.getUserPhotos(
           parseInt(userId),
-          true
+          true // 다른 유저의 경우 항상 공개 사진만 볼 수 있음
         );
 
         // 프로필 정보 처리
@@ -159,7 +159,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
             id: photo.id.toString(),
             imageUrl: photo.imageUrl,
             score: photo.score,
-            isPrivate: false, // 다른 사용자의 경우 모두 공개 사진
+            isPrivate: false // 다른 사용자의 경우 모두 공개 사진
           })
         );
 
@@ -272,7 +272,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
           </div>
         ) : (
           <PhotoGrid
-            photos={activeTab === "hidden" ? photos.filter(photo => photo.isPrivate) : photos.filter(photo => !photo.isPrivate)}
+            photos={photos}
             activeTab={activeTab}
             isMyProfile={isMyProfile}
           />
