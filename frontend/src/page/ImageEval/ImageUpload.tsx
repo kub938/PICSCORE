@@ -103,7 +103,9 @@ function ImageUpload() {
       };
 
       console.log("이미지 분석 완료:", updatedEvalData);
-      navigate("/image-result", { state: { evalData: updatedEvalData } });
+      navigate("/image-result", {
+        state: { evalData: updatedEvalData, imageUrl: tempImage },
+      });
     }
   }, [imageEval.data]);
 

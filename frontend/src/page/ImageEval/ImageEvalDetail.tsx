@@ -16,7 +16,6 @@ function ImageEvalDetail({
   analysisScore,
   analysisFeedback,
 }: ImageEvalDetailProps) {
-  // 점수 상세 아이템을 표시하기 위한 데이터 배열
   const scoreDetails = [
     {
       icon: <ChatBubbleBottomCenterIcon className="text-pic-primary w-7" />,

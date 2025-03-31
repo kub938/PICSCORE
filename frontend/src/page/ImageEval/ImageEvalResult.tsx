@@ -24,7 +24,8 @@ function ImageEvalResult() {
   const location = useLocation();
 
   const evalData = location.state?.evalData;
-  const { analysisChart, analysisText, score, imageUrl } = evalData;
+  const imageUrl = location.state?.imageUrl;
+  const { analysisChart, analysisText, score } = evalData;
 
   const openModal = () => {
     if (isLoggedIn) {
@@ -66,7 +67,7 @@ function ImageEvalResult() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center ">
+    <div className="flex flex-col w-full mb-16 items-center justify-center ">
       <Modal
         description={
           <>
@@ -97,9 +98,9 @@ function ImageEvalResult() {
         analysisFeedback={analysisText}
       />
 
-      <img src={processResult} alt="결과" className="mb-5 mt-5 " />
+      <img src={processResult} alt="결과" className="mb-5  mt-2" />
       <div
-        className="w-[90%] shadow p-3 rounded flex flex-col items-center"
+        className="w-[80%]  shadow p-3 rounded flex flex-col items-center"
         style={{ boxShadow: "0px 0px 3px 0px rgba(0, 0, 0, 0.3)" }}
       >
         <img
