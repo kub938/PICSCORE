@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { timeAttackApi } from "../../api/timeAttackApi";
+import ContentNavBar from "../../components/NavBar/ContentNavBar";
 
 // Import medal images
 import goldTrophy from "../../assets/gold.png";
@@ -406,6 +407,7 @@ const RankingPage: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full max-w-md bg-gray-50">
+      <ContentNavBar content="랭킹" />
       {/* 랭킹 유형 탭 */}
       <div className="flex border-b bg-white mb-2 shadow-sm">
         <button
