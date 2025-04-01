@@ -13,6 +13,7 @@ import axios from "axios";
 import { useLogout, useMyProfile } from "../../hooks/useUser";
 import { chickenService } from "../../api/chickenApi";
 import { testApi } from "../../api/api";
+import { sendUserFeedback } from "../../utils/sentry";
 
 function Home() {
   // 치킨받기 모달 관리
@@ -26,10 +27,12 @@ function Home() {
   // 서버에 치킨받기 요청을 전송하는 mutation 생성
   const chickenMutation = useMutation({
     mutationFn: (data: { phoneNumber: string; message: string }) => {
+      sendUserFeedback(userData.nickName, data.message);
       return chickenService.requestChicken(data);
     },
     onSuccess: () => {
       // 요청 성공 시 실행할 코드
+
       setShowChickenModal(false);
       setPhoneNumber("");
       setMessage("");
@@ -45,7 +48,6 @@ function Home() {
   // 폼 제출 처리
   const handleChickenSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     // 백엔드 API로 데이터 전송
     chickenMutation.mutate({ phoneNumber, message });
   };
@@ -170,7 +172,7 @@ function Home() {
 
   // userId 설정 유지
   if (userData) {
-    setUserId(userData.data.userId);
+    setUserId(userData.data.userId, userData.data.nickName);
   }
   return (
     <>
