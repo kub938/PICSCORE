@@ -211,6 +211,10 @@ const TimeAttack: React.FC = () => {
   ): void => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
+      
+      // 카메라로 촬영한 파일인지 확인 (파일 이름이나 타입으로는 정확한 판단이 어려움)
+      // 카메라 캡처 속성이 자동으로 적용되도록 설정되어 있으므로 별도 체크는 불필요
+      
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
       setSelectedImageFile(file);
