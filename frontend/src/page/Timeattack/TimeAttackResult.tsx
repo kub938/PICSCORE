@@ -326,8 +326,8 @@ const TimeAttackResult: React.FC = () => {
               localResult?.translatedTopic || localResult?.topic || "알 수 없음"
             }"에 맞는 항목을 찾지 못했습니다.`
           }
-          topic={localResult?.topic || useTimeAttackStore.getState().challengeTopic || "알 수 없음"}
-          translatedTopic={localResult?.translatedTopic || translateTopic(useTimeAttackStore.getState().challengeTopic || "")}
+          topic={localResult?.topic || useTimeAttackStore.getState().gameState.challengeTopic || "알 수 없음"}
+          translatedTopic={localResult?.translatedTopic || translateTopic(useTimeAttackStore.getState().gameState.challengeTopic || "")}
           image={localResult?.image} // 이미지 전달
         />
       ) : (
