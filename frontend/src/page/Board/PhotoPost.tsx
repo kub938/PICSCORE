@@ -202,9 +202,9 @@ function PhotoPost() {
           </div>
         )}
       </div>
-      <div className="relative w-full">
+      <div className="">
         <img
-          className="w-full h-auto max-h-96 object-contain border-b-1 border-gray-300"
+          className="w-full h-auto border-b-1 border-gray-300"
           src={imageUrl}
           alt=""
         />
