@@ -4,6 +4,7 @@ import {
   EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
+
 import {
   useDeletePhoto,
   useGetPhoto,
