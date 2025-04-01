@@ -40,7 +40,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
         
         String socialId = customUserDetails.getSocialId();
-        boolean isExist = userRepository.existsBySocialId(socialId);
+        Boolean isExist = userRepository.existsBySocialId(socialId);
         
         String nickName = null;
         if (isExist) {
