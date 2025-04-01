@@ -87,7 +87,7 @@ public class OAuthService {
         String newRefresh = jwtUtil.createJwt("refresh", nickName, 86400000L); // 1일 유효
 
         // Redis에 새 리프레시 토큰 저장
-        redisUtil.setex(userKey, newRefresh, 86400000L);
+        redisUtil.setex(userKey, newRefresh, 86400L);
 
         // 클라이언트에 새 토큰 쿠키로 설정
         response.addCookie(createCookie("access", newAccess));
