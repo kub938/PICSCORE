@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { testApi } from "../../api/api";
+import ContentNavBar from "../../components/NavBar/ContentNavBar";
 
 // 컴포넌트 임포트
 import BadgeGrid from "./components/BadgeGrid";

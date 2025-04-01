@@ -77,6 +77,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - redis-data:/data
     networks:
       - picscore-network
   
@@ -136,6 +138,8 @@ services:
 volumes:
   mysql-data:
     name: mysql-data
+  redis-data:
+    name: redis-data
   prometheus-data:
     name: prometheus-data
   grafana-data:

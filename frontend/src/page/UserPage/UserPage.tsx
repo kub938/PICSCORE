@@ -212,7 +212,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
   };
 
   return (
-    <div className="w-full flex flex-col max-w-md mx-auto min-h-screen bg-gray-50">
+    <div className="w-full flex flex-col max-w-md mx-auto min-h-screen bg-gray-50 pb-16">
       <ProfileHeader
         profile={profile}
         onFollowClick={handleFollowClick}
