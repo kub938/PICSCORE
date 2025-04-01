@@ -142,7 +142,6 @@ const AchievementPage: React.FC = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const accessToken = useAuthStore((state) => state.accessToken);
 
   // URL 상태 확인 - 선택 모드인지 체크
   useEffect(() => {
@@ -199,7 +198,7 @@ const AchievementPage: React.FC = () => {
     };
 
     fetchBadges();
-  }, [accessToken, activeCategory]);
+  }, [activeCategory]);
 
   // 카테고리 변경 시 필터링
   useEffect(() => {

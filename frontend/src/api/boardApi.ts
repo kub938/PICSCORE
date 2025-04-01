@@ -1,4 +1,4 @@
-import { api, testApi } from "./api";
+import { testApi } from "./api";
 
 export interface PostRequest {
   imageUrl: string;
@@ -67,6 +67,9 @@ export const boardApi = {
         keyword: inputText,
       },
     });
+  },
+  likes: (photoId: number) => {
+    return testApi.post(`/api/v1/photo/like/${photoId}`);
   },
   togglePhotoVisibility: (photoId: number) => {
     return testApi.patch(`/api/v1/photo/${photoId}`);
