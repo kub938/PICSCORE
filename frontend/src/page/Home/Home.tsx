@@ -12,6 +12,7 @@ import HomeNavBar from "../../components/NavBar/HomeNavBar";
 import axios from "axios";
 import { useLogout, useMyProfile } from "../../hooks/useUser";
 import { chickenService } from "../../api/chickenApi";
+import { testApi } from "../../api/api";
 
 function Home() {
   // 치킨받기 모달 관리
@@ -119,19 +120,10 @@ function Home() {
 
   // 기존 유저 데이터 API 유지 (userId 설정 필요)
   const useUserData = () => {
-    const accessToken = useAuthStore((state) => state.accessToken);
-
     return useQuery({
       queryKey: ["userData"],
       queryFn: async () => {
-        const response = await axios.get(
-          "https://j12b104.p.ssafy.io/api/v1/user/info",
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
+        const response = await testApi.get("/api/v1/user/info");
         return response.data;
       },
     });
