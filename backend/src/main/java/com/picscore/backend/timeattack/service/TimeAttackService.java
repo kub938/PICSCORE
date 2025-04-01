@@ -162,9 +162,9 @@ public class TimeAttackService {
                     AzureVisionResponse.class
             );
 
-            float time = 15f;
+            float time = 20f;
             time = Float.parseFloat(request.getTime());
-            final float adjustedTime = time / 15f;
+            final float adjustedTime = time / 18f;
 
             // API 응답에서 태그 정보 추출 및 변환
             List<AnalysisPhotoResponse> analysisResults = response.getBody().getTags().stream()
