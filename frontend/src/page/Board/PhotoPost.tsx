@@ -4,10 +4,9 @@ import {
   EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
-
 import {
-  useDeletePhoto,
-  useGetPhoto,
+  useDeletePhoto as useDeletePhotoHook,
+  useGetPhoto as useGetPhotoHook,
   useToggleLike,
   useTogglePhotoVisibility,
 } from "../../hooks/useBoard";
@@ -25,13 +24,13 @@ import { boardApi } from "../../api/boardApi";
 function PhotoPost() {
   const { number } = useParams();
   const photoId = number ? parseInt(number) : -1;
-  const { isError, isLoading, data } = useGetPhoto(photoId);
+  const { isError, isLoading, data } = useGetPhotoHook(photoId);
   const navigate = useNavigate();
   const [isOpenShareModal, setIsOpenShareModal] = useState(false);
   const [showCopyMessage, setShowCopyMessage] = useState(false);
   const [showPhotoEvalModal, setPhotoEvalModal] = useState(false);
   const [showOptionModal, setShowOptionModal] = useState(false);
-  const deletePhotoMutation = useDeletePhoto(photoId);
+  const deletePhotoMutation = useDeletePhotoHook(photoId);
   const toggleVisibilityMutation = useTogglePhotoVisibility(photoId);
   const myId = useAuthStore((state) => state.userId);
   const likeToggleMutation = useToggleLike();
