@@ -37,22 +37,26 @@ import { persist } from "zustand/middleware";
 // );
 
 interface TestUserInfoState {
-  accessToken: string;
   isLoggedIn: boolean;
-  login: (accessToken: string) => void;
+  userId: number;
+  login: () => void;
   logout: () => void;
+  setUserId: (userId: number) => void;
 }
 
 export const useAuthStore = create<TestUserInfoState>()(
   persist(
     (set) => ({
-      accessToken: "",
       isLoggedIn: false,
-      login: (accessToken: string) => {
-        set({ isLoggedIn: true, accessToken: accessToken });
+      userId: 0,
+      login: () => {
+        set({ isLoggedIn: true });
       },
       logout: () => {
-        set({ isLoggedIn: false, accessToken: "" });
+        set({ isLoggedIn: false });
+      },
+      setUserId: (userId: number) => {
+        set({ userId: userId });
       },
     }),
     { name: "auth" }

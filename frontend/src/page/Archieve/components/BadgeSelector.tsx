@@ -1,7 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "../../../types";
-import { achievementData } from "../achievementData";
+import { useAllBadges } from "../../../hooks/useBadge"; // 실제 API 훅 사용
+
+// API 응답 타입 정의
+interface BadgeResponseData {
+  badgeId: number;
+  name: string;
+  image: string;
+  obtainCondition: string;
+  isObtain: boolean;
+}
+
+interface ApiResponse {
+  data: {
+    data: BadgeResponseData[];
+    message: string;
+    timeStamp: string;
+  };
+}
 
 interface BadgeSelectorProps {
   onClose: () => void;
@@ -14,33 +31,35 @@ const BadgeSelector: React.FC<BadgeSelectorProps> = ({
   onSelectBadge,
   currentBadge,
 }) => {
-  const [achievedBadges, setAchievedBadges] = useState<Badge[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
+  const [badges, setBadges] = useState<Badge[]>([]);
+
+  // 실제 API 데이터 가져오기
+  const { data, isLoading, error } = useAllBadges();
 
   useEffect(() => {
-    // 획득한 뱃지 불러오기
-    const fetchAchievedBadges = () => {
-      setLoading(true);
+    if (data?.data?.data) {
+      // API 응답을 Badge 타입으로 변환
+      const apiData: Badge[] = data.data.data.map(
+        (item: BadgeResponseData) => ({
+          id: item.badgeId.toString(),
+          name: item.name,
+          description: item.obtainCondition,
+          image: item.image,
+          achieved: item.isObtain,
+        })
+      );
 
-      // 실제 구현에서는 API 호출을 사용할 것입니다.
-      // const response = await axios.get('api/v1/bedge/achieved');
-
-      // 목업 데이터 사용 - 모든 카테고리에서 달성한 뱃지 필터링
-      setTimeout(() => {
-        const allBadges =
-          achievementData.find((cat) => cat.id === "all")?.badges || [];
-        const achieved = allBadges.filter((badge) => badge.achieved);
-        setAchievedBadges(achieved);
-        setLoading(false);
-      }, 300);
-    };
-
-    fetchAchievedBadges();
-  }, []);
+      setBadges(apiData);
+    }
+  }, [data]);
 
   const handleSelectBadge = (badge: Badge) => {
-    onSelectBadge(badge);
-    onClose();
+    // 달성한 뱃지만 선택 가능하도록 유지
+    if (badge.achieved) {
+      onSelectBadge(badge);
+      onClose();
+    }
   };
 
   return (
@@ -67,17 +86,21 @@ const BadgeSelector: React.FC<BadgeSelectorProps> = ({
         </div>
 
         <div className="p-4 overflow-y-auto max-h-[60vh]">
-          {loading ? (
+          {isLoading ? (
             <div className="flex items-center justify-center h-40">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
             </div>
-          ) : achievedBadges.length === 0 ? (
+          ) : error ? (
+            <div className="p-4 text-center text-red-500">
+              <p>뱃지 정보를 불러오는데 실패했습니다</p>
+            </div>
+          ) : badges.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
-              <p>획득한 뱃지가 없습니다</p>
+              <p>표시할 뱃지가 없습니다</p>
               <button
                 onClick={() => {
                   onClose();
-                  // navigate("/archieve");
+                  navigate("/archieve");
                 }}
                 className="mt-2 text-green-500 font-medium"
               >
@@ -86,24 +109,54 @@ const BadgeSelector: React.FC<BadgeSelectorProps> = ({
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-3">
-              {achievedBadges.map((badge) => (
+              {badges.map((badge) => (
                 <div
                   key={badge.id}
-                  className={`p-2 rounded-lg border cursor-pointer hover:bg-gray-50 transition flex flex-col items-center ${
+                  className={`p-2 rounded-lg border ${
                     currentBadge === badge.id
                       ? "border-green-500 bg-green-50"
                       : "border-gray-200"
-                  }`}
+                  } ${
+                    badge.achieved
+                      ? "cursor-pointer hover:bg-gray-50"
+                      : "cursor-not-allowed"
+                  } transition flex flex-col items-center`}
                   onClick={() => handleSelectBadge(badge)}
                 >
-                  <img
-                    src={badge.image}
-                    alt={badge.name}
-                    className="w-12 h-12 object-contain mb-1"
-                  />
+                  <div
+                    className={`relative ${
+                      !badge.achieved ? "opacity-40 grayscale" : ""
+                    }`}
+                  >
+                    <img
+                      src={badge.image}
+                      alt={badge.name}
+                      className="w-12 h-12 object-contain mb-1"
+                    />
+                    {badge.achieved && (
+                      <div className="absolute -top-1 -right-1 bg-green-500 text-white rounded-full p-0.5 text-xs">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
                   <span className="text-xs text-center font-medium truncate w-full">
                     {badge.name}
                   </span>
+                  {!badge.achieved && (
+                    <span className="text-xs text-gray-400">미달성</span>
+                  )}
                 </div>
               ))}
             </div>
@@ -121,7 +174,7 @@ const BadgeSelector: React.FC<BadgeSelectorProps> = ({
             <button
               onClick={() => {
                 onClose();
-                // navigate("/archieve");
+                navigate("/archieve");
               }}
               className="flex-1 py-2 bg-green-500 text-white rounded font-medium"
             >
