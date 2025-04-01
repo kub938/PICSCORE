@@ -82,7 +82,9 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
         // 내 프로필 데이터 조회
         const profileResponse = await userApi.getMyProfile();
         const statsResponse = await userApi.getMyStatistics();
-        const photosResponse = await userApi.getMyPhotos(activeTab !== "hidden");
+        const photosResponse = await userApi.getMyPhotos(
+          activeTab !== "hidden"
+        );
 
         console.log("profileResponse", profileResponse);
         console.log("statsResponse", statsResponse);
@@ -116,7 +118,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
             id: photo.id.toString(),
             imageUrl: photo.imageUrl,
             score: photo.score,
-            isPrivate: activeTab === "hidden" // 비공개 탭이면 모든 사진은 비공개로 표시
+            isPrivate: activeTab === "hidden", // 비공개 탭이면 모든 사진은 비공개로 표시
           })
         );
 
@@ -159,7 +161,7 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
             id: photo.id.toString(),
             imageUrl: photo.imageUrl,
             score: photo.score,
-            isPrivate: false // 다른 사용자의 경우 모두 공개 사진
+            isPrivate: false, // 다른 사용자의 경우 모두 공개 사진
           })
         );
 
@@ -258,7 +260,6 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
                 strokeLinejoin="round"
                 className="mx-auto text-gray-400"
               >
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="9" y1="9" x2="15" y2="15"></line>
                 <line x1="15" y1="9" x2="9" y2="15"></line>
               </svg>
@@ -267,7 +268,8 @@ const UserPage: React.FC<UserPageProps> = ({ userId, apiEndpoint }) => {
               컨테스트 게시판 준비 중
             </h3>
             <p className="text-gray-500">
-              현재 컨테스트 기능을 준비 중입니다.<br />곧 서비스를 이용하실 수 있습니다.
+              현재 컨테스트 기능을 준비 중입니다.
+              <br />곧 서비스를 이용하실 수 있습니다.
             </p>
           </div>
         ) : (
