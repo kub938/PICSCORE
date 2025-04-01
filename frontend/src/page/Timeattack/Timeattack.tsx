@@ -109,7 +109,7 @@ const TimeAttack: React.FC = () => {
   // Local state 관리
   const navigate = useNavigate();
   const [step, setStep] = useState<number>(1); // 1: Explanation, 2: Preparation, 3: Photo Upload
-  const [timeLeft, setTimeLeft] = useState<number>(15); // Countdown timer for photo capture
+  const [timeLeft, setTimeLeft] = useState<number>(20); // Countdown timer for photo capture
   const [captureTimeLeft, setCaptureTimeLeft] = useState<number | null>(null);
   const [countdown, setCountdown] = useState<number>(3); // Countdown for preparation
   const [isTimerActive, setIsTimerActive] = useState<boolean>(false);
@@ -211,18 +211,21 @@ const TimeAttack: React.FC = () => {
   ): void => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
-      
+
       // 모바일 환경인지 확인
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      );
-      
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
+
       // 모바일이 아닌 경우 경고 메시지 표시하고 함수 종료
       if (!isMobile) {
-        alert('타임어택 모드에서는 모바일 기기의 카메라로만 사진 촬영이 가능합니다.');
+        alert(
+          "타임어택 모드에서는 모바일 기기의 카메라로만 사진 촬영이 가능합니다."
+        );
         return;
       }
-      
+
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
       setSelectedImageFile(file);
