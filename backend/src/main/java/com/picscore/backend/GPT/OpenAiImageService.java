@@ -179,7 +179,7 @@ public class OpenAiImageService {
 
             // GPT 응답에서 "choices.message.content" 부분 추출
             String content = root.path("choices").get(0).path("message").path("content").asText();
-            System.out.println("분석 결과!!! " + content);
+//            System.out.println("분석 결과!!! " + content);
 
             // 점수를 저장할 Map
             Map<String, Integer> scores = new HashMap<>();

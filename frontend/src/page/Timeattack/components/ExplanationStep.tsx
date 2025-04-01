@@ -29,7 +29,7 @@ const ExplanationStep: React.FC<ExplanationStepProps> = ({ onStartGame }) => {
                 2
               </div>
               <div className="ml-4 flex-1">
-                <p className="font-bold">주제를 확인하고 15초 내에</p>
+                <p className="font-bold">주제를 확인하고 20초 내에</p>
                 <p className="text-gray-600">
                   카메라로 주제에 맞는 사진을 촬영하세요!
                 </p>
