@@ -56,7 +56,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // Redis에 Refresh Token 저장
         String userKey = "refresh:" + userRepository.findIdByNickName(nickName);
-        redisUtil.setex(userKey, refresh, 86400000L); // 1일 TTL
+        redisUtil.setex(userKey, refresh, 86400L); // 1일 TTL
 
         // 클라이언트에 Access Token 및 Refresh Token 쿠키로 설정
         response.addCookie(createCookie("access", access));
