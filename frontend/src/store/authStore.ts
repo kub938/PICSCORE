@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { clearSentryUser, identifySentryUser } from "../utils/sentry";
 
 // export interface UserInfoState {
 //   userId: number;
@@ -41,7 +42,7 @@ interface TestUserInfoState {
   userId: number;
   login: () => void;
   logout: () => void;
-  setUserId: (userId: number) => void;
+  setUserId: (userId: number, nickname: string) => void;
 }
 
 export const useAuthStore = create<TestUserInfoState>()(
@@ -53,9 +54,11 @@ export const useAuthStore = create<TestUserInfoState>()(
         set({ isLoggedIn: true });
       },
       logout: () => {
-        set({ isLoggedIn: false });
+        clearSentryUser();
+        set({ isLoggedIn: false, userId: undefined });
       },
-      setUserId: (userId: number) => {
+      setUserId: (userId: number, username: string) => {
+        identifySentryUser({ id: userId, username: username });
         set({ userId: userId });
       },
     }),
