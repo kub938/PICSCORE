@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userApi } from "../api/userApi";
 import axios from "axios";
 
+const baseURL = import.meta.env.VITE_BASE_URL;
+
 // Profile hooks
 export const useMyProfile = () => {
   return useQuery({
@@ -184,7 +186,7 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: async () => {
       const response = await testApi.post(
-        "https://j12b104.p.ssafy.io/api/v1/user/logout",
+        baseURL + "/api/v1/user/logout",
         {} // 빈 객체 또는 필요한 데이터
       );
       return response;
