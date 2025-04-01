@@ -162,7 +162,14 @@ public class PhotoController {
     public ResponseEntity<BaseResponse<GetPhotoDetailResponse>> getPhotoDetail(
             HttpServletRequest request, @PathVariable Long photoId) {
 
-        Long userId = oAuthService.findIdByNickName(request);
+        Long userId = null; // 기본값 설정 (비회원)
+
+        try {
+            userId = oAuthService.findIdByNickName(request);
+        } catch (Exception e) {
+            System.out.printf("쿠키에서 userId 추출 실패: {}", e.getMessage()); // 예외 로깅
+        }
+
         GetPhotoDetailResponse getPhotoDetailResponse = photoService.getPhotoDetail(userId, photoId);
 
         return ResponseEntity.ok(BaseResponse.success("사진 상세 조회 성공", getPhotoDetailResponse));
