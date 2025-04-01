@@ -1,0 +1,11 @@
+package com.picscore.backend.user.model.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class SearchUsersRequest {
+
+    private String searchText;
+}
