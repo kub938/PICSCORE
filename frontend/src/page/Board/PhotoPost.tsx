@@ -39,7 +39,7 @@ function PhotoPost() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center">
-        <FadeLoader color="#a4e857" height={12} radius={8} />;
+        <FadeLoader color="#a4e857" height={12} radius={8} />
       </div>
     );
   }
