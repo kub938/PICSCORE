@@ -8,8 +8,8 @@ import {
   useDeletePhoto,
   useGetPhoto,
   useToggleLike,
+  useTogglePhotoVisibility,
 } from "../../hooks/useBoard";
-import { useDeletePhoto, useGetPhoto, useTogglePhotoVisibility } from "../../hooks/useBoard";
 import { useNavigate, useParams } from "react-router-dom";
 import ErrorPage from "../Error/ErrorPage";
 import { useEffect, useState } from "react";
