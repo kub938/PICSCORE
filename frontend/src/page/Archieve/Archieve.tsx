@@ -52,7 +52,7 @@ const BADGE_DESCRIPTION_MAPPING: Record<string, string> = {
 // API 응답을 배지 객체로 변환하는 함수 수정
 const formatBadgeFromApi = (apiData: ApiBadge): Badge => {
   const badgeId = apiData.badgeId.toString();
-  const isAchieved = apiData.obtain === true;
+  const isAchieved = apiData.isObtain === true;
 
   // 이름 매핑 적용 (API에서 받은 이름 또는 매핑된 이름)
   const displayName = BADGE_NAME_MAPPING[apiData.name] || apiData.name;
@@ -89,7 +89,7 @@ interface ApiBadge {
   name: string;
   image: string;
   obtainCondition: string;
-  obtain: boolean; // isObtain이 아닌 obtain 속성이 API에서 반환됨
+  isObtain: boolean; // isObtain이 아닌 obtain 속성이 API에서 반환됨
 }
 
 // 기본 카테고리 정의
