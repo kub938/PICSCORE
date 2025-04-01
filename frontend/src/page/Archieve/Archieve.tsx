@@ -243,7 +243,6 @@ const AchievementPage: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full max-w-md mx-auto bg-gray-50 min-h-screen">
-      <ContentNavBar content="업적" />
       <div className="p-4">
         {/* 업적 달성도 */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-4 border border-gray-200">
