@@ -67,6 +67,11 @@ const routeLayouts: { [key: string]: LayoutConfig } = {
     showBottomBar: false,
     content: "업적",
   },
+  "/search/:search": {
+    showNavBar: false,
+    showBottomBar: true,
+    content: "검색",
+  },
 };
 
 function RouteListener() {
