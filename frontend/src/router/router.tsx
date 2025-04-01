@@ -78,6 +78,10 @@ const router = createBrowserRouter([
         element: <ImageUpload />,
       },
       {
+        path: "/photo/:number",
+        element: <PhotoPost />,
+      },
+      {
         element: <PrivateRouter />,
         children: [
           {
@@ -124,10 +128,6 @@ const router = createBrowserRouter([
           {
             path: "/search/:search",
             element: <SearchResult />,
-          },
-          {
-            path: "/photo/:number",
-            element: <PhotoPost />,
           },
 
           {
