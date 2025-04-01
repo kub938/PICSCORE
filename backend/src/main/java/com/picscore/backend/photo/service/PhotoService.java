@@ -284,17 +284,13 @@ public class PhotoService {
 
 
     /**
-     * 특정 사진의 상세 정보를 조회하는 메서드
+     * 특정 사진의 상세 정보를 조회하는 메서드 (비회원도 접근 가능)
      *
+     * @param userId  요청한 사용자 ID (비회원일 경우 null)
      * @param photoId 조회할 사진의 ID
-     * @return ResponseEntity<BaseResponse<GetPhotoDetailResponse>> 사진 상세 정보
+     * @return 사진 상세 정보 응답 DTO
      */
-    public GetPhotoDetailResponse getPhotoDetail(
-            Long userId, Long photoId) {
-
-        if (userId == null || userId <= 0) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다.");
-        }
+    public GetPhotoDetailResponse getPhotoDetail(Long userId, Long photoId) {
 
         if (photoId == null || photoId <= 0) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사진 ID입니다.");
@@ -310,7 +306,13 @@ public class PhotoService {
         // 좋아요 수 조회
         int likeCnt = photoLikeRepository.countByPhotoId(photoId);
 
-        Boolean isLike = photoLikeRepository.existsByPhotoIdAndUserId(photoId, userId);
+        // 기본적으로 비회원의 경우 isLike = false
+        Boolean isLike = false;
+
+        // 회원이라면 좋아요 여부 조회
+        if (userId != null && userId > 0) {
+            isLike = photoLikeRepository.existsByPhotoIdAndUserId(photoId, userId);
+        }
 
         // 해시태그 조회
         List<String> hashTags = photoHashtagRepository.findByPhotoId(photoId)
@@ -319,10 +321,9 @@ public class PhotoService {
                 .collect(Collectors.toList());
 
         // DTO에 데이터 설정
-        GetPhotoDetailResponse response = new GetPhotoDetailResponse(user, photo, likeCnt, hashTags, isLike);
-
-        return response;
+        return new GetPhotoDetailResponse(user, photo, likeCnt, hashTags, isLike);
     }
+
 
 
     /**
