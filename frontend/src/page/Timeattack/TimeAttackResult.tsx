@@ -6,6 +6,31 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTimeAttackStore } from "../../store/timeAttackStore";
 import { useAchievementCheck } from "../../hooks/useAchievement";
 
+// 주제 영어-한글 매핑
+const TOPIC_TRANSLATIONS: Record<string, string> = {
+  dog: "강아지",
+  cat: "고양이",
+  flower: "꽃",
+  car: "자동차",
+  tree: "나무",
+  food: "음식",
+  mountain: "산",
+  sky: "하늘",
+  book: "책",
+  cup: "컵",
+  chair: "의자",
+  clock: "시계",
+  computer: "컴퓨터",
+  plant: "식물",
+  table: "테이블",
+  building: "건물",
+  coffee: "커피",
+};
+
+const translateTopic = (englishTopic: string): string => {
+  return TOPIC_TRANSLATIONS[englishTopic] || englishTopic; // 매핑이 없으면 원래 값 반환
+};
+
 // 컴포넌트 임포트
 import Container from "./components/Container";
 import LoadingState from "./components/LoadingState";
@@ -298,11 +323,11 @@ const TimeAttackResult: React.FC = () => {
           message={
             localResult?.message ||
             `주제 "${
-              localResult?.translatedTopic || localResult?.topic || ""
+              localResult?.translatedTopic || localResult?.topic || "알 수 없음"
             }"에 맞는 항목을 찾지 못했습니다.`
           }
-          topic={localResult?.topic}
-          translatedTopic={localResult?.translatedTopic}
+          topic={localResult?.topic || useTimeAttackStore.getState().challengeTopic || "알 수 없음"}
+          translatedTopic={localResult?.translatedTopic || translateTopic(useTimeAttackStore.getState().challengeTopic || "")}
           image={localResult?.image} // 이미지 전달
         />
       ) : (
