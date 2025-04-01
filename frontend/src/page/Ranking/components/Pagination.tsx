@@ -25,7 +25,7 @@ const Pagination: React.FC<PaginationProps> = ({
         이전
       </button>
 
-      <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">
+      <div className="w-10 h-10 rounded-full bg-pic-primary flex items-center justify-center text-white font-bold">
         {currentPage}
       </div>
 

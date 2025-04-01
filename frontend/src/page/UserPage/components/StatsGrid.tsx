@@ -25,7 +25,7 @@ const StatsGrid: React.FC<StatsGridProps> = ({ stats }) => (
       />
       <StatsCard
         title="타임어택"
-        value={`상위 ${stats.timeAttackRank}%`}
+        value={`${stats.timeAttackRank}위`}
         color="text-green-500"
       />
       <StatsCard

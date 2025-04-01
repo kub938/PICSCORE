@@ -76,7 +76,7 @@ public class UserController {
     public ResponseEntity<BaseResponse<Void>> redirectToGoogleLogout(
             HttpServletResponse response) throws IOException {
 
-//        response.sendRedirect("/logout");
+        response.sendRedirect("/logout");
         BaseResponse<Void> baseResponse = BaseResponse.withMessage("로그아웃 완료");
         return ResponseEntity.ok(baseResponse);
     }
