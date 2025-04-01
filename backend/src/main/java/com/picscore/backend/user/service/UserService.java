@@ -210,7 +210,7 @@ public class UserService {
         int followerCnt = followRepository.countByFollowingId(userId);
         int followingCnt = followRepository.countByFollowerId(userId);
 
-        boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, userId);
+        Boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, userId);
 
         List<UserBadge> userBadgeList = userBadgeRepository.findByUserId(userId);
         List<ProfileBadgeDto> profileBadgeList =
