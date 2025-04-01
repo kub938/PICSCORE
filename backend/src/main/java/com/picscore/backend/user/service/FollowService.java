@@ -103,7 +103,7 @@ public class FollowService {
                         .map(follow -> {
                             User follower = follow.getFollower();
                             // 현재 사용자가 해당 팔로워를 팔로우하고 있는지 확인
-                            boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(
+                            Boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(
                                     userId, follower.getId()
                             );
 
@@ -177,7 +177,7 @@ public class FollowService {
                         .map(follow -> {
                             User follower = follow.getFollower();
                             // 현재 로그인한 사용자가 이 팔로워를 팔로우하고 있는지 확인
-                            boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(
+                            Boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(
                                     myId, follower.getId()
                             );
                             // DTO 생성 및 반환
@@ -217,7 +217,7 @@ public class FollowService {
                         .map(follow -> {
                             User following = follow.getFollowing();
                             // 현재 로그인한 사용자가 이 팔로잉을 팔로우하고 있는지 확인
-                            boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(
+                            Boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(
                                     myId, following.getId()
                             );
                             // DTO 생성 및 반환

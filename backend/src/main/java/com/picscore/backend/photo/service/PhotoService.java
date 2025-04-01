@@ -310,7 +310,7 @@ public class PhotoService {
         // 좋아요 수 조회
         int likeCnt = photoLikeRepository.countByPhotoId(photoId);
 
-        boolean isLike = photoLikeRepository.existsByPhotoIdAndUserId(photoId, userId);
+        Boolean isLike = photoLikeRepository.existsByPhotoIdAndUserId(photoId, userId);
 
         // 해시태그 조회
         List<String> hashTags = photoHashtagRepository.findByPhotoId(photoId)
@@ -524,7 +524,7 @@ public class PhotoService {
      * @param key 파일 키 (폴더명 + 파일명)
      * @return boolean 파일이 존재하면 true, 없으면 false
      */
-    public boolean doesFileExist(String key) {
+    public Boolean doesFileExist(String key) {
         try {
             HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
                     .bucket(bucketName)
