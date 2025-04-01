@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    boolean existsBySocialId(String socialId);
+    Boolean existsBySocialId(String socialId);
 
     User findBySocialId(String socialId);
 
@@ -24,7 +24,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u.nickName FROM User u WHERE u.socialId = :socialId")
     String findNickNameBySocialId(@Param("socialId") String socialId);
 
-    boolean existsByNickName(String nickName);
+    Boolean existsByNickName(String nickName);
 
     @Query("SELECT u.profileImage FROM User u WHERE u.id = :userId")
     String findProfileImageByUserId(@Param("userId") Long userId);

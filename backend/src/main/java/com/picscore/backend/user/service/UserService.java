@@ -5,6 +5,7 @@ import com.picscore.backend.badge.model.entity.Badge;
 import com.picscore.backend.badge.model.entity.UserBadge;
 import com.picscore.backend.badge.repository.UserBadgeRepository;
 import com.picscore.backend.common.exception.CustomException;
+import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.photo.service.PhotoService;
 import com.picscore.backend.timeattack.model.entity.TimeAttack;
@@ -28,12 +29,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -66,29 +70,29 @@ public class UserService {
     public LoginInfoResponse LoginInfo(
             HttpServletRequest request) {
 
-//        // 쿠키에서 AccessToken 찾기
-//        Optional<Cookie> accessTokenCookie = Arrays.stream(request.getCookies())
-//                .filter(cookie -> "access".equals(cookie.getName()))
-//                .findFirst();
-//
-//        // AccessToken 쿠키가 없는 경우
-//        if (accessTokenCookie.isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                    .body(BaseResponse.error("AccessToken 쿠키 없음"));
-//        }
-//
-//        // JWT에서 닉네임(유저 식별자) 추출
-//        String accessToken = accessTokenCookie.get().getValue();
-        // 헤더에서 Authorization 값 추출
-        String authHeader = request.getHeader("Authorization");
+        // 쿠키에서 AccessToken 찾기
+        Optional<Cookie> accessTokenCookie = Arrays.stream(request.getCookies())
+                .filter(cookie -> "access".equals(cookie.getName()))
+                .findFirst();
 
-        // Authorization 헤더가 없거나 'Bearer '로 시작하지 않는 경우
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "유효한 Authorization 헤더 없음");
+        // AccessToken 쿠키가 없는 경우
+        if (accessTokenCookie.isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "AccessToken 쿠키 없음");
         }
 
-        // 'Bearer ' 접두사 제거하여 실제 토큰 추출
-        String accessToken = authHeader.substring(7);
+        // JWT에서 닉네임(유저 식별자) 추출
+        String accessToken = accessTokenCookie.get().getValue();
+
+//        // 헤더에서 Authorization 값 추출
+//        String authHeader = request.getHeader("Authorization");
+//
+//        // Authorization 헤더가 없거나 'Bearer '로 시작하지 않는 경우
+//        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+//            throw new CustomException(HttpStatus.BAD_REQUEST, "유효한 Authorization 헤더 없음");
+//        }
+//
+//        // 'Bearer ' 접두사 제거하여 실제 토큰 추출
+//        String accessToken = authHeader.substring(7);
 
 //        responses.addCookie(createCookie("access", accessToken));
         // 여기까지 개발 환경
@@ -206,7 +210,7 @@ public class UserService {
         int followerCnt = followRepository.countByFollowingId(userId);
         int followingCnt = followRepository.countByFollowerId(userId);
 
-        boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, userId);
+        Boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, userId);
 
         List<UserBadge> userBadgeList = userBadgeRepository.findByUserId(userId);
         List<ProfileBadgeDto> profileBadgeList =

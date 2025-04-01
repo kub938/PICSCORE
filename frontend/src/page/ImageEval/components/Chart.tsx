@@ -1,18 +1,5 @@
 import React from "react";
-
-// 차트 데이터 타입 정의
-interface ImageEvalData {
-  구도: number;
-  조명: number;
-  색상: number;
-  선명도: number;
-  기술: number;
-}
-
-// 컴포넌트 속성 타입 정의
-interface RadarChartProps {
-  data?: ImageEvalData;
-}
+import { AnalysisScoreType } from "../../../types/evalTypes";
 
 // 포인트 좌표에 대한 타입 정의
 interface Point {
@@ -25,19 +12,12 @@ interface LabelPoint extends Point {
   angle: number;
 }
 
-const RadarChart: React.FC<RadarChartProps> = ({
-  data = {
-    구도: 85,
-    조명: 78,
-    색상: 92,
-    선명도: 83,
-    기술: 88,
-  },
-}) => {
+function Chart({ analysisScore }: { analysisScore: AnalysisScoreType }) {
   // 차트의 설정값
+  const data = analysisScore;
   const centerX: number = 150;
   const centerY: number = 150;
-  const maxRadius: number = 120;
+  const maxRadius: number = 100;
 
   // 점수에 따른 각 축의 좌표 계산
   const calculatePoint = (
@@ -65,11 +45,23 @@ const RadarChart: React.FC<RadarChartProps> = ({
   };
 
   // 데이터 포인트 및 레이블 계산
-  const categories: string[] = Object.keys(data);
+  const categories: string[] = [
+    "구도",
+    "노이즈",
+    "노출",
+    "다이나믹 레인지",
+    "선명도",
+    "화이트밸런스",
+  ];
   const total: number = categories.length;
-  const points: Point[] = categories.map((category, i) =>
-    calculatePoint(data[category as keyof ImageEvalData], i, total)
-  );
+  const points: Point[] = categories.map((category, i) => {
+    // "다이나믹 레인지"와 같은 특수 키 처리
+    const value =
+      category === "다이나믹 레인지"
+        ? data["다이나믹 레인지"]
+        : data[category as keyof AnalysisScoreType];
+    return calculatePoint(value, i, total);
+  });
   const labelPoints: LabelPoint[] = categories.map((_, i) =>
     calculateLabelPoint(i, total)
   );
@@ -79,13 +71,13 @@ const RadarChart: React.FC<RadarChartProps> = ({
     .map((point) => `${point.x},${point.y}`)
     .join(" ");
 
-  // 그리드 레벨 (배경 오각형들)
+  // 그리드 레벨 (배경 헥사곤들)
   const gridLevels: number[] = [20, 40, 60, 80, 100];
 
   return (
     <div className="flex justify-center items-center w-full h-full">
       <svg width="300" height="300" viewBox="0 0 300 300">
-        {/* 배경 그리드 오각형들 */}
+        {/* 배경 그리드 헥사곤들 */}
         {gridLevels.map((level, i) => {
           const gridPoints: Point[] = categories.map((_, idx) =>
             calculatePoint(level, idx, total)
@@ -154,69 +146,96 @@ const RadarChart: React.FC<RadarChartProps> = ({
           let scoreDy: number = 0;
           let scoreAnchor: string = "middle";
 
-          // 카테고리별 개별 위치 조정
-          if (category === "구도") {
-            titleAnchor = "start";
-            titleDx = -9;
-            titleDy = 0;
-            scoreAnchor = "start";
-            scoreDx = -12;
-            scoreDy = 14;
-          } else if (category === "조명") {
+          // 6개 항목에 맞게 위치 조정
+          if (i === 0) {
+            // 구도 (상단)
             titleAnchor = "middle";
-            titleDy = 0;
             titleDx = 0;
+            titleDy = -5;
             scoreAnchor = "middle";
             scoreDx = 0;
-            scoreDy = 14;
-          } else if (category === "색상") {
-            titleAnchor = "end";
-            titleDx = 10;
-            titleDy = 0;
-            scoreAnchor = "end";
-            scoreDx = 13;
-            scoreDy = 14;
-          } else if (category === "선명도") {
-            titleAnchor = "end";
-            titleDx = 17;
-            titleDy = 0;
-            scoreAnchor = "end";
-            scoreDx = 13;
-            scoreDy = 15;
-          } else if (category === "기술") {
-            titleAnchor = "start";
-            titleDy = -2;
-            titleDx = -10;
-            scoreAnchor = "start";
-            scoreDx = -12;
             scoreDy = 12;
+          } else if (i === 1) {
+            // 노이즈 (우상단)
+            titleAnchor = "start";
+            titleDx = 5;
+            titleDy = 0;
+            scoreAnchor = "start";
+            scoreDx = 5;
+            scoreDy = 15;
+          } else if (i === 2) {
+            // 노출 (우하단)
+            titleAnchor = "start";
+            titleDx = 8;
+            titleDy = 0;
+            scoreAnchor = "start";
+            scoreDx = 5;
+            scoreDy = 15;
+          } else if (i === 3) {
+            // 다이나믹 레인지 (하단)
+            titleAnchor = "middle";
+            titleDx = 0;
+            titleDy = -3;
+            scoreAnchor = "middle";
+            scoreDx = 0;
+            scoreDy = 10;
+          } else if (i === 4) {
+            // 선명도 (좌하단)
+            titleAnchor = "end";
+            titleDx = -5;
+            titleDy = 0;
+            scoreAnchor = "end";
+            scoreDx = -5;
+            scoreDy = 15;
+          } else if (i === 5) {
+            // 화이트밸런스 (좌상단)
+            titleAnchor = "end";
+            titleDx = 16;
+            titleDy = 0;
+            scoreAnchor = "end";
+            scoreDx = -2;
+            scoreDy = 15;
           }
+
+          // 다이나믹 레인지는 길이가 길어서 특수 처리
+          const displayCategory =
+            category === "다이나믹 레인지" ? "다이나믹\n레인지" : category;
+          const categoryLines = displayCategory.split("\n");
+
+          // 점수 값 가져오기 (다이나믹 레인지 특수 처리)
+          const scoreValue =
+            category === "다이나믹 레인지"
+              ? data["다이나믹 레인지"]
+              : data[category as keyof AnalysisScoreType];
 
           return (
             <g key={`label-${i}`}>
-              <text
-                x={labelPoint.x}
-                y={labelPoint.y}
-                dx={titleDx}
-                dy={titleDy}
-                textAnchor={titleAnchor}
-                fontSize="12"
-                fontWeight="bold"
-                fill="#4b5563"
-              >
-                {category}
-              </text>
+              {categoryLines.map((line, lineIndex) => (
+                <text
+                  key={`title-${i}-${lineIndex}`}
+                  x={labelPoint.x}
+                  y={labelPoint.y + lineIndex * 12}
+                  dx={titleDx}
+                  dy={titleDy}
+                  textAnchor={titleAnchor}
+                  fontSize="12"
+                  fontWeight="bold"
+                  fill="#4b5563"
+                >
+                  {line}
+                </text>
+              ))}
               <text
                 x={labelPoint.x}
                 y={labelPoint.y}
                 dx={scoreDx}
-                dy={scoreDy}
+                dy={scoreDy + (categoryLines.length > 1 ? 12 : 0)}
                 textAnchor={scoreAnchor}
                 fontSize="12"
                 fontWeight="bold"
                 fill="#4b5563"
               >
-                ({data[category as keyof ImageEvalData]})
+                ({scoreValue})
               </text>
             </g>
           );
@@ -227,6 +246,6 @@ const RadarChart: React.FC<RadarChartProps> = ({
       </svg>
     </div>
   );
-};
+}
 
-export default RadarChart;
+export default Chart;

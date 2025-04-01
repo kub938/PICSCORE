@@ -1,5 +1,6 @@
+// page/Ranking/components/RankingList.tsx
 import React from "react";
-import { RankingUser } from "../../../types";
+import { RankingUser } from "../../../api/rankingApi";
 
 interface RankingListProps {
   rankings: RankingUser[];
@@ -28,8 +29,12 @@ const RankingItem: React.FC<RankingItemProps> = ({ user }) => (
         {user.profileImage ? (
           <img
             src={user.profileImage}
-            alt={`${user.nickname} 프로필`}
+            alt={`${user.nickName} 프로필`}
             className="w-full h-full rounded-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "/default-profile.jpg"; // 로드 실패 시 기본 이미지
+            }}
           />
         ) : (
           <svg
@@ -48,9 +53,9 @@ const RankingItem: React.FC<RankingItemProps> = ({ user }) => (
           </svg>
         )}
       </div>
-      <span>{user.nickname}</span>
+      <span>{user.nickName}</span>
     </div>
-    <div className="text-center font-bold text-xl">{user.score}</div>
+    <div className="text-center font-bold text-xl">{user.score.toFixed(2)}</div>
   </li>
 );
 

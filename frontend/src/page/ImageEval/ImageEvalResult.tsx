@@ -11,19 +11,32 @@ import { useState } from "react";
 import ImageEvalDetail from "./ImageEvalDetail";
 import { useAuthStore } from "../../store";
 import Modal from "../../components/Modal";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ImageEvalResponse } from "../../types/evalTypes";
+import { useUploadImage } from "../../hooks/useEvalImage";
 
 function ImageEvalResult() {
-  const score = 84;
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const imageUploadMutation = useUploadImage();
+  const location = useLocation();
+
+  const evalData = location.state?.evalData;
+  const imageUrl = location.state?.imageUrl;
+  const { analysisChart, analysisText, score } = evalData;
 
   const openModal = () => {
     if (isLoggedIn) {
       setIsDetailOpen(true);
     } else {
+      setIsModalOpen(true);
+    }
+  };
+
+  const uploadOpenModal = () => {
+    if (isLoggedIn) {
       setIsModalOpen(true);
     }
   };
@@ -39,8 +52,22 @@ function ImageEvalResult() {
     setIsDetailOpen(false);
   };
 
+  const handleImagePost = (evalData: ImageEvalResponse) => {
+    if (evalData) {
+      if (isLoggedIn) {
+        imageUploadMutation.mutate(evalData, {
+          onSuccess: (data: any) => {
+            navigate(`/board`);
+          },
+        });
+      } else {
+        setIsModalOpen(true);
+      }
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center ">
+    <div className="flex flex-col w-full mb-16 items-center justify-center ">
       <Modal
         description={
           <>
@@ -67,15 +94,17 @@ function ImageEvalResult() {
         isModalOpen={isDetailOpen}
         closeDetail={closeDetail}
         score={score}
+        analysisScore={analysisChart}
+        analysisFeedback={analysisText}
       />
 
-      <img src={processResult} alt="결과" className="mb-5 mt-5 " />
+      <img src={processResult} alt="결과" className="mb-5  mt-2" />
       <div
-        className="w-[90%] shadow p-3 rounded flex flex-col items-center"
+        className="w-[80%]  shadow p-3 rounded flex flex-col items-center"
         style={{ boxShadow: "0px 0px 3px 0px rgba(0, 0, 0, 0.3)" }}
       >
         <img
-          src={testImage}
+          src={imageUrl}
           alt=""
           className="rounded h-full w-full aspect-square border mb-4"
           style={{ boxShadow: "0px 0px 3px 0px rgba(0, 0, 0, 0.3)" }}
@@ -83,7 +112,14 @@ function ImageEvalResult() {
         <div className="font-logo text-pic-primary text-5xl mb-2">
           {score}점
         </div>
-        <div className="mb-1">혹시... 전문 사진작가?</div>
+
+        {score < 30 ? (
+          <div>PICSCORE가 필요해 보이네요...</div>
+        ) : score >= 30 && score <= 70 ? (
+          <div>잠재력이 보이는 사진이네요!</div>
+        ) : (
+          <div className="mb-1">저희팀에 영입 해도 될까요..?</div>
+        )}
       </div>
 
       <div className="flex  gap-10 mt-8 mb-5">
@@ -91,7 +127,14 @@ function ImageEvalResult() {
           <MagnifyingGlassIcon width={15} />
           <div className="ml-2">자세히</div>
         </Button>
-        <Button color="green" width={30} height={10}>
+        <Button
+          color="green"
+          width={30}
+          height={10}
+          onClick={() => {
+            handleImagePost(evalData);
+          }}
+        >
           <ArrowUpTrayIcon width={15} />
           <div className="ml-2">업로드</div>
         </Button>
