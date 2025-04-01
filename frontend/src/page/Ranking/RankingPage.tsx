@@ -407,7 +407,6 @@ const RankingPage: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full max-w-md bg-gray-50">
-      <ContentNavBar content="랭킹" />
       {/* 랭킹 유형 탭 */}
       <div className="flex border-b bg-white mb-2 shadow-sm">
         <button
