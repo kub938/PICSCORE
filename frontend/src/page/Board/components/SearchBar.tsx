@@ -38,6 +38,8 @@ function SearchBar() {
 
     if (inputText && inputText.trim() !== "") {
       navigate(`/search/${inputText}`);
+      setInputText("");
+      setActive(false);
     }
   };
 

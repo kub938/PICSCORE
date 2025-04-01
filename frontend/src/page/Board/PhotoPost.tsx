@@ -1,12 +1,18 @@
 import {
-  HeartIcon,
+  HeartIcon as HeartOutline,
   ShareIcon,
   EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
-import { useDeletePhoto, useGetPhoto, useTogglePhotoVisibility } from "../../hooks/useBoard";
+import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
+import {
+  useDeletePhoto,
+  useGetPhoto,
+  useToggleLike,
+  useTogglePhotoVisibility,
+} from "../../hooks/useBoard";
 import { useNavigate, useParams } from "react-router-dom";
 import ErrorPage from "../Error/ErrorPage";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FadeLoader } from "react-spinners";
 import ImageEvalDetail from "../ImageEval/ImageEvalDetail";
 import Modal from "../../components/Modal";
@@ -27,6 +33,7 @@ function PhotoPost() {
   const deletePhotoMutation = useDeletePhoto(photoId);
   const toggleVisibilityMutation = useTogglePhotoVisibility(photoId);
   const myId = useAuthStore((state) => state.userId);
+  const likeToggleMutation = useToggleLike();
 
   if (isLoading) {
     return (
@@ -49,8 +56,6 @@ function PhotoPost() {
     setPhotoEvalModal(false);
   };
   const openPhotoEval = () => {
-    console.log(showPhotoEvalModal);
-
     setPhotoEvalModal(true);
   };
   const closeOptionModal = () => {
@@ -89,8 +94,12 @@ function PhotoPost() {
     navigate(`/user/profile/${id}`);
   };
 
-  console.log(data);
+  const handleToggleLike = () => {
+    likeToggleMutation.mutate(photoId);
+  };
+
   const {
+    isLike,
     analysisChart,
     analysisText,
     hashTag,
@@ -101,9 +110,9 @@ function PhotoPost() {
     score,
     userId,
   } = data;
-
   const nowPhotoLocation = window.location.href;
   const isMyPhoto = userId === myId;
+
   return (
     <div className="w-full flex flex-col ">
       {isOpenShareModal && (
@@ -177,19 +186,36 @@ function PhotoPost() {
             {nickName}
           </div>
         </div>
-        {/* {isMyPhoto && ( */}
-        <div className="w-2/10 flex justify-center " onClick={openOptionModal}>
-          <EllipsisHorizontalIcon className="cursor-pointer" width={30} />
-        </div>
-        {/* )} */}
+        {isMyPhoto && (
+          <div
+            className="w-2/10 flex justify-center "
+            onClick={openOptionModal}
+          >
+            <EllipsisHorizontalIcon className="cursor-pointer" width={30} />
+          </div>
+        )}
       </div>
       <div className=" h-110">
-        <img className="w-full h-full" src={imageUrl} alt="" />
+        <img
+          className="w-full h-full  border-b-1 border-gray-300"
+          src={imageUrl}
+          alt=""
+        />
       </div>
-      <div className=" h-50 mx-3">
+      <div className=" h-50 mx-3 my-1.5 ">
         <div className="flex items-center justify-between">
           <div className="flex">
-            <HeartIcon className="w-7 cursor-pointer" />
+            {isLike ? (
+              <HeartSolid
+                className="w-7 cursor-pointer"
+                onClick={handleToggleLike}
+              />
+            ) : (
+              <HeartOutline
+                className="w-7 cursor-pointer"
+                onClick={handleToggleLike}
+              />
+            )}
             <ShareIcon
               className="w-6 m-2 cursor-pointer"
               onClick={openShareModal}
@@ -202,17 +228,29 @@ function PhotoPost() {
             <span className="ml-0.5"> {score}</span>
           </div>
         </div>
-        <div className="inline-block">이 사진을 {likeCnt}명이 좋아합니다</div>
-        <div>
-          {hashTag.map((tag, index) => {
-            return <span key={index}>{tag}</span>;
-          })}
+        <div className="flex justify-between items-center">
+          <div className="inline-block mb-1 font-semibold text-sm">
+            좋아요 {likeCnt}
+            <span className="px-0.5">개</span>
+          </div>
+          <div>
+            {hashTag.map((tag, index) => {
+              return (
+                <span
+                  className="bg-pic-primary py-0.5 px-2  text-sm rounded-xl border text-white"
+                  key={index}
+                >
+                  #{tag}
+                </span>
+              );
+            })}
+          </div>
         </div>
         <div
           onClick={openPhotoEval}
           className="cursor-pointer inline-block text-gray-500"
         >
-          자세히 보기
+          ... 자세히 보기
         </div>
       </div>
     </div>

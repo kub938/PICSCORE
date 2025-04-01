@@ -49,91 +49,83 @@ function ImageEvalDetail({
                 </div>
               </div>
 
+              <div className="bg-white rounded m-3 p-7 ">
+                <div className="font-bold mb-2 text-xl">요소 분석</div>
+                <Chart analysisScore={analysisScore} />
+              </div>
               <div className=" bg-white rounded m-3 p-7 ">
                 <div className="font-bold mb-2 text-xl">점수 상세</div>
                 <div className="border-y-2  border-gray-200 ">
-                  <div className="flex items-center my-2">
+                  <div className="flex items-center justify-between my-4">
                     <ChatBubbleBottomCenterIcon className="text-pic-primary w-7 my-2 mx-4" />
-                    <div>
-                      <div className="font-bold text-gray-700">
-                        구도{" "}
-                        <span className="text-pic-primary">
-                          {analysisScore.구도}점
-                        </span>
-                      </div>
-                      <div className="text-sm">{analysisFeedback.구도}</div>
+                    <div className="mr-10">
+                      <div className="font-bold text-gray-700">구도 </div>
+                      <div className="text-xs">{analysisFeedback.구도}</div>
+                    </div>
+                    <div className="text-pic-primary font-bold mr-3 w-10">
+                      {analysisScore.구도}점
                     </div>
                   </div>
 
-                  <div className="flex items-center my-2">
+                  <div className="flex items-center justify-between my-4">
                     <ChatBubbleLeftRightIcon className="text-pic-primary w-7 my-2 mx-4" />
-                    <div>
-                      <div className="font-bold text-gray-700">
-                        노이즈{" "}
-                        <span className="text-pic-primary">
-                          {analysisScore.노이즈}점
-                        </span>
-                      </div>
-                      <div className="text-sm">{analysisFeedback.노이즈}</div>
+                    <div className="mr-10">
+                      <div className="font-bold text-gray-700">노이즈 </div>
+                      <div className="text-xs">{analysisFeedback.노이즈}</div>
+                    </div>
+                    <div className="text-pic-primary font-bold mr-3 w-10">
+                      {analysisScore.노이즈}점
                     </div>
                   </div>
-                  <div className="flex items-center my-2">
+                  <div className="flex items-center  justify-between my-4">
                     <SunIcon className="text-pic-primary w-7 my-2 mx-4" />
-                    <div>
-                      <div className="font-bold text-gray-700">
-                        노출{" "}
-                        <span className="text-pic-primary">
-                          {analysisScore.노출}점
-                        </span>
-                      </div>
-                      <div className="text-sm">{analysisFeedback.노출}</div>
+                    <div className="mr-10">
+                      <div className="font-bold text-gray-700">노출 </div>
+                      <div className="text-xs">{analysisFeedback.노출}</div>
+                    </div>
+                    <div className="text-pic-primary font-bold mr-0 w-11">
+                      {analysisScore.노출}점
                     </div>
                   </div>
-                  <div className="flex items-center my-2">
-                    <ClockIcon className="text-pic-primary w-7 my-2 mx-4" />
+                  <div className="flex items-center justify-between my-4">
+                    <ClockIcon className="text-pic-primary w-7 my-2 mx-4 " />
                     <div>
                       <div className="font-bold text-gray-700">
                         다이나믹 레인지{" "}
-                        <span className="text-pic-primary">
-                          {analysisScore["다이나믹 레인지"]}점
-                        </span>
                       </div>
-                      <div className="text-sm">
+                      <div className="text-xs">
                         {analysisFeedback["다이나믹 레인지"]}
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center my-2">
-                    <PhotoIcon className="text-pic-primary w-7 my-2 mx-4" />
-                    <div>
-                      <div className="font-bold text-gray-700">
-                        선명도{" "}
-                        <span className="text-pic-primary">
-                          {analysisScore.선명도}점
-                        </span>
-                      </div>
-                      <div className="text-sm">{analysisFeedback.선명도}</div>
+                    <div className="text-pic-primary font-bold mr-3 w-12">
+                      {analysisScore["다이나믹 레인지"]}점
                     </div>
                   </div>
-                  <div className="flex items-center my-2">
+                  <div className="flex items-center justify-between my-4">
+                    <PhotoIcon className="text-pic-primary w-7 my-2 mx-4" />
+                    <div>
+                      <div className="font-bold text-gray-700">선명도 </div>
+                      <div className="text-xs">{analysisFeedback.선명도}</div>
+                    </div>
+                    <div className="text-pic-primary font-bold mr-3 w-10">
+                      {analysisScore.선명도}점
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between my-4">
                     <PhotoIcon className="text-pic-primary w-7 my-2 mx-4" />
                     <div>
                       <div className="font-bold text-gray-700">
                         화이트밸런스{" "}
-                        <span className="text-pic-primary">
-                          {analysisScore.화이트밸런스}점
-                        </span>
                       </div>
-                      <div className="text-sm">
+                      <div className="text-xs">
                         {analysisFeedback.화이트밸런스}
                       </div>
                     </div>
+                    <div className="text-pic-primary font-bold mr-3 w-10">
+                      {analysisScore.화이트밸런스}점
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="bg-white rounded m-3 p-7 ">
-                <div className="font-bold mb-2 text-xl">요소 분석</div>
-                {/* <Chart analysisScore={analysisScore} /> */}
               </div>
             </div>
           </div>
