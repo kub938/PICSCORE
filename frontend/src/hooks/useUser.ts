@@ -186,7 +186,7 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: async () => {
       const response = await testApi.post(
-        baseURL + "/api/v1/user/logout",
+        `${baseURL}/api/v1/user/logout`,
         {} // 빈 객체 또는 필요한 데이터
       );
       return response;
