@@ -212,8 +212,16 @@ const TimeAttack: React.FC = () => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       
-      // 카메라로 촬영한 파일인지 확인 (파일 이름이나 타입으로는 정확한 판단이 어려움)
-      // 카메라 캡처 속성이 자동으로 적용되도록 설정되어 있으므로 별도 체크는 불필요
+      // 모바일 환경인지 확인
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+      
+      // 모바일이 아닌 경우 경고 메시지 표시하고 함수 종료
+      if (!isMobile) {
+        alert('타임어택 모드에서는 모바일 기기의 카메라로만 사진 촬영이 가능합니다.');
+        return;
+      }
       
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
