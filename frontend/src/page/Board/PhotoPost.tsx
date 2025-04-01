@@ -39,7 +39,7 @@ function PhotoPost() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center">
-        <FadeLoader color="#a4e857" height={12} radius={8} />;
+        <FadeLoader color="#a4e857" height={12} radius={8} />
       </div>
     );
   }
@@ -94,7 +94,9 @@ function PhotoPost() {
   const navigateProfile = (id: number) => {
     navigate(`/user/profile/${id}`);
   };
-
+  const navigateMyProfile = () => {
+    navigate("/mypage");
+  };
   const handleToggleLike = () => {
     likeToggleMutation.mutate(photoId);
   };
@@ -178,11 +180,15 @@ function PhotoPost() {
             className="w-11 h-11  rounded-full cursor-pointer "
             src={profileImage}
             alt=""
-            onClick={() => navigateProfile(userId)}
+            onClick={() => {
+              isMyPhoto ? navigateMyProfile() : navigateProfile(userId);
+            }}
           />
           <div
             className="ml-3 cursor-pointer font-semibold "
-            onClick={() => navigateProfile(userId)}
+            onClick={() => {
+              isMyPhoto ? navigateMyProfile() : navigateProfile(userId);
+            }}
           >
             {nickName}
           </div>
