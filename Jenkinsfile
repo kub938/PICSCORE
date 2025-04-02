@@ -76,20 +76,20 @@ pipeline {
 
                                                 export SENTRY_ORG=your-sentry-org
                                                 export SENTRY_PROJECT=your-sentry-project
-                                                export SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+                                                export SENTRY_AUTH_TOKEN=\${SENTRY_AUTH_TOKEN}
                                                 export SENTRY_URL=https://sentry.io/ # 필요 시 변경
 
-                                                VERSION_TAG=$(git rev-parse --short HEAD)
-                                                sentry-cli releases new picscore@${VERSION_TAG}
-                                                sentry-cli releases set-commits picscore@${VERSION_TAG} --auto
+                                                VERSION_TAG=\$(git rev-parse --short HEAD)
+                                                sentry-cli releases new picscore@\${VERSION_TAG}
+                                                sentry-cli releases set-commits picscore@\${VERSION_TAG} --auto
 
                                                 # sourcemap 업로드
-                                                sentry-cli releases files picscore@${VERSION_TAG} upload-sourcemaps dist/assets \
+                                                sentry-cli releases files picscore@\${VERSION_TAG} upload-sourcemaps dist/assets \
                                                 --url-prefix "~/assets" \
                                                 --validate \
                                                 --rewrite
 
-                                                sentry-cli releases finalize picscore@${VERSION_TAG}
+                                                sentry-cli releases finalize picscore@\${VERSION_TAG}
                                             """
                                         }
                                     }
@@ -155,20 +155,20 @@ pipeline {
 
                                                 export SENTRY_ORG=your-sentry-org
                                                 export SENTRY_PROJECT=your-sentry-project
-                                                export SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+                                                export SENTRY_AUTH_TOKEN=\${SENTRY_AUTH_TOKEN}
                                                 export SENTRY_URL=https://sentry.io/ # 필요 시 변경
 
-                                                VERSION_TAG=$(git rev-parse --short HEAD)
-                                                sentry-cli releases new picscore@${VERSION_TAG}
-                                                sentry-cli releases set-commits picscore@${VERSION_TAG} --auto
+                                                VERSION_TAG=\$(git rev-parse --short HEAD)
+                                                sentry-cli releases new picscore@\${VERSION_TAG}
+                                                sentry-cli releases set-commits picscore@\${VERSION_TAG} --auto
 
                                                 # sourcemap 업로드
-                                                sentry-cli releases files picscore@${VERSION_TAG} upload-sourcemaps dist/assets \
+                                                sentry-cli releases files picscore@\${VERSION_TAG} upload-sourcemaps dist/assets \
                                                 --url-prefix "~/assets" \
                                                 --validate \
                                                 --rewrite
 
-                                                sentry-cli releases finalize picscore@${VERSION_TAG}
+                                                sentry-cli releases finalize picscore@\${VERSION_TAG}
                                             """
                                         }
                                     }
