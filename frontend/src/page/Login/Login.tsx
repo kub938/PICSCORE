@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import GoogleLoginBtn from "./components/GoogleLoginBtn";
 import KakaoLoginBtn from "./components/KakaoLoginBtn";
 import { CameraIcon } from "@heroicons/react/24/solid";
+import ErrorTestButton from "../../test/ErrorTestButton";
 function Login() {
   const navigate = useNavigate();
 
@@ -12,7 +13,6 @@ function Login() {
           <span className="text-pic-primary ">PIC</span>
           <span>SCORE</span>
         </div>
-
         <div
           onClick={() => navigate("/image-upload")}
           className="w-50 h-50 flex flex-col inset-shadow-sm shadow-sm justify-center items-center mt-15 mb-5 border-gray-300 rounded-lg"
@@ -23,6 +23,8 @@ function Login() {
       </div>
       <div className="flex flex-col gap-2">
         <GoogleLoginBtn />
+        <ErrorTestButton />
+
         {/* <KakaoLoginBtn /> */}
       </div>
     </div>
