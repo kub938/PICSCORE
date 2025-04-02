@@ -81,7 +81,7 @@ pipeline {
 
                                                 VERSION_TAG=\$(git rev-parse --short HEAD)
                                                 sentry-cli releases new picscore@\${VERSION_TAG}
-                                                sentry-cli releases set-commits picscore@\${VERSION_TAG} --auto
+                                                sentry-cli releases set-commits picscore@\${VERSION_TAG} --auto --ignore-missing
 
                                                 # sourcemap 업로드
                                                 sentry-cli releases files picscore@\${VERSION_TAG} upload-sourcemaps dist/assets \
@@ -160,7 +160,7 @@ pipeline {
 
                                                 VERSION_TAG=\$(git rev-parse --short HEAD)
                                                 sentry-cli releases new picscore@\${VERSION_TAG}
-                                                sentry-cli releases set-commits picscore@\${VERSION_TAG} --auto
+                                                sentry-cli releases set-commits picscore@\${VERSION_TAG} --auto --ignore-missing
 
                                                 # sourcemap 업로드
                                                 sentry-cli releases files picscore@\${VERSION_TAG} upload-sourcemaps dist/assets \
