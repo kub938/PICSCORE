@@ -20,7 +20,7 @@ function ImageEvalResult() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const imageUploadMutation = useUploadImage();
+  const { mutate, isPending } = useUploadImage();
   const location = useLocation();
 
   const evalData = location.state?.evalData;
@@ -53,16 +53,19 @@ function ImageEvalResult() {
   };
 
   const handleImagePost = (evalData: ImageEvalResponse) => {
-    if (evalData) {
-      if (isLoggedIn) {
-        imageUploadMutation.mutate(evalData, {
-          onSuccess: (data: any) => {
-            navigate(`/board`);
-          },
-        });
-      } else {
-        setIsModalOpen(true);
-      }
+    if (!evalData) return;
+
+    if (!isLoggedIn) {
+      setIsModalOpen(true);
+      return;
+    }
+
+    if (!isPending) {
+      mutate(evalData, {
+        onSuccess: () => {
+          navigate("/board");
+        },
+      });
     }
   };
 
