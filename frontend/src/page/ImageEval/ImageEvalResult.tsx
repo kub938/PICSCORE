@@ -68,7 +68,6 @@ function ImageEvalResult() {
       });
     }
   };
-
   return (
     <div className="flex flex-col w-full mb-16 items-center justify-center ">
       <Modal
@@ -136,7 +135,9 @@ function ImageEvalResult() {
             width={30}
             height={10}
             onClick={() => {
-              handleImagePost(evalData);
+              if (!isPending) {
+                handleImagePost(evalData);
+              }
             }}
           >
             <ArrowUpTrayIcon width={15} />
