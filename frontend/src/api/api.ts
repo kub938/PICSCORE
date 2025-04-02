@@ -97,6 +97,9 @@ testApi.interceptors.response.use(
             `${errorStatus} Not Found: 요청한 리소스가 서버에 없음`
           );
           break;
+        case 413:
+          console.error(`${errorStatus} 파일크기가 너무 커요`);
+          break;
         case 422:
           console.error(
             `${errorStatus} Unprocessable Entity: 요청은 유효하나 처리 실패`
