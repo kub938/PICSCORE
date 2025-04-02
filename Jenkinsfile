@@ -74,8 +74,8 @@ pipeline {
                                             sh """
                                                 npm install -g @sentry/cli
 
-                                                export SENTRY_ORG=your-sentry-org
-                                                export SENTRY_PROJECT=your-sentry-project
+                                                export SENTRY_ORG=comp-6d
+                                                export SENTRY_PROJECT=picscore
                                                 export SENTRY_AUTH_TOKEN=\${SENTRY_AUTH_TOKEN}
                                                 export SENTRY_URL=https://sentry.io/ # 필요 시 변경
 
@@ -153,8 +153,8 @@ pipeline {
                                             sh """
                                                 npm install -g @sentry/cli
 
-                                                export SENTRY_ORG=your-sentry-org
-                                                export SENTRY_PROJECT=your-sentry-project
+                                                export SENTRY_ORG=comp-6d
+                                                export SENTRY_PROJECT=picscore
                                                 export SENTRY_AUTH_TOKEN=\${SENTRY_AUTH_TOKEN}
                                                 export SENTRY_URL=https://sentry.io/ # 필요 시 변경
 
