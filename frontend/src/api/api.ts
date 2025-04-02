@@ -82,12 +82,12 @@ testApi.interceptors.response.use(
         case 400:
           console.error(`${errorStatus} 오류`);
           authStore.logout();
-          window.location.replace("/login");
+          window.location.replace("/");
           break;
         case 401:
           console.error(`${errorStatus} Unauthorized: 인증 오류`);
           authStore.logout();
-          window.location.replace("/login");
+          window.location.replace("/");
           break;
         case 403:
           console.error(`${errorStatus} Forbidden: 권한 오류`);
