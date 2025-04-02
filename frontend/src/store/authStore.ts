@@ -40,7 +40,6 @@ import { clearSentryUser, identifySentryUser } from "../utils/sentry";
 interface TestUserInfoState {
   isLoggedIn: boolean;
   userId: number;
-  login: () => void;
   logout: () => void;
   setUserId: (userId: number, nickname: string) => void;
 }
@@ -50,16 +49,14 @@ export const useAuthStore = create<TestUserInfoState>()(
     (set) => ({
       isLoggedIn: false,
       userId: 0,
-      login: () => {
-        set({ isLoggedIn: true });
-      },
       logout: () => {
         clearSentryUser();
         set({ isLoggedIn: false, userId: undefined });
+        localStorage.removeItem("auth");
       },
       setUserId: (userId: number, username: string) => {
         identifySentryUser({ id: userId, username: username });
-        set({ userId: userId });
+        set({ userId: userId, isLoggedIn: true });
       },
     }),
     { name: "auth" }

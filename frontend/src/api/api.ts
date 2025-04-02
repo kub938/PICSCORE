@@ -1,9 +1,12 @@
 import axios from "axios";
 import { useAuthStore } from "../store";
 import { captureException } from "../utils/sentry";
+import { useNavigate } from "react-router-dom";
 
+const getAuthStore = () => {
+  return useAuthStore.getState();
+};
 const baseURL = import.meta.env.VITE_BASE_URL;
-
 export const evalTestApi = axios.create({
   baseURL,
   headers: {
@@ -20,7 +23,6 @@ evalTestApi.interceptors.response.use(
       const errorData = error.response.data;
       const requestUrl = error.config.url;
 
-      // Sentry에 API 오류 보고
       captureException(error, {
         source: "eval-api",
         type: "http-error",
@@ -28,18 +30,12 @@ evalTestApi.interceptors.response.use(
         endpoint: requestUrl,
         response: JSON.stringify(errorData).slice(0, 200),
       });
-
-      // 기존 로깅 코드
-      console.error("서버 응답 에러:", errorStatus);
     } else if (error.request) {
-      // 네트워크 오류 Sentry에 보고
       captureException(error, {
         source: "eval-api",
         type: "network-error",
         url: error.config?.url,
       });
-
-      console.error("네트워크 에러:", error.request);
     } else {
       // 일반 클라이언트 오류 Sentry에 보고
       captureException(error, {
@@ -72,8 +68,6 @@ testApi.interceptors.response.use(
       const errorStatus = error.response.status;
       const errorData = error.response.data;
       const requestUrl = error.config.url;
-      console.error("서버 응답 에러:", errorStatus);
-
       captureException(error, {
         source: "api",
         type: "http-error",
@@ -85,6 +79,9 @@ testApi.interceptors.response.use(
       switch (errorStatus) {
         case 401:
           console.error(`${errorStatus} Unauthorized: 인증 오류`);
+          const authStore = getAuthStore();
+          authStore.logout();
+          window.location.replace("/login");
           break;
         case 403:
           console.error(`${errorStatus} Forbidden: 권한 오류`);
