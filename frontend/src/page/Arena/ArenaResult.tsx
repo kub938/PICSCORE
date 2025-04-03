@@ -20,7 +20,7 @@ interface AnimationModalProps {
   isOpen: boolean;
   onClose: () => void;
   correctCount: number;
-  partialCorrectCount: number;
+  correct: number;
   xpGained: number;
   destination: "ranking" | "arena";
 }
@@ -29,7 +29,7 @@ const AnimationModal: React.FC<AnimationModalProps> = ({
   isOpen,
   onClose,
   correctCount,
-  partialCorrectCount,
+  correct,
   xpGained,
   destination,
 }) => {
@@ -78,7 +78,7 @@ const AnimationModal: React.FC<AnimationModalProps> = ({
           <div className="mb-6">
             <p className="text-xl text-yellow-300">맞은 개수</p>
             <p className="text-5xl font-bold text-white">
-              {partialCorrectCount}/4
+              {correct}/4
             </p>
           </div>
           <div className="mb-8">
@@ -165,9 +165,8 @@ const ArenaResultPage: React.FC = () => {
 
       // 백엔드에 결과 전송
       const requestData: SaveArenaResultRequest = {
-        correctCount: resultData.correctCount, // 정확히 맞춘 개수 (0 또는 1)
+        correct: resultData.correct, // 정확히 맞춘 개수 (0~4)
         time: resultData.remainingTime, // 남은 시간
-        score: resultData.score, // 계산된 점수
       };
 
       const response = await arenaApi.saveArenaResult(requestData);
@@ -229,7 +228,7 @@ const ArenaResultPage: React.FC = () => {
             photos={resultData.photos}
             timeSpent={resultData.timeSpent}
             correctCount={resultData.correctCount}
-            partialCorrectCount={resultData.partialCorrectCount}
+            partialCorrectCount={resultData.correct}
             xpEarned={xpEarned}
             onPlayAgain={handlePlayAgain}
             onViewRanking={handleViewRanking}
@@ -244,7 +243,7 @@ const ArenaResultPage: React.FC = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         correctCount={resultData?.correctCount || 0}
-        partialCorrectCount={resultData?.partialCorrectCount || 0}
+        correct={resultData?.correct || 0}
         xpGained={xpEarned}
         destination={modalDestination}
       />
