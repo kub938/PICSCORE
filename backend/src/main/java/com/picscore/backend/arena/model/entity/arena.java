@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Table(name = "arena")
 @NoArgsConstructor
 public class arena {
     @Id

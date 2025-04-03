@@ -36,8 +36,9 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Photo p SET p.isPublic = NOT(p.isPublic) WHERE p.id = :id")
+    @Query("UPDATE Photo p SET p.isPublic = CASE WHEN p.isPublic = true THEN false ELSE true END WHERE p.id = :id")
     void togglePublic(@Param("id") Long id);
+
 
     @Query("SELECT p, COUNT(pl) " +
             "FROM Photo p " +
@@ -48,9 +49,13 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
     List<Object[]> findTop5PhotosWithLikeCount(Pageable pageable);
 
     // 랜덤하게 is_public=true인 사진 4장 가져오기 (score 값이 중복되지 않도록)
-    @Query("SELECT p FROM Photo p" +
-        " WHERE p.isPublic = true AND p.photoType = 'article'" +
-        "GROUP BY p.score" +
-        " ORDER BY RAND() LIMIT 4 ")
-    List<Photo> getRandomPublicPhotos();
+    @Query(value = "SELECT p.photo_id, p.score, p.image_url FROM photo p " +
+            "WHERE p.is_public = 1 AND p.photo_type = 'article' " +
+            "AND p.photo_id IN ( " +
+            "    SELECT MIN(photo_id) FROM photo " +
+            "    WHERE is_public = 1 AND photo_type = 'article' " +
+            "    GROUP BY score " +
+            ") " +
+            "ORDER BY RAND() LIMIT 4", nativeQuery = true)
+    List<Object[]> getRandomPublicPhotos();
 }
