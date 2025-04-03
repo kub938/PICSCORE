@@ -81,7 +81,7 @@ const routeLayouts: { [key: string]: LayoutConfig } = {
   "/time-attack": {
     showNavBar: true,
     showBottomBar: false,
-    content: "타임어택택",
+    content: "타임어택",
   },
 };
 

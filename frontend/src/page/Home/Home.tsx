@@ -271,7 +271,7 @@ function Home() {
             </div>
           </Link>
 
-          {/* 아레나나 */}
+          {/* 랭킹 */}
           <Link to="/ranking">
             <div className="bg-white rounded-xl p-5 flex flex-col items-center shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
               <div className="absolute inset-0 bg-white rounded-xl shadow-xl"></div>
@@ -387,14 +387,16 @@ function Home() {
                 className="bg-white border-2 border-pic-primary rounded-xl p-4 flex flex-col items-center justify-center shadow-md hover:shadow-lg transition-all cursor-pointer"
                 onClick={() => {
                   setShowGameModal(false);
-                  navigate('/time-attack');
+                  navigate("/time-attack");
                 }}
               >
                 <div className="w-16 h-16 rounded-full bg-pic-primary/10 flex items-center justify-center mb-2">
                   <img src={time} alt="타임어택" className="w-8 h-8" />
                 </div>
                 <span className="font-bold text-gray-700">타임어택</span>
-                <p className="text-xs text-gray-500 text-center mt-2">시간 제한 퀴즈 풀기</p>
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  시간 제한 퀴즈 풀기
+                </p>
               </div>
 
               {/* 아레나 버튼 */}
@@ -402,14 +404,16 @@ function Home() {
                 className="bg-white border-2 border-pic-primary rounded-xl p-4 flex flex-col items-center justify-center shadow-md hover:shadow-lg transition-all cursor-pointer"
                 onClick={() => {
                   setShowGameModal(false);
-                  navigate('/arena');
+                  navigate("/arena");
                 }}
               >
                 <div className="w-16 h-16 rounded-full bg-pic-primary/10 flex items-center justify-center mb-2">
                   <img src={ranking} alt="아레나" className="w-8 h-8" />
                 </div>
                 <span className="font-bold text-gray-700">아레나</span>
-                <p className="text-xs text-gray-500 text-center mt-2">사진 점수 맞추기</p>
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  사진 점수 맞추기
+                </p>
               </div>
             </div>
 
