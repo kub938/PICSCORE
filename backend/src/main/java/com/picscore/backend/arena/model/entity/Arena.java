@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "arena")
 @NoArgsConstructor
-public class arena {
+public class Arena {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "arena_id")
@@ -19,7 +19,11 @@ public class arena {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "score", nullable = false)
     private int score;
+
+    @Column(name = "activity_week", nullable = false)
+    private String activityWeek;
 
 
 }
