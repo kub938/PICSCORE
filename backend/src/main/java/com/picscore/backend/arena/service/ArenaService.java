@@ -3,8 +3,9 @@ package com.picscore.backend.arena.service;
 import com.picscore.backend.arena.model.ArenaPhotoResponse;
 import com.picscore.backend.arena.model.entity.Arena;
 import com.picscore.backend.arena.repository.ArenaRepository;
-import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.photo.repository.PhotoRepository;
+import com.picscore.backend.user.model.entity.User;
+import com.picscore.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,10 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.IsoFields;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +22,7 @@ public class ArenaService {
 
     final private PhotoRepository photoRepository;
     final private ArenaRepository arenaRepository;
+    final private UserRepository userRepository;
     @Transactional
     public Map<String, Object> randomPhotos () {
         Map<String, Object> response = new HashMap<>();
@@ -49,30 +48,43 @@ public class ArenaService {
         return response;
     }
 
-    public Map<String, Object> calculateArena(int correct, String time) {
+    public Integer calculateArena(Long userId, int correct, String time) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다. ID: " + userId));
         String activityWeek = getCurrentGameWeek();
         float Ftime = 20f;
         Ftime = Float.parseFloat(time);
         final float adjustedTime = Ftime / 18f;
-        // 🎯 기존 데이터 조회
-        Arena arena = arenaRepository.findByUserIdAndActivityWeek(userId, activityWeek)
+        Arena arena = arenaRepository.findByUserId(userId)
+                .map(existingArena -> {
+                    // 📅 주차(activityWeek)가 다르면 초기화
+                    if (!existingArena.getActivityWeek().equals(activityWeek)) {
+                        existingArena.resetForNewWeek(activityWeek);
+                    }
+                    return existingArena;
+                })
                 .orElseGet(() -> {
-                    // 데이터가 없으면 새 엔티티 생성
-                    Arena newArena = new Arena();
-                    newArena.setUserId(userId);
-                    newArena.setActivityWeek(activityWeek);
-                    newArena.setScore(0); // 초기 점수 0
+                    // 🌱 Arena가 없으면 새로 생성
+                    Arena newArena = new Arena(user, 0, activityWeek);
                     return arenaRepository.save(newArena);
                 });
+        // 📊 경험치 계산
+        int exp = correct * 100;
+
         // ✅ 정답이 4개라면 점수 증가
         if (correct == 4) {
-            arena.setScore(arena.getScore() + 1);
+            // 📊 경험치 계산
+            exp += (int)(adjustedTime * 100);
+            arena.increaseScore();
         }
 
-        // 📊 경험치 계산
-        double experience = (correct * 10 * 0.7) + ((double) timeValue / 18 * 0.3);
+        int experience = userRepository.findExperienceByUserId(userId);
+        int plusExperience = experience + exp;
+        user.updateExperience(plusExperience);
+        user.updateLevel(plusExperience);
+        userRepository.save(user);
 
-        return experience;
+        return exp;
     }
     // ✅ 현재 주차의 게임 ID 가져오기
     public String getCurrentGameWeek() {
