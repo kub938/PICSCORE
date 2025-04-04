@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { FadeLoader } from "react-spinners";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import SearchBar from "./components/SearchBar";
+import BoardPhotoGrid from "./components/BoardPhotoGrid";
 
 function Board() {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ function Board() {
     <div className="w-full h-screen flex flex-col">
       <SearchBar />
 
+      {/* <BoardPhotoGrid /> */}
       <div
         className={`overflow-y-auto flex-1 mb-16 ${
           isLoading && "pt-16 flex flex-col items-center justify-center"

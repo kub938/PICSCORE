@@ -16,6 +16,9 @@ import {
 import * as Sentry from "@sentry/react";
 import ErrorPage from "./page/Error/ErrorPage.tsx";
 import { captureException } from "./utils/sentry.ts";
+import "./mocks/mockSetup";
+import { queryClient } from "./lib/queryClient.ts";
+
 Sentry.init({
   dsn: "https://ddad7224c5340a0e840748574bf999fc@o4509077080834048.ingest.us.sentry.io/4509077096169472",
   integrations: [
