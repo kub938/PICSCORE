@@ -73,6 +73,11 @@ const routeLayouts: { [key: string]: LayoutConfig } = {
     showBottomBar: true,
     content: "검색",
   },
+  "/time-attack": {
+    showNavBar: true,
+    showBottomBar: false,
+    content: "타임어택",
+  },
 };
 
 function RouteListener() {
