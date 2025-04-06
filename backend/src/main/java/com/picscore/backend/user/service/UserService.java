@@ -37,6 +37,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.IsoFields;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -342,7 +345,7 @@ public class UserService {
         Map<String, Object> stats = timeAttackRepository.calculateStats(userId);
         float avgScore = stats.get("avgScore") != null ? ((Double) stats.get("avgScore")).floatValue() : 0f;
 
-        List<TimeAttack> timeAttackList = timeAttackRepository.findHighestScoresAllUser();
+        List<TimeAttack> timeAttackList = timeAttackRepository.findHighestScoresAllUser(getCurrentGameWeek());
         int rank = 0;
         for (int i = 0; i < timeAttackList.size(); i++) {
             if (timeAttackList.get(i).getUser().getId().equals(userId)) {
@@ -420,5 +423,13 @@ public class UserService {
             return "mobile";
         }
         return "pc";
+    }
+
+    // ✅ 현재 주차의 게임 ID 가져오기
+    private String getCurrentGameWeek() {
+        LocalDate now = LocalDate.now(ZoneId.of("UTC"));
+        int year = now.getYear();
+        int week = now.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+        return String.format("%d%02d", year, week);
     }
 }
