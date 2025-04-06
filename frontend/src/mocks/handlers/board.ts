@@ -16,15 +16,25 @@ export const boardHandlers = [
 
     // 모든 페이지를 순회하면서 사진 찾기
     for (const pageKey in photos) {
-      const page = photos[pageKey as PhotosKey];
-      const photoFound = page.data.photos.find(
-        (photo: Photo) => photo.id === idNumber
-      );
+      const pageKeyAsNumber = Number(pageKey);
 
-      if (photoFound) {
-        foundPhoto = photoFound;
-        break;
-      }
+      if (
+        pageKeyAsNumber === 1 ||
+        pageKeyAsNumber === 2 ||
+        pageKeyAsNumber === 3 ||
+        pageKeyAsNumber === 4 ||
+        pageKeyAsNumber === 5
+      ) {
+        const page = photos[pageKeyAsNumber as PhotosKey];
+        const photoFound = page.data.photos.find(
+          (photo: Photo) => photo.id === idNumber
+        );
+
+        if (photoFound) {
+          foundPhoto = photoFound;
+          break;
+        }
+      } // 이 닫는 중괄호가 누락되었습니다
     }
 
     if (foundPhoto) {
