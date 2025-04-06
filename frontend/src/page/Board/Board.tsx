@@ -51,7 +51,7 @@ function Board() {
       >
         {isLoading && <FadeLoader color="#a4e857" height={12} radius={8} />}
         {Array.from({ length: totalPage * 8 }, (_, rowIndex) => (
-          <div key={rowIndex} className="flex w-full ">
+          <div key={rowIndex} className="flex w-full">
             {photos
               .slice(rowIndex * 3, rowIndex * 3 + 3)
               .map((photo, index) => (
@@ -63,9 +63,13 @@ function Board() {
                   onClick={() => navigatePhotoDetail(photo.id)}
                 >
                   <img
-                    src={photo.imageUrl}
+                    src={`${photo.imageUrl}?w=400&quality=80`}
+                    srcSet={`${photo.imageUrl}?w=200&quality=80 200w, 
+                    ${photo.imageUrl}?w=400&quality=80 400w, 
+                    ${photo.imageUrl}?w=600&quality=80 600w`}
+                    sizes="(max-width: 768px) 33vw, 400px"
                     alt="이미지 입니다."
-                    className="h-full w-full"
+                    className="h-full w-full object-cover"
                   />
                 </div>
               ))}
