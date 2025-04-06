@@ -351,8 +351,19 @@ public class UserService {
             }
         }
 
+        // 아레나 랭크
+        String activityWeek = GameWeekUtil.getCurrentGameWeek();
+        List<Arena> arenaList = arenaRepository.getRankAllUser(activityWeek);
+        int arenaRank = 0;
+        for (int ii = 0; ii < arenaList.size(); ii++) {
+            if (arenaList.get(ii).getUser().getId().equals(userId)) {
+                arenaRank = ii + 1; // 등수는 1부터 시작
+                break;
+            }
+        }
+
         GetUserStaticResponse response = new GetUserStaticResponse(
-                avgScore, rank
+                avgScore, rank, arenaRank
         );
 
         return response;
