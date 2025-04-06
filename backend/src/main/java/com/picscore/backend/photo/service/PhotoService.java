@@ -95,7 +95,13 @@ public class PhotoService {
      * @throws IOException 파일 처리 중 발생할 수 있는 입출력 예외
      */
     @Transactional
-    public ResponseEntity<BaseResponse<UploadPhotoResponse>> uploadFile(MultipartFile file) throws IOException {
+    public ResponseEntity<BaseResponse<UploadPhotoResponse>> uploadFile(
+            MultipartFile file) throws IOException {
+
+        if (file == null || file.isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "업로드 파일이 유효하지 않습니다");
+        }
+
         // UUID를 사용하여 고유한 파일명 생성
         String fileName = UUID.randomUUID() + getFileExtension(file.getOriginalFilename());
 
@@ -129,11 +135,21 @@ public class PhotoService {
      * @return String 파일 확장자 (점 포함)
      */
     private String getFileExtension(String originalFileName) {
-        int extensionIndex = originalFileName.lastIndexOf(".");
-        if (extensionIndex > 0) {
-            return originalFileName.substring(extensionIndex);
+        // 1. null 또는 빈 문자열 체크
+        if (originalFileName == null || originalFileName.isEmpty()) {
+            return "";
         }
-        return "";
+
+        // 2. 마지막 점(.) 위치 찾기
+        int extensionIndex = originalFileName.lastIndexOf('.');
+
+        // 3. 유효성 검사 (점이 없거나, 첫 문자에 있을 경우 제외)
+        if (extensionIndex <= 0 || extensionIndex >= originalFileName.length() - 1) {
+            return "";
+        }
+
+        // 4. 소문자로 통일하여 반환 (선택사항)
+        return originalFileName.substring(extensionIndex);
     }
 
 
@@ -144,7 +160,13 @@ public class PhotoService {
      * @return String 업로드된 파일의 URL
      * @throws IOException 파일 처리 중 발생할 수 있는 입출력 예외
      */
-    public String uploadProfileFile(MultipartFile file) throws IOException {
+    public String uploadProfileFile(
+            MultipartFile file) throws IOException {
+
+        if (file == null || file.isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "업로드 파일이 유효하지 않습니다");
+        }
+
         String fileName = UUID.randomUUID() + "." + getFileExtension(file.getOriginalFilename());
         String tempFolder = "profile/";
 
