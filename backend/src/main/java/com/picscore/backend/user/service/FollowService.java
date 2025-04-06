@@ -13,54 +13,31 @@ public interface FollowService {
 
     /**
      * 팔로우 관계를 토글(추가/삭제)하는 메서드
-     *
-     * @param followerId 팔로우를 하는 사용자의 ID
-     * @param followingId 팔로우 대상 사용자의 ID
-     * @return Boolean 팔로우 관계가 생성되면 true, 삭제되면 false
      */
     Boolean toggleFollow(Long followerId, Long followingId);
 
     /**
      * 현재 사용자의 팔로워 목록을 조회하는 메서드
-     *
-     * @param userId 현재 사용자의 ID
-     * @return ResponseEntity<BaseResponse<GetMyFollowersResponse>> 팔로워 목록을 포함한 응답
      */
     List<GetMyFollowersResponse> getMyFollowers(Long userId);
 
     /**
      * 현재 사용자의 팔로잉 목록을 조회하는 메서드
-     *
-     * @param userId 현재 사용자의 ID
-     * @return ResponseEntity<BaseResponse<GetMyFollowersResponse>> 팔로잉 목록을 포함한 응답
      */
     List<GetMyFollowingsResponse> getMyFollowings(Long userId);
 
     /**
      * 특정 사용자의 팔로워 목록을 조회하는 메서드
-     *
-     * @param myId 현재 로그인한 사용자의 ID
-     * @param userId 팔로워를 조회할 사용자의 ID
-     * @return ResponseEntity<BaseResponse<List<GetUserFollowersResponse>>> 팔로워 목록을 포함한 응답
      */
     List<GetUserFollowersResponse> getUserFollowers(Long myId, Long userId);
 
     /**
      * 특정 사용자의 팔로잉 목록을 조회하는 메서드
-     *
-     * @param myId 현재 로그인한 사용자의 ID
-     * @param userId 팔로잉을 조회할 사용자의 ID
-     * @return ResponseEntity<BaseResponse<List<GetUserFollowingsResponse>>> 팔로잉 목록을 포함한 응답
      */
     List<GetUserFollowingsResponse> getUserFollowings(Long myId, Long userId);
 
     /**
      * 현재 사용자의 팔로워를 삭제하는 메서드
-     *
-     * @param myId 현재 로그인한 사용자의 ID
-     * @param userId 삭제할 팔로워의 ID
-     * @return ResponseEntity<BaseResponse<Void>> 삭제 결과를 포함한 응답
      */
     void deleteMyFollower(Long myId, Long userId);
-
 }

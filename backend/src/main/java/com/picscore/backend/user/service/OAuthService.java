@@ -11,27 +11,16 @@ public interface OAuthService {
 
     /**
      * 리프레시 토큰을 검증하고 새로운 액세스 및 리프레시 토큰을 발급합니다.
-     *
-     * @param request HTTP 요청 객체
-     * @param response HTTP 응답 객체
-     * @return ResponseEntity 객체로 결과 반환
      */
     String reissue(HttpServletRequest request, HttpServletResponse response);
 
     /**
      * 현재 로그인한 사용자의 ID를 닉네임을 통해 조회하는 메서드
-     *
-     * @param request HTTP 요청 객체 (쿠키에서 AccessToken 추출)
-     * @return Long 사용자 ID
      */
     Long findIdByNickName(HttpServletRequest request);
 
     /**
      * 사용자 계정을 삭제하는 메서드
-     *
-     * @param userId 삭제할 사용자의 ID
-     * @param response HTTP 응답 객체 (쿠키 삭제에 사용)
-     * @return ResponseEntity<BaseResponse<Void>> 삭제 결과를 포함한 응답
      */
     void deleteUser(Long userId, HttpServletRequest request, HttpServletResponse response);
 
