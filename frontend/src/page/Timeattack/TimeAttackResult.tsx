@@ -73,7 +73,7 @@ const AnimationModal: React.FC<AnimationModalProps> = ({
 
   const handleGoToRanking = () => {
     onClose();
-    navigate("/ranking", { state: { from: "timeattack-result" } });
+    navigate("/ranking", { replace: true });
   };
 
   const handleGoToTimeAttack = () => {
@@ -97,7 +97,7 @@ const AnimationModal: React.FC<AnimationModalProps> = ({
               <span className="text-xl text-white ml-1">XP</span>
             </div>
           </div>
-          
+
           {/* 버튼 그룹 - 두 개의 버튼 */}
           <div className="grid grid-cols-2 gap-3 mt-6">
             <button
