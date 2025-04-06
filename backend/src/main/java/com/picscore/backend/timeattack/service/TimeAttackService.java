@@ -26,6 +26,7 @@ import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.IsoFields;
@@ -46,6 +47,8 @@ public class TimeAttackService {
 
     private final RestTemplate restTemplate;
     private final S3Client s3Client;
+
+    private final SecureRandom secureRandom = new SecureRandom();
 
 
 
@@ -81,7 +84,7 @@ public class TimeAttackService {
         Page<TimeAttack> timeAttackPage = timeAttackRepository.findHighestScoresPerUser(pageRequest);
 
         // 페이지 데이터 존재 여부 확인
-        if (pageNum > timeAttackPage.getTotalPages() || timeAttackPage.getContent().isEmpty()) {
+        if (timeAttackPage == null || pageNum > timeAttackPage.getTotalPages() || timeAttackPage.getContent().isEmpty()) {
             throw new CustomException(HttpStatus.NOT_FOUND, "해당 페이지에 랭킹 정보가 없습니다");
         }
 
@@ -169,6 +172,12 @@ public class TimeAttackService {
             time = Float.parseFloat(request.getTime());
             final float adjustedTime = time / 20f;
 
+
+            // 응답 자체가 유효하지 않은 경우 예외 처리
+            if (response == null || response.getBody() == null) {
+                throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 분석 결과가 유효하지 않습니다");
+            }
+
             // API 응답에서 태그 정보 추출 및 변환
             List<AnalysisPhotoResponse> analysisResults = response.getBody().getTags().stream()
                     .map(tag -> new AnalysisPhotoResponse(
@@ -181,7 +190,7 @@ public class TimeAttackService {
                     .max(Comparator.comparing(AnalysisPhotoResponse::getConfidence))
                     .orElseGet(() -> {
                         // 랜덤한 값(0.00 ~ 0.20) 생성
-                        float randomConfidence = new Random().nextFloat() * 0.20f;
+                        float randomConfidence = secureRandom.nextFloat() * 0.20f;
                         return new AnalysisPhotoResponse("일치 항목 없음", randomConfidence, randomConfidence * 0.7f + adjustedTime * 0.3f);
                     });
 

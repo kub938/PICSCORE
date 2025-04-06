@@ -34,6 +34,21 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
             countQuery = "SELECT COUNT(p) FROM Photo p WHERE p.isPublic = true AND p.photoType = 'article'")
     Page<Photo> findAllWithPublic(Pageable pageable);
 
+    @Query(
+            value = """
+        SELECT p FROM Photo p
+        LEFT JOIN PhotoLike pl ON pl.photo.id = p.id
+        WHERE p.isPublic = true
+        GROUP BY p
+        ORDER BY COUNT(pl) DESC
+    """,
+            countQuery = """
+        SELECT COUNT(DISTINCT p) FROM Photo p
+        WHERE p.isPublic = true AND p.photoType = 'article'
+    """
+    )
+    Page<Photo> findAllOrderByLikeCount(Pageable pageable);
+
 
     @Modifying
     @Transactional
@@ -59,6 +74,7 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
             ") " +
             "ORDER BY RAND() LIMIT 4", nativeQuery = true)
     List<Object[]> getRandomPublicPhotos();
+
     int countByUserId(Long userId);
 
     Boolean existsByUserIdAndScoreGreaterThanEqual(Long userId, Float score);
@@ -67,5 +83,4 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
 
     @Query("SELECT p.id FROM Photo p WHERE p.user.id = :userId")
     List<Long> findPhotoIdsByUserId(@Param("userId") Long userId);
-
 }
