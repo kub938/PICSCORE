@@ -186,6 +186,32 @@ const RankingPage: React.FC = () => {
     }
   }, [currentPage, isLoggedIn, rankingType]);
 
+  // URL 쿼리 파라미터를 통해 초기 탭 설정
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    
+    console.log("URL 파라미터:", tabParam, "| 현재 랭킹 타입:", rankingType);
+    
+    if (tabParam?.toLowerCase() === 'arena') {
+      console.log("아레나 탭 선택");
+      setRankingType('arena');
+    } else if (tabParam?.toLowerCase() === 'timeattack') {
+      console.log("타임어택 탭 선택");
+      setRankingType('timeAttack');
+    } else if (tabParam?.toLowerCase() === 'contest') {
+      console.log("컨테스트 탭 선택");
+      setRankingType('contest');
+    }
+    // URL 파라미터 지우기 (내비게이션 기록 유지)
+    if (tabParam) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('tab');
+      window.history.replaceState({}, '', newUrl.toString());
+      console.log("URL 업데이트 완료:", newUrl.toString());
+    }
+  }, [location.search]);
+
   // 랭킹 유형 변경 시 데이터 리셋
   useEffect(() => {
     // 랭킹 유형 변경 시 페이지 번호를 1로 리셋
@@ -556,21 +582,15 @@ const RankingPage: React.FC = () => {
             {getRankingTitle()}
           </h2>
 
-          {/* 데이터 필터 드롭다운 (필요 시 추가) */}
-          {/*
-          <div className="relative">
-            <select
-              value={timeframe}
-              onChange={(e) => handleTimeFrameChange(e.target.value as TimeFrame)}
-              className="bg-white border border-gray-300 text-gray-700 py-1 px-3 pr-8 rounded-lg shadow-sm focus:border-pic-primary focus:ring-pic-primary"
+          {/* 도전하기 버튼 - 컨테스트가 아닐 때만 표시 */}
+          {rankingType !== "contest" && (
+            <button
+              onClick={() => navigate(rankingType === "arena" ? "/arena" : "/time-attack")}
+              className="bg-pic-primary hover:bg-pic-primary/90 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
             >
-              <option value="today">오늘</option>
-              <option value="week">이번 주</option>
-              <option value="month">이번 달</option>
-              <option value="all">전체</option>
-            </select>
-          </div>
-          */}
+              도전하기
+            </button>
+          )}
         </div>
 
         {/* 랭킹 테이블 헤더 - 랭킹 타입에 따라 다른 컴포넌트 렌더링 */}

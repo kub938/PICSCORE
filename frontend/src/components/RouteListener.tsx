@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import useLayoutStore from "../store/layoutStore";
 import { useGetPhoto } from "../hooks/useBoard";
 import { addBreadcrumb } from "@sentry/react";
+import { useAuthStore } from "../store/authStore"; // 인증 상태를 가져오기 위한 import 추가
 
 interface LayoutConfig {
   showNavBar: boolean;
@@ -12,7 +13,7 @@ interface LayoutConfig {
 }
 const nickname = "asdf";
 const routeLayouts: { [key: string]: LayoutConfig } = {
-  "/": { showNavBar: false, showBottomBar: false, content: "" },
+  "/": { showNavBar: false, showBottomBar: true, content: "" },
   "/image-upload": {
     showNavBar: true,
     showBottomBar: false,
@@ -23,9 +24,10 @@ const routeLayouts: { [key: string]: LayoutConfig } = {
     showBottomBar: false,
     content: "로그인",
   },
+  // image-result 경로는 동적으로 처리할 것이므로 여기서는 기본값만 정의
   "/image-result": {
     showNavBar: true,
-    showBottomBar: true,
+    showBottomBar: true, // 기본값, 실제로는 로그인 상태에 따라 결정
     content: "분석 결과",
   },
   "/welcome": {
@@ -78,6 +80,11 @@ const routeLayouts: { [key: string]: LayoutConfig } = {
     showBottomBar: false,
     content: "타임어택",
   },
+  "/arena": {
+    showNavBar: true,
+    showBottomBar: false,
+    content: "아레나",
+  },
 };
 
 function RouteListener() {
@@ -85,6 +92,7 @@ function RouteListener() {
   const setLayoutVisibility = useLayoutStore(
     (state) => state.setLayoutVisibility
   );
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn); // 로그인 상태 가져오기
 
   useEffect(() => {
     //Sentry 브레드크럼 추가( 페이지 이동 추적)
@@ -99,7 +107,7 @@ function RouteListener() {
     if (location.pathname === "/time-attack") {
       const params = new URLSearchParams(location.search);
       const step = params.get("step");
-      
+
       // step이 "1"이거나 null인 경우에만 내브바 표시
       if (step === "1" || step === null) {
         setLayoutVisibility({
@@ -115,6 +123,16 @@ function RouteListener() {
           content: "타임어택",
         });
       }
+      return;
+    }
+
+    // 이미지 결과 페이지 특별 처리 - 로그인 상태에 따라 하단바 표시 여부 결정
+    if (location.pathname === "/image-result") {
+      setLayoutVisibility({
+        showNavBar: true,
+        showBottomBar: isLoggedIn, // 로그인 상태일 때만 하단바 표시
+        content: "분석 결과",
+      });
       return;
     }
 
@@ -134,7 +152,7 @@ function RouteListener() {
         content: "안됐어요",
       });
     }
-  }, [location, setLayoutVisibility]);
+  }, [location, setLayoutVisibility, isLoggedIn]); // isLoggedIn 의존성 추가
 
   return null;
 }

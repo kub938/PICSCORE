@@ -28,12 +28,12 @@ const compressImageIfNeeded = async (file: File): Promise<File> => {
   const FILE_SIZE_LIMIT = 5; // 5MB
   const TARGET_SIZE = 4; // 4MB
   const fileSizeMB = file.size / (1024 * 1024);
-  
+
   if (fileSizeMB < FILE_SIZE_LIMIT) {
     console.log(`압축 불필요: 파일 크기 ${fileSizeMB.toFixed(2)}MB (5MB 미만)`);
     return file;
   }
-  
+
   try {
     // 압축 옵션 설정
     const options = {
@@ -44,14 +44,16 @@ const compressImageIfNeeded = async (file: File): Promise<File> => {
       alwaysKeepResolution: true, // 해상도 유지
     };
 
-    console.log(`압축 시작: 원본 크기 ${fileSizeMB.toFixed(2)}MB (5MB 이상)`); 
+    console.log(`압축 시작: 원본 크기 ${fileSizeMB.toFixed(2)}MB (5MB 이상)`);
 
     // 이미지 압축 실행
     const compressedFile = await imageCompression(file, options);
     const compressedSizeMB = compressedFile.size / (1024 * 1024);
 
     console.log(
-      `압축 완료: ${compressedSizeMB.toFixed(2)}MB (${Math.round((compressedFile.size / file.size) * 100)}% 크기)`
+      `압축 완료: ${compressedSizeMB.toFixed(2)}MB (${Math.round(
+        (compressedFile.size / file.size) * 100
+      )}% 크기)`
     );
 
     return compressedFile;
@@ -108,14 +110,18 @@ function ImageUpload() {
       // 파일 크기 확인 (100MB 제한)
       const fileSizeMB = originalFile.size / (1024 * 1024);
       const MAX_FILE_SIZE = 100; // 100MB 제한
-      
+
       if (fileSizeMB > MAX_FILE_SIZE) {
-        alert(`파일 크기가 너무 큽니다. (${fileSizeMB.toFixed(1)}MB)\n\n최대 ${MAX_FILE_SIZE}MB 크기의 이미지만 업로드 가능합니다.`);
+        alert(
+          `파일 크기가 너무 큽니다. (${fileSizeMB.toFixed(
+            1
+          )}MB)\n\n최대 ${MAX_FILE_SIZE}MB 크기의 이미지만 업로드 가능합니다.`
+        );
         // 파일 선택 초기화
         if (event.target) event.target.value = "";
         return;
       }
-      
+
       // 원본 이미지 미리보기 설정 (압축 전)
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -125,7 +131,7 @@ function ImageUpload() {
         }
       };
       reader.readAsDataURL(originalFile); //base64로 전환
-      
+
       // 원본 파일 저장 (나중에 압축)
       setImageFile(originalFile);
       console.log(`원본 이미지 크기: ${fileSizeMB.toFixed(2)}MB`);
@@ -140,17 +146,17 @@ function ImageUpload() {
       try {
         // 압축 시작 상태 설정
         setIsCompressing(true);
-        
+
         // 이미지 크기 확인 및 필요시 압축 (5MB 이상일 경우만)
         const processedFile = await compressImageIfNeeded(imageFile);
-        
+
         // 압축 완료 상태 설정
         setIsCompressing(false);
-        
+
         // 압축 완료 후 formData 생성 및 업로드
         const formData = new FormData();
         formData.append("file", processedFile);
-        
+
         // 로딩 상태 설정 추가 (옵션)
         tempImageMutation.mutate(formData, {
           onSuccess: (data) => {
@@ -195,7 +201,9 @@ function ImageUpload() {
       className="flex flex-col w-full items-center justify-center"
       onClick={modalClose}
     >
-      {(imageEval.isLoading || tempImageMutation.isPending || isCompressing) && <Loading />}
+      {(imageEval.isLoading ||
+        tempImageMutation.isPending ||
+        isCompressing) && <Loading />}
       {/* 사진 촬영 / 업로드 모달창 */}
       {modalState && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -278,11 +286,17 @@ function ImageUpload() {
         height={12}
         textSize="lg"
         onClick={handleTempImagePost}
-        disabled={isCompressing || tempImageMutation.isPending || imageEval.isLoading}
+        disabled={
+          isCompressing || tempImageMutation.isPending || imageEval.isLoading
+        }
       >
-        {isCompressing ? "이미지 압축 중..." : 
-         tempImageMutation.isPending ? "업로드 중..." : 
-         imageEval.isLoading ? "분석 중..." : "확인"}
+        {isCompressing
+          ? "이미지 압축 중..."
+          : tempImageMutation.isPending
+          ? "업로드 중..."
+          : imageEval.isLoading
+          ? "분석 중..."
+          : "확인"}
       </Button>
     </div>
   );

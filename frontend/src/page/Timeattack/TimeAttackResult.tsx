@@ -72,7 +72,9 @@ const AnimationModal: React.FC<AnimationModalProps> = ({
 
   const handleGoToRanking = () => {
     onClose();
-    navigate("/ranking", { replace: true });
+    // 정확한 URL 마크업와 탭 파라미터 확인
+    console.log("타임어택에서 랭킹보기 클릭, 이동 URL: /ranking?tab=timeAttack");
+    navigate("/ranking?tab=timeAttack", { replace: true });
   };
 
   const handleGoToTimeAttack = () => {
@@ -257,9 +259,13 @@ const TimeAttackResult: React.FC = () => {
     }
   };
 
-  // 랭킹 보기 핸들러
   const handleViewRanking = async () => {
     await saveResultAndCheckAchievement();
+  };
+
+  // 애니메이션 모달에서 랭킹 보기 클릭 시 타임어택 랭킹 탭으로 이동하도록 설정
+  const handleGoToRanking = () => {
+    navigate("/ranking?tab=timeAttack", { replace: true });
   };
 
   // 모달 닫기 핸들러
