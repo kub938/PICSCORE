@@ -8,6 +8,7 @@ import com.picscore.backend.photo.model.response.*;
 import com.picscore.backend.photo.repository.PhotoHashtagRepository;
 import com.picscore.backend.photo.repository.PhotoLikeRepository;
 import com.picscore.backend.photo.repository.PhotoRepository;
+import com.picscore.backend.photo.service.HashtagService;
 import com.picscore.backend.photo.service.PhotoService;
 import com.picscore.backend.user.model.entity.User;
 import com.picscore.backend.user.repository.UserRepository;
@@ -41,7 +42,7 @@ public class PhotoServiceImpl implements PhotoService {
     private final PhotoLikeRepository photoLikeRepository;
     private final PhotoHashtagRepository photoHashtagRepository;
 
-    private final HashtagServiceImpl hashtagService;
+    private final HashtagService hashtagService;
 
     private final S3Client s3Client;
 
