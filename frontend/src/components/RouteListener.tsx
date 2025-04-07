@@ -80,6 +80,11 @@ const routeLayouts: { [key: string]: LayoutConfig } = {
     showBottomBar: false,
     content: "타임어택",
   },
+  "/arena": {
+    showNavBar: true,
+    showBottomBar: false,
+    content: "아레나",
+  },
 };
 
 function RouteListener() {
@@ -102,7 +107,7 @@ function RouteListener() {
     if (location.pathname === "/time-attack") {
       const params = new URLSearchParams(location.search);
       const step = params.get("step");
-      
+
       // step이 "1"이거나 null인 경우에만 내브바 표시
       if (step === "1" || step === null) {
         setLayoutVisibility({
