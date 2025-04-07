@@ -13,7 +13,7 @@ interface LayoutConfig {
 }
 const nickname = "asdf";
 const routeLayouts: { [key: string]: LayoutConfig } = {
-  "/": { showNavBar: false, showBottomBar: false, content: "" },
+  "/": { showNavBar: false, showBottomBar: true, content: "" },
   "/image-upload": {
     showNavBar: true,
     showBottomBar: false,
