@@ -295,9 +295,8 @@ function Home() {
             onClick={() => setShowChickenModal(true)}
           >
             <div className="absolute inset-0 bg-white rounded-xl shadow-xl"></div>
-            <div className="relative flex items-center z-10">
-              <span className="text-2xl mr-3">🍗</span>
-              <span className="font-bold text-gray-700 text-lg">치킨받기</span>
+            <div className="relative flex items-center">
+              <span className="text-2xl mr-3">🐣</span>
             </div>
           </div>
         </div>
@@ -338,8 +337,7 @@ function Home() {
                   required
                 />
                 <p className="text-sm text-pic-primary font-bold mt-2 border-t border-b border-pic-primary py-2 px-1 text-center">
-                  양질의 피드백을 보내주시면 추첨을 통해 맛있는 치킨 🍗을
-                  보내드립니다!
+                  함께 성장하는 PICSCORE! 불편한 점이 있다면 피드백 부탁드려요!
                 </p>
               </div>
 
