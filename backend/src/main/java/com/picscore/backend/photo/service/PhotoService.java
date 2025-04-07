@@ -4,6 +4,7 @@ import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.common.model.response.BaseResponse;
 import com.picscore.backend.photo.model.entity.Photo;
 import com.picscore.backend.photo.model.entity.PhotoLike;
+import com.picscore.backend.photo.model.request.UploadPhotoRequest;
 import com.picscore.backend.photo.model.response.*;
 import com.picscore.backend.photo.repository.PhotoHashtagRepository;
 import com.picscore.backend.photo.repository.PhotoLikeRepository;
@@ -40,8 +41,11 @@ public class PhotoService {
     private final PhotoRepository photoRepository;
     private final PhotoLikeRepository photoLikeRepository;
     private final PhotoHashtagRepository photoHashtagRepository;
+
     private final HashtagService hashtagService;
+
     private final S3Client s3Client;
+
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
@@ -50,40 +54,42 @@ public class PhotoService {
      * 새로운 사진을 저장하는 메서드
      *
      * @param userId 사진을 업로드한 사용자
-     * @param score 사진 점수
-     * @param analysisChart 분석 차트
-     * @param analysisText 분석 텍스트
-     * @param isPublic 공개/비공개 여부
+     * @param request UploadPhotoRequest 요청 바디
      * @return ResponseEntity<BaseResponse<HttpStatus>> 저장 결과
      */
     @Transactional
-    public ResponseEntity<BaseResponse<SavePhotoResponse>> savePhoto(Long userId, String imageName, Float score,
-                                                              Map<String, Integer> analysisChart, Map<String, String> analysisText,
-                                                              Boolean isPublic, String photoType, List hashtags) {
+    public SavePhotoResponse savePhoto(
+            Long userId, UploadPhotoRequest request) {
+
         String tempFolder = "temp/";
         String permanentFolder = "permanent/";
+
         // S3에서 임시 폴더에서 영구 폴더로 이미지 이동
         CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
                 .sourceBucket(bucketName)    // 원본 버킷
-                .sourceKey(tempFolder+imageName)        // 원본 경로
+                .sourceKey(tempFolder+request.getImageName())        // 원본 경로
                 .destinationBucket(bucketName) // 동일한 버킷 내 복사
-                .destinationKey(permanentFolder+imageName) // 새로운 경로
+                .destinationKey(permanentFolder+request.getImageName()) // 새로운 경로
                 .build();
         s3Client.copyObject(copyObjectRequest);
-        String permanImageUrl = getFileUrl(permanentFolder,imageName);
+
+        String permanImageUrl = getFileUrl(permanentFolder,request.getImageName());
         if (permanImageUrl == null || permanImageUrl.trim().isEmpty()) {
-            throw new IllegalArgumentException("이미지 URL이 생성되지 않았습니다: " + imageName);
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 URL이 생성되지 않았습니다: " + request.getImageName());
         }
+
         // mySQL에 저장
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저 없음; " + userId));
-        Photo photo = new Photo(user, permanImageUrl, score,  isPublic, photoType, analysisChart, analysisText);
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
+        Photo photo = new Photo(
+                user, permanImageUrl, request.getScore(),request.getIsPublic(),
+                request.getPhotoType(), request.getAnalysisChart(), request.getAnalysisText());
         photoRepository.save(photo);
         SavePhotoResponse response = new SavePhotoResponse(photo.getId());
         // 해시태그 저장은 HashtagService에 위임
-        hashtagService.saveHashtags(photo, hashtags);
+        hashtagService.saveHashtags(photo, request.getHashTag());
 
-        return ResponseEntity.ok(BaseResponse.success("사진 업로드 완료", response));
+        return response;
     }
 
 
@@ -95,7 +101,7 @@ public class PhotoService {
      * @throws IOException 파일 처리 중 발생할 수 있는 입출력 예외
      */
     @Transactional
-    public ResponseEntity<BaseResponse<UploadPhotoResponse>> uploadFile(
+    public UploadPhotoResponse uploadFile(
             MultipartFile file) throws IOException {
 
         if (file == null || file.isEmpty()) {
@@ -118,12 +124,10 @@ public class PhotoService {
                     RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
             // 업로드 성공 시 응답 생성
-            UploadPhotoResponse uploadPhotoResponse = new UploadPhotoResponse(getFileUrl(tempFolder, fileName), fileName);
-            return ResponseEntity.ok(BaseResponse.success("임시 파일 저장 완료", uploadPhotoResponse));
+            UploadPhotoResponse response = new UploadPhotoResponse(getFileUrl(tempFolder, fileName), fileName);
+            return response;
         } catch (Exception e) {
-            // 업로드 실패 시 에러 로그 출력 및 에러 응답 반환
-            System.out.printf("업로드 실패");
-            return ResponseEntity.internalServerError().body(BaseResponse.error("파일 업로드 실패: " + e.getMessage()));
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드 실패: " + e.getMessage());
         }
     }
 
@@ -197,9 +201,12 @@ public class PhotoService {
      * @param keyword 검색할 해시태그 키워드
      * @return ResponseEntity<BaseResponse<List<GetPhotosResponse>>> 검색된 사진 목록
      */
-    public ResponseEntity<BaseResponse<List<GetPhotosResponse>>> searchPhotosByHashtag(String keyword) {
-        List<GetPhotosResponse> results = photoRepository.findPhotosByHashtagName(keyword);
-        return ResponseEntity.ok(BaseResponse.success("사진 조회 성공", results));
+    public List<GetPhotosResponse> searchPhotosByHashtag(
+            String keyword) {
+
+        List<GetPhotosResponse> responses = photoRepository.findPhotosByHashtagName(keyword);
+
+        return responses;
     }
 
 
@@ -208,17 +215,17 @@ public class PhotoService {
      *
      * @param photoId 삭제할 사진의 ID
      * @param userId 삭제 요청을 한 사용자의 ID
-     * @return ResponseEntity<BaseResponse<Void>> 삭제 결과
      */
     @Transactional
-    public ResponseEntity<BaseResponse<Void>> deletePhoto(Long photoId, Long userId) {
+    public void deletePhoto(
+            Long photoId, Long userId) {
+
         // 사진 조회
         Photo photo = photoRepository.findPhotoById(photoId);
 
         if (photo == null) {
             // 사진이 존재하지 않을 경우 에러 반환
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(BaseResponse.error("해당 사진을 찾을 수 없습니다."));
+            throw new CustomException(HttpStatus.NOT_FOUND, "해당 사진을 찾을 수 없습니다.");
         }
 
         // 사진 소유자 정보 조회
@@ -226,15 +233,12 @@ public class PhotoService {
 
         if (!user.getId().equals(userId)) {
             // 요청한 사용자 ID가 사진 소유자가 아닐 경우 에러 반환
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(BaseResponse.error("사진 삭제 권한이 없습니다."));
+            throw new CustomException(HttpStatus.FORBIDDEN, "사진 삭제 권한이 없습니다.");
         }
         // mySQL에서 삭제
         photoRepository.delete(photo);
         // S3에서 삭제
         deleteFile(photo.getImageUrl());
-
-        return ResponseEntity.ok(BaseResponse.withMessage("사진 삭제 완료"));
     }
 
 
@@ -366,28 +370,23 @@ public class PhotoService {
      *
      * @param photoId 상태를 변경할 사진의 ID
      * @param userId 변경 요청을 한 사용자의 ID
-     * @return ResponseEntity<BaseResponse<Void>> 변경 결과
      */
-    public ResponseEntity<BaseResponse<Void>> togglePublic(Long photoId, Long userId) {
+    public void togglePublic(Long photoId, Long userId) {
         // 사진 조회
         Photo photo = photoRepository.findPhotoById(photoId);
 
         if (photo == null) {
             // 사진이 존재하지 않을 경우 에러 반환
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(BaseResponse.error("해당 사진을 찾을 수 없습니다."));
+            throw new CustomException(HttpStatus.NOT_FOUND, "해당 사진을 찾을 수 없습니다.");
         }
 
         // 사진 소유자 정보 조회
         User user = photo.getUser();
         if (!user.getId().equals(userId)) {
             // 요청한 사용자 ID가 사진 소유자가 아닐 경우 에러 반환
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(BaseResponse.error("사진 수정 권한이 없습니다."));
+            throw new CustomException(HttpStatus.FORBIDDEN, "사진 수정 권한이 없습니다.");
         }
         photoRepository.togglePublic(photoId);
-        return ResponseEntity.ok(BaseResponse.withMessage("사진 설정 완료"));
-
     }
 
 
