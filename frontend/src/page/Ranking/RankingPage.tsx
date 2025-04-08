@@ -75,15 +75,20 @@ type TimeFrame = "today" | "week" | "month" | "all";
 const RankingPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const myId = useAuthStore((state) => state.userId);
   // 상태 관리
   const [arenaRankings, setArenaRankings] = useState<RankingUser[]>([]);
-  const [timeAttackRankings, setTimeAttackRankings] = useState<RankingUser[]>([]);
+  const [timeAttackRankings, setTimeAttackRankings] = useState<RankingUser[]>(
+    []
+  );
   const [contestRankings, setContestRankings] = useState<RankingUser[]>([]);
-  
+
   const [arenaTopThree, setArenaTopThree] = useState<RankingUser[]>([]);
-  const [timeAttackTopThree, setTimeAttackTopThree] = useState<RankingUser[]>([]);
+  const [timeAttackTopThree, setTimeAttackTopThree] = useState<RankingUser[]>(
+    []
+  );
   const [contestTopThree, setContestTopThree] = useState<RankingUser[]>([]);
-  
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -133,7 +138,9 @@ const RankingPage: React.FC = () => {
           // 첫 로드 시에만 상위 3명 설정
           if (currentPage === 1) {
             const topUsers = apiRankings
-              .filter((user) => (user.rank !== undefined && user.rank <= 3) || false)
+              .filter(
+                (user) => (user.rank !== undefined && user.rank <= 3) || false
+              )
               .slice(0, 3);
             setTimeAttackTopThree(topUsers);
           }
@@ -205,7 +212,7 @@ const RankingPage: React.FC = () => {
       } else if (rankingType === "arena") {
         fetchArenaRankings();
       }
-      
+
       // 첫 번째 로드일 경우 두 랭킹 모두 불러오기
       if (isFirstLoad.current && currentPage === 1) {
         if (rankingType === "timeAttack") {
@@ -226,20 +233,18 @@ const RankingPage: React.FC = () => {
   // URL 쿼리 파라미터에서 탭 설정 확인
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const tabParam = searchParams.get('tab');
-    
+    const tabParam = searchParams.get("tab");
+
     // 탭 파라미터가 있는 경우 해당 탭으로 설정
-    if (tabParam === 'timeAttack') {
-      setRankingType('timeAttack');
-      console.log('타임어택 탭으로 설정');
-    } else if (tabParam === 'arena') {
-      setRankingType('arena');
-    } else if (tabParam === 'contest') {
-      setRankingType('contest');
+    if (tabParam === "timeAttack") {
+      setRankingType("timeAttack");
+      console.log("타임어택 탭으로 설정");
+    } else if (tabParam === "arena") {
+      setRankingType("arena");
+    } else if (tabParam === "contest") {
+      setRankingType("contest");
     }
   }, [location.search]);
-
-
 
   // 랭킹 유형 변경 시 데이터 리셋
   useEffect(() => {
@@ -248,23 +253,25 @@ const RankingPage: React.FC = () => {
     // 선택된 유저 초기화
     setSelectedUser(null);
     setModalOpen(false);
-    
+
     // 이미 해당 랭킹 데이터가 있다면 로딩 상태를 false로 설정
-    if (rankingType === 'timeAttack' && timeAttackRankings.length > 0) {
+    if (rankingType === "timeAttack" && timeAttackRankings.length > 0) {
       setIsLoading(false);
-      
+
       // TOP3가 없는 경우 다시 상위 3명 설정
       if (timeAttackTopThree.length === 0) {
         const topUsers = timeAttackRankings
-          .filter((user) => (user.rank !== undefined && user.rank <= 3) || false)
+          .filter(
+            (user) => (user.rank !== undefined && user.rank <= 3) || false
+          )
           .slice(0, 3);
         if (topUsers.length > 0) {
           setTimeAttackTopThree(topUsers);
         }
       }
-    } else if (rankingType === 'arena' && arenaRankings.length > 0) {
+    } else if (rankingType === "arena" && arenaRankings.length > 0) {
       setIsLoading(false);
-      
+
       // TOP3가 없는 경우 다시 상위 3명 설정
       if (arenaTopThree.length === 0) {
         const topUsers = arenaRankings.slice(0, 3);
@@ -272,14 +279,20 @@ const RankingPage: React.FC = () => {
           setArenaTopThree(topUsers);
         }
       }
-    } else if (rankingType === 'contest') {
+    } else if (rankingType === "contest") {
       setIsLoading(false);
     }
-    
-    console.log('Current ranking type:', rankingType);
-    console.log('Arena top three:', arenaTopThree);
-    console.log('Time attack top three:', timeAttackTopThree);
-  }, [rankingType, timeAttackRankings, arenaRankings, timeAttackTopThree, arenaTopThree]);
+
+    console.log("Current ranking type:", rankingType);
+    console.log("Arena top three:", arenaTopThree);
+    console.log("Time attack top three:", timeAttackTopThree);
+  }, [
+    rankingType,
+    timeAttackRankings,
+    arenaRankings,
+    timeAttackTopThree,
+    arenaTopThree,
+  ]);
 
   // 랭킹 아이템 클릭 핸들러
   const handleRankingItemClick = (user: RankingUser) => {
@@ -289,7 +302,11 @@ const RankingPage: React.FC = () => {
 
   // 프로필로 이동 핸들러
   const handleGoToProfile = (userId: number) => {
-    navigate(`/user/profile/${userId}`);
+    if (userId === myId) {
+      navigate(`/mypage`);
+    } else {
+      navigate(`/user/profile/${userId}`);
+    }
     setModalOpen(false);
   };
 
@@ -651,18 +668,24 @@ const RankingPage: React.FC = () => {
       </div>
 
       {/* TOP 3 섹션 - contest가 아니고 로딩 중이 아닀 때만 표시 */}
-      {rankingType !== "contest" && !isLoading && currentTopThree.length > 0 && (
-        <div className="grid grid-cols-3 gap-2 p-4">
-          {/* 2등 */}
-          <TrophyCard user={secondPlace} rank={2} trophyImage={silverTrophy} />
+      {rankingType !== "contest" &&
+        !isLoading &&
+        currentTopThree.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 p-4">
+            {/* 2등 */}
+            <TrophyCard
+              user={secondPlace}
+              rank={2}
+              trophyImage={silverTrophy}
+            />
 
-          {/* 1등 */}
-          <TrophyCard user={firstPlace} rank={1} trophyImage={goldTrophy} />
+            {/* 1등 */}
+            <TrophyCard user={firstPlace} rank={1} trophyImage={goldTrophy} />
 
-          {/* 3등 */}
-          <TrophyCard user={thirdPlace} rank={3} trophyImage={bronzeTrophy} />
-        </div>
-      )}
+            {/* 3등 */}
+            <TrophyCard user={thirdPlace} rank={3} trophyImage={bronzeTrophy} />
+          </div>
+        )}
 
       {/* 랭킹 목록 섹션 */}
       <div className="p-5 mt-2 bg-white rounded-lg mx-4 border border-gray-200 shadow-md">
@@ -869,65 +892,67 @@ const RankingPage: React.FC = () => {
         )}
 
         {/* 페이지네이션 - contest가 아니고 로딩 중이 아니고 데이터가 있을 때만 표시 */}
-        {rankingType !== "contest" && !isLoading && currentRankings.length > 0 && (
-          <div className="flex justify-between items-center pt-5 mt-4 border-t border-gray-100">
-            <button
-              onClick={handlePrevPage}
-              className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
-                currentPage === 1
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-              disabled={currentPage === 1 || isLoading}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mr-1"
+        {rankingType !== "contest" &&
+          !isLoading &&
+          currentRankings.length > 0 && (
+            <div className="flex justify-between items-center pt-5 mt-4 border-t border-gray-100">
+              <button
+                onClick={handlePrevPage}
+                className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                  currentPage === 1
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+                disabled={currentPage === 1 || isLoading}
               >
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-              이전
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mr-1"
+                >
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                이전
+              </button>
 
-            <div className="w-10 h-10 rounded-full bg-pic-primary flex items-center justify-center text-white font-bold shadow-sm">
-              {currentPage}
+              <div className="w-10 h-10 rounded-full bg-pic-primary flex items-center justify-center text-white font-bold shadow-sm">
+                {currentPage}
+              </div>
+
+              <button
+                onClick={handleNextPage}
+                className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                  currentPage === totalPages
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+                disabled={currentPage === totalPages || isLoading}
+              >
+                다음
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="ml-1"
+                >
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
             </div>
-
-            <button
-              onClick={handleNextPage}
-              className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
-                currentPage === totalPages
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-              disabled={currentPage === totalPages || isLoading}
-            >
-              다음
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="ml-1"
-              >
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </button>
-          </div>
-        )}
+          )}
       </div>
 
       {/* 랭킹 사진 모달 */}
