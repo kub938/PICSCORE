@@ -64,7 +64,6 @@ public class PhotoServiceImpl implements PhotoService {
     @Override
     @Transactional
     public SavePhotoResponse savePhoto(Long userId, UploadPhotoRequest request) {
-//        userId = Long.valueOf(1);     // 테스트
         String tempFolder = "temp/";
         String permanentFolder = "permanent/";
         String thumbnailFolder = "thumbnail/";
@@ -271,14 +270,13 @@ public class PhotoServiceImpl implements PhotoService {
     @Override
     public Map<String, Object> getPaginatedPhotos(
             int pageNum, String sort) {
-
         if (pageNum < 1) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
         }
 
         Page<Photo> photoPage;
         PageRequest pageRequest;
-
+        
         if (sort == null || sort.equalsIgnoreCase("latest")) {
             pageRequest = PageRequest.of(pageNum - 1, 24, Sort.by(Sort.Direction.DESC, "createdAt"));
             photoPage = photoRepository.findAllWithPublic(pageRequest);
@@ -300,18 +298,19 @@ public class PhotoServiceImpl implements PhotoService {
             throw new CustomException(HttpStatus.NOT_FOUND, "해당 페이지에 랭킹 정보가 없습니다");
         }
 
-        // DTO 변환
+        // ✅ URL 경로 수정: permanent → thumbnail
         List<GetPhotosResponse> photoResponses = photoPage.getContent().stream()
-                .map(photo -> new GetPhotosResponse(photo.getId(), photo.getImageUrl()))
+                .map(photo -> {
+                    String thumbnailUrl = photo.getImageUrl().replace("permanent", "thumbnail");
+                    return new GetPhotosResponse(photo.getId(), thumbnailUrl);
+                })
                 .collect(Collectors.toList());
 
-        // 응답 데이터 구성
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("totalPages", photoPage.getTotalPages());
         responseData.put("currentPage", pageNum);
         responseData.put("photos", photoResponses);
 
-        // 응답 반환
         return responseData;
     }
 
