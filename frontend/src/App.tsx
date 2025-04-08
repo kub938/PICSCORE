@@ -5,7 +5,6 @@ import useLayoutStore from "./store/layoutStore";
 import ContentNavBar from "./components/NavBar/ContentNavBar";
 import { usePWAStore } from "./store/pwaStore";
 import { useEffect } from "react";
-import InstallPWA from "./components/InstallPWA";
 import {
   BeforeInstallPromptEvent,
   NavigatorWithStandalone,
@@ -76,7 +75,6 @@ function App() {
   return (
     <div className="select-none box-content flex flex-col max-w-md mx-auto min-h-screen bg-gray-50 relative">
       {showNavBar && <ContentNavBar content={content} />}
-      <InstallPWA />
       <RouteListener />
       <main className="flex flex-1 justify-center">
         <Outlet />
