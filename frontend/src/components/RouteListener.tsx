@@ -85,6 +85,38 @@ const routeLayouts: { [key: string]: LayoutConfig } = {
     showBottomBar: false,
     content: "아레나",
   },
+  // 새로운 통합 팔로우 페이지 추가
+  "/follow": {
+    showNavBar: true,
+    showBottomBar: false,
+    content: "팔로우",
+  },
+  "/user/follow/:userId": {
+    showNavBar: true,
+    showBottomBar: false,
+    content: "팔로우",
+  },
+  // 기존 페이지 유지 (리다이렉트 처리를 위해)
+  "/following": {
+    showNavBar: true,
+    showBottomBar: false,
+    content: "팔로잉",
+  },
+  "/follower": {
+    showNavBar: true,
+    showBottomBar: false,
+    content: "팔로워",
+  },
+  "/user/following/:userId": {
+    showNavBar: true,
+    showBottomBar: false,
+    content: "팔로잉",
+  },
+  "/user/follower/:userId": {
+    showNavBar: true,
+    showBottomBar: false,
+    content: "팔로워",
+  },
 };
 
 function RouteListener() {
@@ -132,6 +164,19 @@ function RouteListener() {
         showNavBar: true,
         showBottomBar: isLoggedIn, // 로그인 상태일 때만 하단바 표시
         content: "분석 결과",
+      });
+      return;
+    }
+
+    // 홈 경로 특별 처리 - loginSuccess 쿼리 파라미터 확인
+    if (location.pathname === "/") {
+      const searchParams = new URLSearchParams(location.search);
+      const loginSuccess = searchParams.get('loginSuccess');
+      
+      setLayoutVisibility({
+        showNavBar: false,
+        showBottomBar: isLoggedIn || loginSuccess === 'true', // 로그인 상태 또는 loginSuccess가 true일 때만 하단바 표시
+        content: "",
       });
       return;
     }
