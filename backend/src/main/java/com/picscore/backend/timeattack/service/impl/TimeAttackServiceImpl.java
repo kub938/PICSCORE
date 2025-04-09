@@ -2,6 +2,7 @@ package com.picscore.backend.timeattack.service.impl;
 
 import com.picscore.backend.common.exception.CustomException;
 import com.picscore.backend.common.utill.GameWeekUtil;
+import com.picscore.backend.common.utill.RedisUtil;
 import com.picscore.backend.photo.service.PhotoService;
 import com.picscore.backend.timeattack.model.entity.TimeAttack;
 import com.picscore.backend.timeattack.model.request.AnalysisPhotoRequest;
@@ -45,6 +46,7 @@ public class TimeAttackServiceImpl implements TimeAttackService {
     private final PhotoService photoService;
 
     private final GameWeekUtil gameWeekUtil;
+    private final RedisUtil redisUtil;
 
     private final RestTemplate restTemplate;
     private final S3Client s3Client;
@@ -271,6 +273,11 @@ public class TimeAttackServiceImpl implements TimeAttackService {
                 user, activityImageUrl, request.getTopic(), activityWeek, request.getScore()
         );
         timeAttackRepository.save(timeAttack);
+
+        String weekKey = "time-attack:" + activityWeek + ":score";
+        String userKey = "user:" + userId;
+
+        redisUtil.addScoreToZSetWithTTL(weekKey, userKey, request.getScore(), 7);
 
         int experience = userRepository.findExperienceByUserId(userId);
         int plusExperience = experience + (int) (request.getScore() * 10);
