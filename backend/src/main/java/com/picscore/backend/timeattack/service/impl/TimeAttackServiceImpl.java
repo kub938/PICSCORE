@@ -73,59 +73,67 @@ public class TimeAttackServiceImpl implements TimeAttackService {
      */
     @Override
     @Transactional
-    public Map<String, Object> getRanking(
-            int pageNum) {
-
-        // pageNum이 1보다 작은 경우 예외 처리
+    public Map<String, Object> getRanking(int pageNum) {
         if (pageNum < 1) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
         }
 
-        // 페이지 요청 객체 생성 (페이지당 5개 항목)
-        PageRequest pageRequest = PageRequest.of(pageNum-1, 5);
-
         String activityWeek = gameWeekUtil.getCurrentGameWeek();
+        String weekKey = "time-attack:" + activityWeek + ":score";
 
-        // 레포지토리에서 사용자별 최고 점수 조회
-        Page<TimeAttack> timeAttackPage = timeAttackRepository.findHighestScoresPerUser(activityWeek, pageRequest);
+        int pageSize = 5;
+        int start = (pageNum - 1) * pageSize;
+        int end = start + pageSize - 1;
 
-        // 페이지 데이터 존재 여부 확인
-        if (timeAttackPage == null || pageNum > timeAttackPage.getTotalPages() || timeAttackPage.getContent().isEmpty()) {
+        // 1. Redis에서 랭킹 상위 유저 아이디 추출
+        Set<String> userKeys = redisUtil.getTopRankers(weekKey, start, end);  // ex: "user:1", "user:3" ...
+        if (userKeys == null || userKeys.isEmpty()) {
             throw new CustomException(HttpStatus.NOT_FOUND, "해당 페이지에 랭킹 정보가 없습니다");
         }
+        System.out.println("userKeys = " + userKeys);
+        // 2. userId(Long) 리스트로 변환
+        List<Long> userIds = userKeys.stream()
+                .map(key -> Long.parseLong(key.replace("user:", "")))
+                .toList();
+        System.out.println("userIds = " + userIds);
+        // 3. 유저들의 최고 기록 DB에서 조회
+        List<TimeAttack> timeAttacks = timeAttackRepository.findBestRecordByUsers(userIds, activityWeek);
+
+        // 4. userIds 순서에 따라 정렬
+        Map<Long, TimeAttack> timeAttackMap = timeAttacks.stream()
+                .collect(Collectors.toMap(t -> t.getUser().getId(), t -> t));
 
         List<GetRankingResponse> rankingResponses = new ArrayList<>();
-        int baseRank = (pageNum - 1) * 5; // 현재 페이지의 기본 순위 계산
+        for (int i = 0; i < userIds.size(); i++) {
+            Long userId = userIds.get(i);
+            TimeAttack ta = timeAttackMap.get(userId);
+            if (ta != null) {
+                int rank = start + i + 1;
 
-        // 조회된 TimeAttack 데이터를 GetRankingResponse 객체로 변환
-        for (int i = 0; i < timeAttackPage.getContent().size(); i++) {
-            TimeAttack timeAttack = timeAttackPage.getContent().get(i);
-
-            int newRank = baseRank + i + 1;
-            // 랭킹 업데이트
-            timeAttack.updateRanking(newRank);
-            // 변경 사항 저장
-            timeAttackRepository.save(timeAttack);
-
-            rankingResponses.add(new GetRankingResponse(
-                    timeAttack.getUser().getId(),
-                    timeAttack.getUser().getNickName(),
-                    timeAttack.getUser().getProfileImage(),
-                    timeAttack.getPhotoImage(),
-                    timeAttack.getTopic(),
-                    timeAttack.getScore(),
-                    newRank
-            ));
+                rankingResponses.add(new GetRankingResponse(
+                        ta.getUser().getId(),
+                        ta.getUser().getNickName(),
+                        ta.getUser().getProfileImage(),
+                        ta.getPhotoImage(),
+                        ta.getTopic(),
+                        ta.getScore(),
+                        rank
+                ));
+            }
         }
 
-        // 응답 데이터 구성
+        // 5. 전체 랭킹 수 계산
+        Long totalSize = redisUtil.getZSetSize(weekKey);
+        int totalPage = (int) Math.ceil((double) totalSize / pageSize);
+
+        // 응답 구성
         Map<String, Object> responseData = new HashMap<>();
-        responseData.put("totalPage", timeAttackPage.getTotalPages());
+        responseData.put("totalPage", totalPage);
         responseData.put("ranking", rankingResponses);
 
-        // 성공 응답 반환
         return responseData;
     }
+
 
 
     /**
