@@ -25,7 +25,7 @@ public class LavaImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
     private final OpenAiImageService openAiImageService;
-    public ResponseEntity<BaseResponse<String>> analyzeImage(String originalImageUrl) throws IOException {
+    public ResponseEntity<BaseResponse<Map<String, Object>>> analyzeImage(String originalImageUrl) throws IOException {
 
         // ✅ 1. 원본 이미지 다운로드 후 리사이징
         byte[] resizedImage = openAiImageService.resizeImage(originalImageUrl, 500, 500);
@@ -45,14 +45,21 @@ public class LavaImageService {
 
         // ✅ OpenAI API에 요청 보내기 (예외 처리 강화)
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(
-                    "http://70.12.130.141:8000/api/v1/image/analyze",
+            ResponseEntity<JsonNode> response = restTemplate.exchange(
+                    "http://15.164.216.52:8000/api/v1/image/analyze",
+                    HttpMethod.POST,
                     requestEntity,
-                    String.class
+                    JsonNode.class
             );
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                return ResponseEntity.ok(BaseResponse.success("분석 완료", response.getBody()));
+                JsonNode jsonResponse = response.getBody();
+
+                // 필요하면 JsonNode → Map으로 변환
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String, Object> responseMap = mapper.convertValue(jsonResponse, Map.class);
+
+                return ResponseEntity.ok(BaseResponse.success("분석 완료", responseMap));
             } else {
                 throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "LAVA API 요청 실패: HTTP " + response.getStatusCode());
             }

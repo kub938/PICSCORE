@@ -21,8 +21,8 @@ public class ImageAnalysisController {
     @GetMapping("/analyze")
     public ResponseEntity<BaseResponse<Map<String, Object>>> analyze(    // GPT: Map<String, Object>, LAVA: <String>
             @RequestParam String imageUrl) throws IOException {
-        return openAiImageService.analyzeImage(imageUrl, 0);    // GPT API
-//        return lavaImageService.analyzeImage(imageUrl);    // Lava API
+//        return openAiImageService.analyzeImage(imageUrl, 0);    // GPT API
+        return lavaImageService.analyzeImage(imageUrl);    // Lava API
     }
 }
 
