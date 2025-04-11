@@ -58,12 +58,12 @@
  <th>Backend</th>
  <tr>
     <td align="center"><a href="https://github.com/kimkyeonghwan-1"><img src="https://avatars.githubusercontent.com/u/175172659?v=4" width="130px;" alt=""></a></td>
-    <td align="center"><a href="https://github.com/ynco32"><img src="" width="130px;" alt=""></a></td>
+    <td align="center"><a href="https://github.com/xoghd32"><img src="" width="130px;" alt=""></a></td>
   
   </tr>
   <tr>
     <td align="center"><b>kimkyeonghwan-1</b></td>
-    <td align="center"><b></b></td>
+    <td align="center"><b>xoghd32</b></td>
   </tr>
   <tr> 
     <td align="center">김경환[BE리더]</td>
