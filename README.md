@@ -58,7 +58,7 @@
  <th>Backend</th>
  <tr>
     <td align="center"><a href="https://github.com/kimkyeonghwan-1"><img src="https://avatars.githubusercontent.com/u/175172659?v=4" width="130px;" alt=""></a></td>
-    <td align="center"><a href="https://github.com/xoghd32"><img src="" width="130px;" alt=""></a></td>
+    <td align="center"><a href="https://github.com/TAEHONG96"><img src="" width="130px;" alt=""></a></td>
   
   </tr>
   <tr>
