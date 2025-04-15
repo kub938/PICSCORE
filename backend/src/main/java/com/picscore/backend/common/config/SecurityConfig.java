@@ -30,13 +30,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuthUserService;
     private final CustomSuccessHandler customSuccessHandler;
+    private final ObjectMapper objectMapper;
+
+    private final UserRepository userRepository;
+
+    private final CustomOAuth2UserService customOAuthUserService;
+    private final OAuthService oAuthService;
+
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final UserRepository userRepository;
-    private final OAuthService oAuthService;
-    private final ObjectMapper objectMapper;
+
 
     /**
      * Spring Security 필터 체인을 구성합니다.
@@ -106,8 +110,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/", "/api/v1/photo", "/api/v1/image/analyze", "/actuator/**").permitAll()
-                        .requestMatchers("/api/v1/user/{type}").permitAll()
-                        .requestMatchers("/api/v1/user/photo/{userId}").permitAll()
+                        .requestMatchers("/api/v1/user/google", "/api/v1/user/kakao").permitAll()
                         .requestMatchers("/api/v1/photo/{photoId}").permitAll()
                         .anyRequest().authenticated());
 
