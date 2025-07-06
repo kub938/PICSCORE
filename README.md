@@ -1,6 +1,6 @@
 # <span style="color: #123456;">PIC</span>SCORE
 
-![PicScoreBanner](https://github.com/user-attachments/assets/1fd4f826-d473-44f3-a8df-3f8eb17a283e)
+<img width="1070" alt="image" src="https://github.com/user-attachments/assets/2a8352c4-acdd-42de-a3bb-c24a75dfd202" />
 
 # 목차
 
